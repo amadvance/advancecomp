@@ -53,6 +53,8 @@ extern int optind, opterr, optopt;
 // ------------------------------------------------------------------------
 // utime
 
+#include <time.h>
+
 #ifdef HAVE_UTIME_H
 #include <utime.h>
 #endif
