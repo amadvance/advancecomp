@@ -23,6 +23,7 @@
 #include "utility.h"
 
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <cctype>
 #include <cstdio>
@@ -68,6 +69,20 @@ void token_skip(const std::string& s, unsigned& ptr, char sep) {
 	sep_string[0] = sep;
 	sep_string[1] = 0;
 	token_skip(s,ptr,sep_string);
+}
+
+string numhex(unsigned v)
+{
+	ostringstream s;
+	s << setw(8) << setfill('0') << hex << v;
+	return s.str();
+}
+
+string numdec(unsigned v)
+{
+	ostringstream s;
+	s << v;
+	return s.str();
 }
 
 /* Match one string with a shell pattern expression

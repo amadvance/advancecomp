@@ -28,6 +28,7 @@
 #include "lib/endianrw.h"
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <sstream>
 #include <set>
@@ -462,44 +463,53 @@ void zip_entry::check_local(const unsigned char* buf) const {
 	if (le_uint32_read(buf+ZIP_LO_local_file_header_signature) != ZIP_L_signature) {
 		throw error() << "Invalid signature in local header";
 	}
-#if 0 // may differ in strange zips
 	if (info.general_purpose_bit_flag != le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag)) {
-		throw error() << "Invalid local purpose bit flag";
+		throw error() << "Invalid local purpose bit flag " << numhex(info.general_purpose_bit_flag) << "/" << numhex(le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag));
 	}
-#endif
 	if (info.compression_method != le_uint16_read(buf+ZIP_LO_compression_method)) {
 		throw error() << "Invalid method on local header";
 	}
-	if ((info.general_purpose_bit_flag & ZIP_GEN_FLAGS_DEFLATE_ZERO) != 0
-		|| (le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag) & ZIP_GEN_FLAGS_DEFLATE_ZERO) != 0) {
+	if ((le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag) & ZIP_GEN_FLAGS_DEFLATE_ZERO) != 0) {
 		if (le_uint32_read(buf+ZIP_LO_crc32) != 0) {
-			throw error() << "Not zero crc on local header";
+			throw error() << "Not zero crc on local header " << numhex(le_uint32_read(buf+ZIP_LO_crc32));
 		}
 		if (le_uint32_read(buf+ZIP_LO_compressed_size) != 0) {
-			throw error() << "Not zero compressed size in local header";
+			throw error() << "Not zero compressed size in local header " << le_uint32_read(buf+ZIP_LO_compressed_size);
 		}
 		if (le_uint32_read(buf+ZIP_LO_uncompressed_size) != 0) {
-			throw error() << "Not zero uncompressed size in local header";
+			throw error() << "Not zero uncompressed size in local header " << le_uint32_read(buf+ZIP_LO_uncompressed_size);
 		}
 	} else {
 		if (info.crc32 != le_uint32_read(buf+ZIP_LO_crc32)) {
-			throw error() << "Invalid crc on local header " << info.crc32 << " " << le_uint32_read(buf+ZIP_LO_crc32);
+			throw error() << "Invalid crc on local header " << numhex(info.crc32) << "/" << numhex(le_uint32_read(buf+ZIP_LO_crc32));
 		}
 		if (info.compressed_size != le_uint32_read(buf+ZIP_LO_compressed_size)) {
-			throw error() << "Invalid compressed size in local header";
+			throw error() << "Invalid compressed size in local header " << info.compressed_size << "/" << le_uint32_read(buf+ZIP_LO_compressed_size);
 		}
 		if (info.uncompressed_size != le_uint32_read(buf+ZIP_LO_uncompressed_size)) {
-			throw error() << "Invalid uncompressed size in local header";
+			throw error() << "Invalid uncompressed size in local header " << info.uncompressed_size << "/" << le_uint32_read(buf+ZIP_LO_uncompressed_size);
 		}
 	}
 	if (info.filename_length != le_uint16_read(buf+ZIP_LO_filename_length)) {
 		throw error() << "Invalid filename in local header";
 	}
-#if 0 // the .zip generated with the info-zip program have the extra field only on the local header
-	if (info.extra_field_length != le_uint16_read(buf+ZIP_LO_extra_field_length)) {
-		throw error() << "Invalid extra field length in local header";
+	if (info.local_extra_field_length != le_uint16_read(buf+ZIP_LO_extra_field_length)
+		&& info.local_extra_field_length != 0 // the .zip generated with the info-zip program have the extra field only on the local header
+	) {
+		throw error() << "Invalid extra field length in local header " << info.local_extra_field_length << "/" << le_uint16_read(buf+ZIP_LO_extra_field_length);
 	}
-#endif
+}
+
+void zip_entry::check_descriptor(const unsigned char* buf) const {
+	if (info.crc32 != le_uint32_read(buf+ZIP_DO_crc32)) {
+		throw error() << "Invalid crc on data descriptor " << numhex(info.crc32) << "/" << numhex(le_uint32_read(buf+ZIP_DO_crc32));
+	}
+	if (info.compressed_size != le_uint32_read(buf+ZIP_DO_compressed_size)) {
+		throw error() << "Invalid compressed size in data descriptor " << info.compressed_size << "/" << le_uint32_read(buf+ZIP_DO_compressed_size);
+	}
+	if (info.uncompressed_size != le_uint32_read(buf+ZIP_DO_uncompressed_size)) {
+		throw error() << "Invalid uncompressed size in data descriptor " << info.uncompressed_size << "/" << le_uint32_read(buf+ZIP_DO_uncompressed_size);
+	}
 }
 
 // Unload compressed/uncomressed data
@@ -525,6 +535,13 @@ void zip::skip_local(const unsigned char* buf, FILE* f) {
 			throw error() << "Failed seek";
 		}
 	}
+
+	// data descriptor
+	if ((le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag) & ZIP_GEN_FLAGS_DEFLATE_ZERO) != 0) {
+		if (fseek(f, ZIP_DO_FIXED, SEEK_CUR)!=0) {
+			throw error() << "Failed seek";
+		}
+	}
 }
 
 // Load local file header
@@ -533,7 +550,8 @@ void zip::skip_local(const unsigned char* buf, FILE* f) {
 //   f file seeked after the fixed size local header
 // return:
 //   true ok
-void zip_entry::load_local(const unsigned char* buf, FILE* f) {
+void zip_entry::load_local(const unsigned char* buf, FILE* f)
+{
 	check_local(buf);
 
 	// use the local extra_field_length. It may be different than the
@@ -558,6 +576,17 @@ void zip_entry::load_local(const unsigned char* buf, FILE* f) {
 		data_free(data);
 		data = 0;
 		throw;
+	}
+
+	// load the data descriptor
+	if ((le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag) & ZIP_GEN_FLAGS_DEFLATE_ZERO) != 0) {
+		unsigned char data_desc[ZIP_DO_FIXED];
+
+		if (fread(data_desc,ZIP_DO_FIXED,1,f)!=1) {
+			throw error() << "Failed read";
+		}
+
+		check_descriptor(data_desc);
 	}
 }
 

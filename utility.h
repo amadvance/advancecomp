@@ -43,6 +43,9 @@ int striwildcmp(const char* pattern, const char* str);
 unsigned strdec(const char* s);
 unsigned strhex(const char* s);
 
+std::string numhex(unsigned v);
+std::string numdec(unsigned v);
+
 std::string token_get(const std::string& s, unsigned& ptr, const char* sep);
 void token_skip(const std::string& s, unsigned& ptr, const char* sep);
 std::string token_get(const std::string& s, unsigned& ptr, char sep);

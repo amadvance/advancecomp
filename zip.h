@@ -198,6 +198,7 @@ private:
 
 	void check_cent(const unsigned char* buf) const;
 	void check_local(const unsigned char* buf) const;
+	void check_descriptor(const unsigned char* buf) const;
 
 	// abstract
 	zip_entry();
