@@ -37,13 +37,6 @@ public:
 
 void png_print_chunk(unsigned type, unsigned char* data, unsigned size);
 
-bool png_compress_raw(
-	shrink_t level,
-	unsigned char* z_ptr,
-	unsigned& z_size,
-	const unsigned char* fil_ptr,
-	unsigned fil_size
-);
 void png_compress(
 	shrink_t level,
 	data_ptr& out_ptr, unsigned& out_size,

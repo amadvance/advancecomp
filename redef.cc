@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1999-2002 Andrea Mazzoleni
+ * Copyright (C) 2002, 2003 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,23 +44,163 @@ shrink_t opt_level;
 bool opt_quiet;
 bool opt_force;
 
-// --------------------------------------------------------------------------
-// Conversion
-
 enum ftype_t {
 	ftype_png,
 	ftype_mng,
 	ftype_gz
 };
 
+// --------------------------------------------------------------------------
+// Support Generic
+
+#define BLOCK_SIZE 4096
+
 struct block_t {
 	unsigned char* data;
 	block_t* next;
 };
 
-#define BLOCK_SIZE 4096
+void copy_data(adv_fz* f_in, adv_fz* f_out, unsigned char* data, unsigned size) {
+	if (fzread(data, size, 1, f_in) != 1) {
+		throw error() << "Error reading";
+	}
 
-static void png_read_idat(adv_fz* f, unsigned char*& data, unsigned& size, unsigned& type, unsigned char*& res_data, unsigned& res_size)
+	if (fzwrite(data, size, 1, f_out) != 1) {
+		throw error() << "Error writing";
+	}
+}
+
+void copy_data(adv_fz* f_in, adv_fz* f_out, unsigned size) {
+	while (size > 0) {
+		unsigned char c;
+
+		if (fzread(&c, 1, 1, f_in) != 1) {
+			throw error() << "Error reading";
+		}
+
+		if (fzwrite(&c, 1, 1, f_out) != 1) {
+			throw error() << "Error writing";
+		}
+
+		--size;
+	}
+}
+
+void copy_zero(adv_fz* f_in, adv_fz* f_out) {
+	while (1) {
+		unsigned char c;
+
+		if (fzread(&c, 1, 1, f_in) != 1) {
+			throw error() << "Error reading";
+		}
+
+		if (fzwrite(&c, 1, 1, f_out) != 1) {
+			throw error() << "Error writing";
+		}
+
+		if (!c)
+			break;
+	}
+}
+
+void read_deflate(adv_fz* f_in, unsigned size, unsigned char*& res_data, unsigned& res_size) {
+	z_stream z;
+	block_t* base;
+	block_t* i;
+	unsigned pos;
+	int r;
+
+	base = new block_t;
+	base->data = data_alloc(BLOCK_SIZE);
+	i = base;
+
+	z.zalloc = 0;
+	z.zfree = 0;
+	z.next_out = i->data;
+	z.avail_out = BLOCK_SIZE;
+	z.next_in = 0;
+	z.avail_in = 0;
+
+	/* !! ZLIB UNDOCUMENTED FEATURE !! (used in gzio.c module )
+	 * windowBits is passed < 0 to tell that there is no zlib header.
+	 * Note that in this case inflate *requires* an extra "dummy" byte
+	 * after the compressed stream in order to complete decompression and
+	 * return Z_STREAM_END.
+	 */
+	/* The zlib code effectively READ the dummy byte,
+	 * this imply that the pointer MUST point to a valid data region.
+	 * The dummy byte is not always needed, only if inflate return Z_OK
+	 * instead of Z_STREAM_END.
+	 */
+
+	r = inflateInit2(&z, -15);
+
+	while (r == Z_OK && size > 0) {
+		unsigned char block[BLOCK_SIZE];
+		unsigned run = size;
+		if (run > BLOCK_SIZE)
+			run = BLOCK_SIZE;
+		size -= run;
+		if (fzread(block, run, 1, f_in) != 1)
+			throw error() << "Error reading";
+
+		z.next_in = block;
+		z.avail_in = run;
+
+		while (1) {
+			r = inflate(&z, Z_NO_FLUSH);
+			if (r == Z_OK && z.avail_out == 0) {
+				block_t* next;
+				next = new block_t;
+				next->data = data_alloc(BLOCK_SIZE);
+				i->next = next;
+
+				i = next;
+				z.next_out = i->data;
+				z.avail_out = BLOCK_SIZE;
+			} else {
+				break;
+			}
+		}
+	}
+
+	if (r == Z_OK && size == 0) {
+		/* dummy byte */
+		unsigned char dummy = 0;
+		z.next_in = &dummy;
+		z.avail_in = 1;
+
+		r = inflate(&z, Z_SYNC_FLUSH);
+	}
+
+	inflateEnd(&z);
+
+	if (r != Z_STREAM_END) {
+		throw error() << "Invalid compressed data";
+	}
+
+	res_size = z.total_out;
+	res_data = data_alloc(res_size);
+
+	pos = 0;
+	i = base;
+	while (pos < res_size) {
+		block_t* next;
+		unsigned run = BLOCK_SIZE;
+		if (run > res_size - pos)
+			run = res_size - pos;
+		memcpy(res_data + pos, i->data, run);
+
+		data_free(i->data);
+		next = i->next;
+		delete i;
+		i = next;
+
+		pos += run;
+	}
+}
+
+void read_idat(adv_fz* f, unsigned char*& data, unsigned& size, unsigned& type, unsigned char*& res_data, unsigned& res_size)
 {
 	z_stream z;
 	block_t* base;
@@ -85,7 +225,7 @@ static void png_read_idat(adv_fz* f, unsigned char*& data, unsigned& size, unsig
 		z.next_in = data;
 		z.avail_in = size;
 
-		while (r == Z_OK) {
+		while (1) {
 			r = inflate(&z, Z_NO_FLUSH);
 			if (r == Z_OK && z.avail_out == 0) {
 				block_t* next;
@@ -96,6 +236,8 @@ static void png_read_idat(adv_fz* f, unsigned char*& data, unsigned& size, unsig
 				i = next;
 				z.next_out = i->data;
 				z.avail_out = BLOCK_SIZE;
+			} else {
+				break;
 			}
 		}
 
@@ -134,36 +276,15 @@ static void png_read_idat(adv_fz* f, unsigned char*& data, unsigned& size, unsig
 	}
 }
 
-void convert_f(ftype_t ftype, adv_fz* f_in, adv_fz* f_out) {
+// --------------------------------------------------------------------------
+// Conversion PNG/MNG
+
+void convert_dat(adv_fz* f_in, adv_fz* f_out, unsigned end) {
 	unsigned char* data;
 	unsigned type;
 	unsigned size;
-	bool done;
 
-	switch (ftype) {
-	case ftype_png :
-		if (png_read_signature(f_in) != 0) {
-			throw error_png();
-		}
-		if (png_write_signature(f_out, 0) != 0) {
-			throw error_png();
-		}
-		break;
-	case ftype_mng :
-		if (mng_read_signature(f_in) != 0) {
-			throw error_png();
-		}
-		if (mng_write_signature(f_out, 0) != 0) {
-			throw error_png();
-		}
-
-		break;
-	default:
-		throw error() << "Unknown file type";
-	}
-
-	done = false;
-	while (!done) {
+	while (1) {
 		if (png_read_chunk(f_in, &data, &size, &type) != 0) {
 			throw error_png();
 		}
@@ -172,12 +293,12 @@ void convert_f(ftype_t ftype, adv_fz* f_in, adv_fz* f_out) {
 			unsigned char* res_data;
 			unsigned res_size;
 
-			png_read_idat(f_in, data, size, type, res_data, res_size);
+			read_idat(f_in, data, size, type, res_data, res_size);
 
-			unsigned cmp_size = res_size * 11 / 10;
+			unsigned cmp_size = oversize_zlib(res_size);
 			unsigned char* cmp_data = data_alloc(cmp_size);
 
-			if (!png_compress_raw(opt_level, cmp_data, cmp_size, res_data, res_size)) {
+			if (!compress_zlib(opt_level, cmp_data, cmp_size, res_data, res_size)) {
 				throw error() << "Error compressing";
 			}
 
@@ -197,18 +318,116 @@ void convert_f(ftype_t ftype, adv_fz* f_in, adv_fz* f_out) {
 
 		free(data);
 
-		switch (ftype) {
-		case ftype_png :
-			done = type == PNG_CN_IEND;
+		if (type == end)
 			break;
-		case ftype_mng :
-			done = type == MNG_CN_MEND;
-			break;
-		default:
-			throw error() << "Unknown file type";
-		}
+	}
+}
 
-	} while (!done);
+void convert_png(adv_fz* f_in, adv_fz* f_out) {
+	if (png_read_signature(f_in) != 0) {
+		throw error_png();
+	}
+
+	if (png_write_signature(f_out, 0) != 0) {
+		throw error_png();
+	}
+
+	convert_dat(f_in, f_out, PNG_CN_IEND);
+}
+
+void convert_mng(adv_fz* f_in, adv_fz* f_out) {
+	if (mng_read_signature(f_in) != 0) {
+		throw error_png();
+	}
+
+	if (mng_write_signature(f_out, 0) != 0) {
+		throw error_png();
+	}
+
+	convert_dat(f_in, f_out, MNG_CN_MEND);
+}
+
+// --------------------------------------------------------------------------
+// Conversion GZ
+
+void convert_gz(adv_fz* f_in, adv_fz* f_out) {
+	unsigned char header[10];
+
+	copy_data(f_in, f_out, header, 10);
+
+	if (header[0] != 0x1f || header[1] != 0x8b) {
+		throw error() << "Invalid GZ signature";
+	}
+
+	if (header[2] != 0x8 /* deflate */) {
+		throw error(true) << "Compression method not supported";
+	}
+
+	if ((header[3] & 0xE0) != 0) {
+		throw error(true) << "Unsupported flag";
+	}
+
+	if (header[3] & (1 << 2) /* FLG.FEXTRA */) {
+		unsigned char extra_len[2];
+
+		copy_data(f_in, f_out, extra_len, 2);
+
+		copy_data(f_in, f_out, le_uint16_read(extra_len));
+	}
+
+	if (header[3] & (1 << 3) /* FLG.FNAME */) {
+		copy_zero(f_in, f_out);
+	}
+
+	if (header[3] & (1 << 4) /* FLG.FCOMMENT */) {
+		copy_zero(f_in, f_out);
+	}
+
+	if (header[3] & (1 << 1) /* FLG.FHCRC */) {
+		copy_data(f_in, f_out, 2);
+	}
+
+	unsigned size = fzsize(f_in) - fztell(f_in);
+	if (size < 8) {
+		throw error(true) << "Invalid file format";
+	}
+	size -= 8;
+
+	unsigned char* res_data;
+	unsigned res_size;
+	read_deflate(f_in, size, res_data, res_size);
+
+	unsigned cmp_size = oversize_deflate(res_size);
+	unsigned char* cmp_data = data_alloc(cmp_size);
+
+	if (!compress_deflate(opt_level, cmp_data, cmp_size, res_data, res_size))
+		throw error() << "Error compressing";
+
+	data_free(res_data);
+
+	if (fzwrite(cmp_data, cmp_size, 1, f_out) != 1)
+		throw error() << "Error writing";
+
+	data_free(cmp_data);
+
+	copy_data(f_in, f_out, 8);
+}
+
+// --------------------------------------------------------------------------
+// Conversion
+
+void convert_f(ftype_t ftype, adv_fz* f_in, adv_fz* f_out) {
+	switch (ftype) {
+	case ftype_png :
+		convert_png(f_in, f_out);
+		break;
+	case ftype_mng :
+		convert_mng(f_in, f_out);
+		break;
+	case ftype_gz :
+		convert_gz(f_in, f_out);
+		break;
+	}
 }
 
 void convert_inplace(const string& path) {
@@ -223,6 +442,8 @@ void convert_inplace(const string& path) {
 		ftype = ftype_png;
 	else if (file_compare(file_ext(path),".mng") == 0)
 		ftype = ftype_mng;
+	else if (file_compare(file_ext(path),".gz") == 0)
+		ftype = ftype_gz;
 	else
 		throw error() << "File type not supported";
 

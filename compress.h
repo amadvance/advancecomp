@@ -34,6 +34,9 @@
 // --------------------------------------------------------------------------
 // Compression
 
+unsigned oversize_deflate(unsigned size);
+unsigned oversize_zlib(unsigned size);
+
 bool decompress_deflate_zlib(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned out_size);
 bool compress_deflate_zlib(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned& out_size, int compression_level, int strategy, int mem_level);
 
@@ -53,5 +56,8 @@ enum shrink_t {
 	shrink_extra,
 	shrink_extreme
 };
+
+bool compress_zlib(shrink_t level, unsigned char* out_data, unsigned& out_size, const unsigned char* in_data, unsigned in_size);
+bool compress_deflate(shrink_t level, unsigned char* out_data, unsigned& out_size, const unsigned char* in_data, unsigned in_size);
 
 #endif

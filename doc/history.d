@@ -1,6 +1,10 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 1.8 2003/10
+	) Added support for .gz files at advdef.
+	) Fixed support for .png files with splitted IDATs.
+
 AdvanceCOMP Version 1.7 2003/08
 	) Fixed a Segmentation Fault bug on the advmng -r option on
 		the latest gcc.

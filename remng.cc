@@ -1657,8 +1657,8 @@ void usage() {
 	cout << "  " SWITCH_GETOPT_LONG("-3, --shrink-extra   ", "-3    ") "  Compress extra" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-4, --shrink-insane  ", "-4    ") "  Compress extreme" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-s, --scroll NxM     ", "-s NxM") "  Enable the scroll optimization with a NxM pattern" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-S, --scroll-square N", "-S N  ") "  Enable the square scroll optimization with a NxN pattern" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("                     ", "      ") "  search. from -Nx-M to NxM. Example: -s 4x6" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-S, --scroll-square N", "-S N  ") "  Enable the square scroll optimization with a NxN pattern" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-r, --reduce         ", "-r    ") "  Convert the output at palettized 8 bit" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-e, --expand         ", "-e    ") "  Convert the output at 24 bit" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-c, --lc             ", "-c    ") "  Use of the MNG LC (Low Complexity) format" << endl;

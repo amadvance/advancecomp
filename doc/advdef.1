@@ -20,14 +20,14 @@ advdef [\(hyz, \(hy\(hyrecompress] [\(hy0, \(hy\(hyshrink\(hystore]
 .PD
 .SH DESCRIPTION 
 The main purpose of this utility is to recompress the
-data present in the png and mng files.
+data present in the png, mng and gz files.
 .PP
 The internal structure of the files isn\(cqt changed.
 Only the compressed data is modified.
 .SH OPTIONS 
 .TP
 .B \(hyz, \(hy\(hyrecompress FILES...
-Recompress the specified files. If the \(hy1, \(hy2, \(hy3
+Recompress the specified files. If the \(hy1, \(hy2, \(hy3, \(hy4
 options are specified it\(cqs used the smallest file
 choice from the previous compressed data and the
 new compression. If the \(hy0 option is specified the
@@ -54,7 +54,11 @@ SLOW.
 .TP
 .B \(hyf, \(hy\(hyforce
 Force the use of the new file also if it\(cqs bigger.
+.SH LIMITATIONS 
+The advdef program cannot be used to recompress huge files
+because it needs to allocate memory for both the complete
+compressed and uncompressed data.
 .SH COPYRIGHT 
-This file is Copyright (C) 2002 Andrea Mazzoleni
+This file is Copyright (C) 2003 Andrea Mazzoleni
 .SH SEE ALSO 
-advpng(1), advmng(1), advzip(1)
+advpng(1), advmng(1), advzip(1), gzip(1)

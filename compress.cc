@@ -22,6 +22,8 @@
 
 #include "compress.h"
 
+#include <cassert>
+
 // -------------------------------------------------------------------------
 // compression/decompression
 
@@ -191,3 +193,128 @@ bool decompress_bzip2(const unsigned char* in_data, unsigned in_size, unsigned c
 	return true;
 }
 #endif
+
+bool compress_zlib(shrink_t level, unsigned char* out_data, unsigned& out_size, const unsigned char* in_data, unsigned in_size) {
+#if defined(USE_7Z)
+	if (level == shrink_normal || level == shrink_extra || level == shrink_extreme) {
+		unsigned sz_passes;
+		unsigned sz_fastbytes;
+
+		switch (level) {
+		case shrink_normal :
+			sz_passes = 1;
+			sz_fastbytes = 64;
+			break;
+		case shrink_extra :
+			sz_passes = 3;
+			sz_fastbytes = 128;
+			break;
+		case shrink_extreme :
+			sz_passes = 5;
+			sz_fastbytes = 255;
+			break;
+		default:
+			assert(0);
+		}
+
+		if (!compress_rfc1950_7z(in_data,in_size,out_data,out_size,sz_passes,sz_fastbytes)) {
+			return false;
+		}
+
+		return true;
+	}
+#endif
+
+	int libz_level = Z_BEST_COMPRESSION;
+
+	switch (level) {
+	case shrink_none :
+		libz_level = Z_NO_COMPRESSION;
+		break;
+	case shrink_fast :
+		libz_level = Z_DEFAULT_COMPRESSION;
+		break;
+	case shrink_normal :
+		libz_level = Z_DEFAULT_COMPRESSION;
+		break;
+	case shrink_extra :
+		libz_level = Z_BEST_COMPRESSION;
+		break;
+	case shrink_extreme :
+		libz_level = Z_BEST_COMPRESSION;
+		break;
+	}
+
+	if (!compress_rfc1950_zlib(in_data,in_size,out_data,out_size,libz_level,Z_DEFAULT_STRATEGY,MAX_MEM_LEVEL)) {
+		return false;
+	}
+
+	return true;
+}
+
+bool compress_deflate(shrink_t level, unsigned char* out_data, unsigned& out_size, const unsigned char* in_data, unsigned in_size) {
+#if defined(USE_7Z)
+	if (level == shrink_normal || level == shrink_extra || level == shrink_extreme) {
+		unsigned sz_passes;
+		unsigned sz_fastbytes;
+
+		switch (level) {
+		case shrink_normal :
+			sz_passes = 1;
+			sz_fastbytes = 64;
+			break;
+		case shrink_extra :
+			sz_passes = 3;
+			sz_fastbytes = 128;
+			break;
+		case shrink_extreme :
+			sz_passes = 5;
+			sz_fastbytes = 255;
+			break;
+		default:
+			assert(0);
+		}
+
+		if (!compress_deflate_7z(in_data,in_size,out_data,out_size,sz_passes,sz_fastbytes)) {
+			return false;
+		}
+
+		return true;
+	}
+#endif
+
+	int libz_level = Z_BEST_COMPRESSION;
+
+	switch (level) {
+	case shrink_none :
+		libz_level = Z_NO_COMPRESSION;
+		break;
+	case shrink_fast :
+		libz_level = Z_DEFAULT_COMPRESSION;
+		break;
+	case shrink_normal :
+		libz_level = Z_DEFAULT_COMPRESSION;
+		break;
+	case shrink_extra :
+		libz_level = Z_BEST_COMPRESSION;
+		break;
+	case shrink_extreme :
+		libz_level = Z_BEST_COMPRESSION;
+		break;
+	}
+
+	if (!compress_deflate_zlib(in_data,in_size,out_data,out_size,libz_level,Z_DEFAULT_STRATEGY,MAX_MEM_LEVEL)) {
+		return false;
+	}
+
+	return true;
+}
+
+unsigned oversize_deflate(unsigned size) {
+	return size * 11 / 10 + 12;
+}
+
+unsigned oversize_zlib(unsigned size) {
+	return oversize_deflate(size) + 10;
+}
+

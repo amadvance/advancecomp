@@ -32,64 +32,6 @@
 
 using namespace std;
 
-bool png_compress_raw(shrink_t level, unsigned char* z_ptr, unsigned& z_size, const unsigned char* fil_ptr, unsigned fil_size) {
-#if defined(USE_7Z)
-	if (level == shrink_normal || level == shrink_extra || level == shrink_extreme) {
-		unsigned sz_passes;
-		unsigned sz_fastbytes;
-
-		switch (level) {
-		case shrink_normal :
-			sz_passes = 1;
-			sz_fastbytes = 64;
-			break;
-		case shrink_extra :
-			sz_passes = 3;
-			sz_fastbytes = 128;
-			break;
-		case shrink_extreme :
-			sz_passes = 5;
-			sz_fastbytes = 255;
-			break;
-		default:
-			assert(0);
-		}
-
-		if (!compress_rfc1950_7z(fil_ptr,fil_size,z_ptr,z_size,sz_passes,sz_fastbytes)) {
-			return false;
-		}
-
-		return true;
-	}
-#endif
-
-	int libz_level = Z_BEST_COMPRESSION;
-
-	switch (level) {
-	case shrink_none :
-		libz_level = Z_NO_COMPRESSION;
-		break;
-	case shrink_fast :
-		libz_level = Z_DEFAULT_COMPRESSION;
-		break;
-	case shrink_normal :
-		libz_level = Z_DEFAULT_COMPRESSION;
-		break;
-	case shrink_extra :
-		libz_level = Z_BEST_COMPRESSION;
-		break;
-	case shrink_extreme :
-		libz_level = Z_BEST_COMPRESSION;
-		break;
-	}
-
-	if (!compress_rfc1950_zlib(fil_ptr,fil_size,z_ptr,z_size,libz_level,Z_DEFAULT_STRATEGY,MAX_MEM_LEVEL)) {
-		return false;
-	}
-
-	return true;
-}
-
 void png_compress(shrink_t level, data_ptr& out_ptr, unsigned& out_size, const unsigned char* img_ptr, unsigned img_scanline, unsigned img_pixel, unsigned x, unsigned y, unsigned dx, unsigned dy) {
 	data_ptr fil_ptr;
 	unsigned fil_size;
@@ -101,7 +43,7 @@ void png_compress(shrink_t level, data_ptr& out_ptr, unsigned& out_size, const u
 
 	fil_scanline = dx * img_pixel + 1;
 	fil_size = dy * fil_scanline;
-	z_size = fil_size * 11 / 10 + 12;
+	z_size = oversize_zlib(fil_size);
 
 	fil_ptr = data_alloc(fil_size);
 	z_ptr = data_alloc(z_size);
@@ -117,7 +59,7 @@ void png_compress(shrink_t level, data_ptr& out_ptr, unsigned& out_size, const u
 
 	assert(p0 == fil_ptr + fil_size);
 
-	if (!png_compress_raw(level, z_ptr, z_size, fil_ptr, fil_size)) {
+	if (!compress_zlib(level, z_ptr, z_size, fil_ptr, fil_size)) {
 		throw error() << "Failed compression";
 	}
 
@@ -136,7 +78,7 @@ void png_compress_delta(shrink_t level, data_ptr& out_ptr, unsigned& out_size, c
 
 	fil_scanline = dx * img_pixel + 1;
 	fil_size = dy * fil_scanline;
-	z_size = fil_size * 11 / 10 + 12;
+	z_size = oversize_zlib(fil_size);
 
 	fil_ptr = data_alloc(fil_size);
 	z_ptr = data_alloc(z_size);
@@ -155,7 +97,7 @@ void png_compress_delta(shrink_t level, data_ptr& out_ptr, unsigned& out_size, c
 
 	assert(p0 == fil_ptr + fil_size);
 
-	if (!png_compress_raw(level, z_ptr, z_size, fil_ptr, fil_size)) {
+	if (!compress_zlib(level, z_ptr, z_size, fil_ptr, fil_size)) {
 		throw error() << "Failed compression";
 	}
 

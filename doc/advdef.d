@@ -9,14 +9,14 @@ Synopsis
 
 Description
 	The main purpose of this utility is to recompress the
-	data present in the png and mng files.
+	data present in the png, mng and gz files.
 
 	The internal structure of the files isn't changed.
 	Only the compressed data is modified.
 
 Options
 	-z, --recompress FILES...
-		Recompress the specified files. If the -1, -2, -3
+		Recompress the specified files. If the -1, -2, -3, -4
 		options are specified it's used the smallest file
 		choice from the previous compressed data and the
 		new compression. If the -0 option is specified the
@@ -44,9 +44,14 @@ Options
 	-f, --force
 		Force the use of the new file also if it's bigger.
 
+Limitations
+	The advdef program cannot be used to recompress huge files
+	because it needs to allocate memory for both the complete
+	compressed and uncompressed data.
+
 Copyright
-	This file is Copyright (C) 2002 Andrea Mazzoleni
+	This file is Copyright (C) 2003 Andrea Mazzoleni
 
 See Also
-	advpng(1), advmng(1), advzip(1)
+	advpng(1), advmng(1), advzip(1), gzip(1)
 
