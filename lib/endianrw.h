@@ -281,7 +281,7 @@ static inline void be_uint32_write(void* ptr, unsigned v)
 #endif
 }
 
-static inline unsigned cpu_uint_read(void* ptr, unsigned size)
+static inline unsigned cpu_uint_read(const void* ptr, unsigned size)
 {
 	switch (size) {
 	default:
@@ -308,3 +308,4 @@ static inline void cpu_uint_write(void* ptr, unsigned size, unsigned v)
 #endif
 
 /*@}*/
+

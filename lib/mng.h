@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1999, 2000, 2001, 2002, 2003 Andrea Mazzoleni
+ * Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,6 +78,13 @@ typedef struct mng_struct {
 
 adv_error mng_read_signature(adv_fz* f);
 adv_error mng_write_signature(adv_fz* f, unsigned* count);
+adv_error mng_write_mhdr(
+	unsigned pix_width, unsigned pix_height,
+	unsigned frequency, adv_bool is_lc,
+	adv_fz* f, unsigned* count
+);
+adv_error mng_write_mend(adv_fz* f, unsigned* count);
+adv_error mng_write_fram(unsigned tick, adv_fz* f, unsigned* count);
 
 /** \addtogroup VideoFile */
 /*@{*/
@@ -104,5 +111,4 @@ unsigned mng_height_get(adv_mng* mng);
 #endif
 
 #endif
-
 

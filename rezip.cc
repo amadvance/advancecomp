@@ -27,11 +27,6 @@
 #include <iomanip>
 #include <string>
 
-#include <sys/stat.h>
-#include <unistd.h>
-#include <dirent.h>
-#include <sys/types.h>
-
 using namespace std;
 
 // --------------------------------------------------------------------------
@@ -112,8 +107,8 @@ Archive:  /mnt/bag/home/am/data/src/advscan/prova.zip
      4366  Unk:012    1030  76%  04-20-02 13:58  58ab4966  test/advmame.lst
       268  Defl:X       89  67%  04-18-02 18:13  e6527450  test/advscan.rc
        29  Stored       29   0%  04-22-02 19:28  d3f60a47  test/test
-   101057  Unk:012   90765  10%  04-20-02 14:55  c42107d7  test/unknow/40love_reject.zip
-    96730  Unk:012   95538   1%  04-20-02 14:55  cafec0cf  test/unknow/40love2.zip
+   101057  Unk:012   90765  10%  04-20-02 14:55  c42107d7  test/unknown/40love_reject.zip
+    96730  Unk:012   95538   1%  04-20-02 14:55  cafec0cf  test/unknown/40love2.zip
     96730  Unk:012   95538   1%  04-20-02 14:55  cafec0cf  test/rom/40love.zip
  --------          -------  ---                            -------
    299180           282989   5%                            6 files
@@ -173,7 +168,7 @@ Archive:  /mnt/bag/home/am/data/src/advscan/prova.zip
 			case zip_entry::deflate9 : m = "Defl:X"; break;
 			case zip_entry::bzip2 : m = "Bzip2"; break;
 			case zip_entry::lzma : m = "LZMA"; break;
-			default: m = "Unknow"; break;
+			default: m = "Unknown"; break;
 			}
 
 			cout.setf(ios::left, ios::adjustfield);
@@ -565,7 +560,7 @@ void process(int argc, char* argv[]) {
 				// not optimal code for g++ 2.95.3
 				string opt;
 				opt = (char)optopt;
-				throw error() << "Unknow option `" << opt << "'";
+				throw error() << "Unknown option `" << opt << "'";
 			}
 		} 
 	}
@@ -606,7 +601,7 @@ int main(int argc, char* argv[]) {
 		cerr << "Low memory" << endl;
 		exit(EXIT_FAILURE);
 	} catch (...) {
-		cerr << "Unknow error" << endl;
+		cerr << "Unknown error" << endl;
 		exit(EXIT_FAILURE);
 	}
 

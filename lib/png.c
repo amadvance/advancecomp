@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1999, 2000, 2001, 2002, 2003 Andrea Mazzoleni
+ * Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,7 +93,7 @@ err:
  * \param type Type of the chunk.
  * \param data Data of the chunk.
  * \param size Size of the chunk.
- * \param count Pointer at the number of bytes written. It may be 0.
+ * \param count Pointer at the incremental counter of bytes written. Use 0 for disabling it.
  */
 adv_error png_write_chunk(adv_fz* f, unsigned type, const unsigned char* data, unsigned size, unsigned* count)
 {
@@ -158,7 +158,7 @@ adv_error png_read_signature(adv_fz* f)
 /**
  * Write the PNG file signature.
  * \param f File to write.
- * \param count Pointer at the number of bytes written. It may be 0.
+ * \param count Pointer at the incremental counter of bytes written. Use 0 for disabling it.
  */
 adv_error png_write_signature(adv_fz* f, unsigned* count)
 {
@@ -575,7 +575,7 @@ adv_error png_read_iend(adv_fz* f, const unsigned char* data, unsigned data_size
  * \param pix_ptr Where to put pointer at the start of the image data.
  * \param pix_scanline Where to put the length of a scanline in bytes.
  * \param pal_ptr Where to put the allocated palette data pointer. Set to 0 if the image is RGB.
- * \param pal_size Where to put the palette size in number of colors. Set to 0 if the image is RGB.
+ * \param pal_size Where to put the palette size in bytes. Set to 0 if the image is RGB.
  * \param rns_ptr Where to put the allocated transparency data pointer. Set to 0 if the image hasn't transparency.
  * \param rns_size Where to put the transparency size in number of bytes. Set to 0 if the image hasn't transparency.
  * \param f File to read.
@@ -820,7 +820,7 @@ err:
  * \param pix_ptr Where to put pointer at the start of the image data.
  * \param pix_scanline Where to put the length of a scanline in bytes.
  * \param pal_ptr Where to put the allocated palette data pointer. Set to 0 if the image is RGB.
- * \param pal_size Where to put the palette size in number of colors. Set to 0 if the image is RGB.
+ * \param pal_size Where to put the palette size in bytes. Set to 0 if the image is RGB.
  * \param rns_ptr Where to put the allocated transparency data pointer. Set to 0 if the image hasn't transparency.
  * \param rns_size Where to put the transparency size in number of bytes. Set to 0 if the image hasn't transparency.
  * \param f File to read.
@@ -902,4 +902,303 @@ adv_error png_read(
 	return r;
 }
 
+/**
+ * Write the PNG IHDR chunk.
+ * \param f File to write.
+ * \param count Pointer at the incremental counter of bytes written. Use 0 for disabling it.
+ */
+adv_error png_write_ihdr(
+	unsigned pix_width, unsigned pix_height,
+	unsigned pix_depth, unsigned pix_type,
+	adv_fz* f, unsigned* count
+) {
+	uint8 ihdr[13];
+
+	be_uint32_write(ihdr, pix_width);
+	be_uint32_write(ihdr+4, pix_height);
+
+	ihdr[8] = pix_depth;
+	ihdr[9] = pix_type;
+	ihdr[10] = 0; /* compression */
+	ihdr[11] = 0; /* filter */
+	ihdr[12] = 0; /* interlace */
+
+	if (png_write_chunk(f, PNG_CN_IHDR, ihdr, 13, count)!=0)
+		return -1;
+
+	return 0;
+}
+
+adv_error png_write_iend(adv_fz* f, unsigned* count)
+{
+	if (png_write_chunk(f, PNG_CN_IEND, 0, 0, count)!=0)
+		return -1;
+
+	return 0;
+}
+
+/**
+ * Write the PNG IDAT chunk.
+ * \param f File to write.
+ * \param count Pointer at the incremental counter of bytes written. Use 0 for disabling it.
+ */
+adv_error png_write_idat(
+	unsigned pix_width, unsigned pix_height, unsigned pix_pixel,
+	const uint8* pix_ptr, int pix_pixel_pitch, int pix_scanline_pitch,
+	adv_bool fast,
+	adv_fz* f, unsigned* count
+) {
+	uint8* z_ptr;
+	uint8* r_ptr;
+	unsigned char filter;
+	unsigned long z_size;
+	unsigned res_size;
+	const uint8* p;
+	unsigned i;
+	int method;
+	z_stream z;
+	int r;
+
+	z_size = pix_height * (pix_width * (pix_pixel+1)) * 103 / 100 + 12;
+
+	if (pix_pixel_pitch != pix_pixel) {
+		r_ptr = (uint8*)malloc(pix_width * pix_pixel);
+		if (!r_ptr)
+			goto err;
+	} else {
+		r_ptr = 0;
+	}
+
+	z_ptr = (uint8*)malloc(z_size);
+	if (!z_ptr)
+		goto err_row;
+
+	if (fast)
+		method = Z_BEST_SPEED;
+	else
+		method = Z_DEFAULT_COMPRESSION;
+
+	z.zalloc = 0;
+	z.zfree = 0;
+	z.next_out = z_ptr;
+	z.avail_out = z_size;
+	z.next_in = 0;
+	z.avail_in = 0;
+
+	p = pix_ptr;
+	filter = 0;
+
+	r = deflateInit(&z, method);
+
+	for(i=0;i<pix_height;++i) {
+		z.next_in = &filter; /* filter byte */
+		z.avail_in = 1;
+
+		r = deflate(&z, Z_NO_FLUSH);
+		if (r != Z_OK) {
+			error_set("Error compressing data");
+			goto err_free;
+		}
+
+		if (r_ptr) {
+			unsigned char* r = r_ptr;
+			unsigned j;
+			for(j=0;j<pix_width;++j) {
+				unsigned k;
+				for(k=0;k<pix_pixel;++k) {
+					*r++ = *p++;
+				}
+				p += pix_pixel_pitch - pix_pixel;
+			}
+			z.next_in = r_ptr; /* pixel data */
+			z.avail_in = pix_width * pix_pixel;
+			p += pix_scanline_pitch - pix_width * pix_pixel_pitch;
+		} else {
+			z.next_in = (uint8*)p; /* pixel data */
+			z.avail_in = pix_width * pix_pixel;
+			p += pix_scanline_pitch;
+		}
+
+		r = deflate(&z, Z_NO_FLUSH);
+		if (r != Z_OK) {
+			error_set("Error compressing data");
+			goto err_free;
+		}
+	}
+
+	r = deflate(&z, Z_FINISH);
+	if (r != Z_STREAM_END) {
+		error_set("Error compressing data");
+		goto err_free;
+	}
+
+	res_size = z.total_out;
+
+	r = deflateEnd(&z);
+	if (r != Z_OK) {
+		error_set("Error compressing data");
+		goto err_free;
+	}
+
+	if (png_write_chunk(f, PNG_CN_IDAT, z_ptr, res_size, count)!=0)
+		goto err_free;
+
+	free(z_ptr);
+	if (r_ptr)
+		free(r_ptr);
+
+	return 0;
+
+err_free:
+	free(z_ptr);
+err_row:
+	if (r_ptr)
+		free(r_ptr);
+err:
+	return -1;
+}
+
+/**
+ * Save a partial PNG image.
+ * \param pix_width Image width.
+ * \param pix_height Image height.
+ * \param pix_pixel Image bytes per pixel.
+ * \param pix_ptr Pointer at the start of the image data.
+ * \param pix_pixel_pitch Pitch for the next pixel. It may differ from pix_pixel.
+ * \param pix_scanline_pitch Pitch for the next scanline.
+ * \param pal_ptr Palette data pointer. Use 0 for RGB image.
+ * \param pal_size Palette size in bytes. Use 0 for RGB image.
+ * \param rns_ptr Transparency data pointer. Use 0 for no transparency.
+ * \param rns_size Transparency size in number of bytes. Use 0 for no transparency.
+ * \param f File to write.
+ * \param count Pointer at the incremental counter of bytes written. Use 0 for disabling it.
+ */
+adv_error png_write_raw(
+	unsigned pix_width, unsigned pix_height, unsigned pix_pixel,
+	const unsigned char* pix_ptr, int pix_pixel_pitch, int pix_scanline_pitch,
+	const unsigned char* pal_ptr, unsigned pal_size,
+	const unsigned char* rns_ptr, unsigned rns_size,
+	adv_bool fast,
+	adv_fz* f, unsigned* count
+) {
+	unsigned color;
+	unsigned depth;
+
+	if (pix_pixel == 1 && pal_size != 0) {
+		color = 3;
+		depth = 8;
+	} else if (pix_pixel == 1 && pal_size == 0) {
+		color = 1;
+		depth = 8;
+	} else if (pix_pixel == 3 && pal_size == 0) {
+		color = 2;
+		depth = 8;
+	} else if (pix_pixel == 4 && pal_size == 0) {
+		color = 6;
+		depth = 8;
+	} else {
+		error_unsupported_set("Unsupported bit depth/color");
+		goto err;
+	}
+
+	if (png_write_ihdr(pix_width, pix_height, depth, color, f, count) != 0) {
+		goto err;
+	}
+
+	if (pal_size) {
+		if (png_write_chunk(f, PNG_CN_PLTE, pal_ptr, pal_size, count) != 0) {
+			goto err;
+		}
+	}
+
+	if (rns_size) {
+		if (png_write_chunk(f, PNG_CN_tRNS, rns_ptr, rns_size, count) != 0) {
+			goto err;
+		}
+	}
+
+	if (png_write_idat(pix_width, pix_height, pix_pixel, pix_ptr, pix_pixel_pitch, pix_scanline_pitch, 0, f, count) != 0) {
+		goto err;
+	}
+
+	if (png_write_iend(f, count) != 0) {
+		goto err;
+	}
+
+	return 0;
+
+err:
+	return -1;
+}
+
+/**
+ * Save a complete PNG image with transparency.
+ * \param pix_width Image width.
+ * \param pix_height Image height.
+ * \param pix_pixel Image bytes per pixel.
+ * \param pix_ptr Pointer at the start of the image data.
+ * \param pix_pixel_pitch Pitch for the next pixel. It may differ from pix_pixel.
+ * \param pix_scanline_pitch Pitch for the next scanline.
+ * \param pal_ptr Palette data pointer. Use 0 for RGB image.
+ * \param pal_size Palette size in bytes. Use 0 for RGB image.
+ * \param rns_ptr Transparency data pointer. Use 0 for no transparency.
+ * \param rns_size Transparency size in number of bytes. Use 0 for no transparency.
+ * \param f File to write.
+ * \param count Pointer at the incremental counter of bytes written. Use 0 for disabling it.
+ */
+adv_error png_write_rns(
+	unsigned pix_width, unsigned pix_height, unsigned pix_pixel,
+	const unsigned char* pix_ptr, int pix_pixel_pitch, int pix_scanline_pitch,
+	const unsigned char* pal_ptr, unsigned pal_size,
+	const unsigned char* rns_ptr, unsigned rns_size,
+	adv_bool fast,
+	adv_fz* f, unsigned* count
+) {
+	if (png_write_signature(f, count) != 0) {
+		return -1;
+	}
+
+	return png_write_raw(
+		pix_width, pix_height, pix_pixel,
+		pix_ptr, pix_pixel_pitch, pix_scanline_pitch,
+		pal_ptr, pal_size,
+		rns_ptr, rns_size,
+		fast,
+		f, count
+	);
+}
+
+/**
+ * Save a complete PNG image.
+ * \param pix_width Image width.
+ * \param pix_height Image height.
+ * \param pix_pixel Image bytes per pixel.
+ * \param pix_ptr Pointer at the start of the image data.
+ * \param pix_pixel_pitch Pitch for the next pixel. It may differ from pix_pixel.
+ * \param pix_scanline_pitch Pitch for the next scanline. 
+ * \param pal_ptr Palette data pointer. Use 0 for RGB image.
+ * \param pal_size Palette size in bytes. Use 0 for RGB image.
+ * \param f File to write.
+ * \param count Pointer at the incremental counter of bytes written. Use 0 for disabling it.
+ */
+adv_error png_write(
+	unsigned pix_width, unsigned pix_height, unsigned pix_pixel,
+	const unsigned char* pix_ptr, int pix_pixel_pitch, int pix_scanline_pitch,
+	const unsigned char* pal_ptr, unsigned pal_size,
+	adv_bool fast,
+	adv_fz* f, unsigned* count
+) {
+	if (png_write_signature(f, count) != 0) {
+		return -1;
+	}
+
+	return png_write_raw(
+		pix_width, pix_height, pix_pixel,
+		pix_ptr, pix_pixel_pitch, pix_scanline_pitch,
+		pal_ptr, pal_size,
+		0, 0,
+		fast,
+		f, count
+	);
+}
 

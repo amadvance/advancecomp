@@ -19,10 +19,7 @@
  */
 
 #include "scroll.h"
-
 #include "utility.h"
-
-#include <stdlib.h>
 
 #if defined(__i386__)
 #define USE_MMX

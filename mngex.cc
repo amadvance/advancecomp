@@ -25,8 +25,6 @@
 #include "lib/mng.h"
 #include "lib/endianrw.h"
 
-#include <cassert>
-
 #include <iostream>
 #include <iomanip>
 
@@ -672,6 +670,7 @@ void mng_write_frame(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned tick)
 		throw error_png();
 	}
 }
+
 
 void mng_write_footer(adv_mng_write* mng, adv_fz* f, unsigned* fc)
 {

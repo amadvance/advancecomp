@@ -567,11 +567,14 @@ adv_error fzseek(adv_fz* f, long offset, int mode)
 	if (f->type == fz_file) {
 		switch (mode) {
 			case SEEK_SET :
-				return fseek(f->f, offset, SEEK_SET);
+				return fseek(f->f, f->real_offset + offset, SEEK_SET);
 			case SEEK_CUR :
 				return fseek(f->f, offset, SEEK_CUR);
 			case SEEK_END :
-				return fseek(f->f, offset, SEEK_END);
+				if (f->real_size)
+					return fseek(f->f, f->real_size - offset, SEEK_SET);
+				else
+					return fseek(f->f, offset, SEEK_END);
 			default:
 				return -1;
 		}

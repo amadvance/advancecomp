@@ -33,12 +33,6 @@
 #include <sstream>
 #include <set>
 
-#include <cerrno>
-#include <cstring>
-
-#include <sys/stat.h>
-#include <unistd.h>
-
 using namespace std;
 
 // -------------------------------------------------------------------------
@@ -244,7 +238,7 @@ zip_entry::method_t zip_entry::method_get() const {
 				case ZIP_GEN_FLAGS_IMPLODE_8KD3T :
 					return implode_8kdict_3tree;
 			}
-			return unknow;
+			return unknown;
 		case ZIP_METHOD_DEFLATE :
 			switch (info.general_purpose_bit_flag & ZIP_GEN_FLAGS_DEFLATE_MASK) {
 				case ZIP_GEN_FLAGS_DEFLATE_NORMAL :
@@ -256,14 +250,14 @@ zip_entry::method_t zip_entry::method_get() const {
 				case ZIP_GEN_FLAGS_DEFLATE_SUPERFAST :
 					return deflate1;
 			}
-			return unknow;
+			return unknown;
 		case ZIP_METHOD_BZIP2 :
 			return bzip2;
 		case ZIP_METHOD_LZMA :
 			return lzma;
 	}
 
-	return unknow;
+	return unknown;
 }
 
 bool zip_entry::is_text() const {

@@ -22,8 +22,6 @@
 
 #include "siglock.h"
 
-#include <signal.h>
-
 using namespace std;
 
 #if HAVE_SIGHUP

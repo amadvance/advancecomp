@@ -22,11 +22,11 @@
 
 #include "compress.h"
 
-#include <cassert>
-
 bool decompress_deflate_zlib(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned out_size) {
 
 	z_stream stream;
+	int r;
+
 	stream.next_in = const_cast<unsigned char*>(in_data);
 	stream.avail_in = in_size;
 	stream.next_out = out_data;
@@ -41,33 +41,38 @@ bool decompress_deflate_zlib(const unsigned char* in_data, unsigned in_size, uns
 	 * after the compressed stream in order to complete decompression and
 	 * return Z_STREAM_END.
 	 */
+	r = inflateInit2(&stream,-15);
+	if (r != Z_OK) {
+		return false;
+	}
+
+	r = inflate(&stream, Z_SYNC_FLUSH);
+
 	/* The zlib code effectively READ the dummy byte,
 	 * this imply that the pointer MUST point to a valid data region.
 	 * The dummy byte is not always needed, only if inflate return Z_OK
 	 * instead of Z_STREAM_END.
 	 */
-
-	if (inflateInit2(&stream,-15) != Z_OK) {
-		return false;
-	}
-
-	int err = inflate(&stream, Z_SYNC_FLUSH);
-
-	if (err == Z_OK) {
+	if (r == Z_OK) {
 		/* dummy byte */
 		unsigned char dummy = 0;
 		stream.next_in = &dummy;
 		stream.avail_in = 1;
 
-		err = inflate(&stream, Z_SYNC_FLUSH);
+		r = inflate(&stream, Z_SYNC_FLUSH);
 	}
 
-	if (err != Z_STREAM_END || stream.total_in != in_size || stream.total_out != out_size) {
+	if (r != Z_STREAM_END) {
 		inflateEnd(&stream);
 		return false;
 	}
 
-	if (inflateEnd(&stream) != Z_OK) {
+	r = inflateEnd(&stream);
+	if (r != Z_OK) {
+		return false;
+	}
+
+	if (stream.total_in != in_size || stream.total_out != out_size) {
 		return false;
 	}
 

@@ -25,11 +25,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-#include <cctype>
-#include <cstdio>
-#include <cerrno>
-
-#include <sys/stat.h>
+#include <new>
 
 using namespace std;
 
@@ -563,6 +559,8 @@ unsigned char* data_dup(const unsigned char* Adata, unsigned Asize)
 {
 	if (Adata) {
 		unsigned char* data = (unsigned char*)malloc(Asize);
+		if (!data)
+			throw std::bad_alloc();
 		if (Asize)
 			memcpy(data, Adata, Asize);
 		return data;
@@ -576,7 +574,9 @@ unsigned char* data_dup(const unsigned char* Adata, unsigned Asize)
  */
 unsigned char* data_alloc(unsigned size)
 {
-	return (unsigned char*)malloc(size);
+	unsigned char* data = (unsigned char*)malloc(size);
+	if (!data)
+		throw std::bad_alloc();
 }
 
 /**

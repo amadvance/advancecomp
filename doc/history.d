@@ -1,9 +1,11 @@
 Name
 	advcomp - History For AdvanceCOMP
 
-AdvanceCOMP Version 1.10 2004/03
+AdvanceCOMP Version 1.10 2004/04
 	) Added support for alpha channel and the new -n option
 		at advmng.
+	) Fixed the uncompressing error "Invalid compressed data in ..."
+		with some GZIP files [Christian Lestrade].
 
 AdvanceCOMP Version 1.9 2003/11
 	) Added support for .tgz files at advdef.

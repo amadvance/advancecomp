@@ -25,8 +25,6 @@
 
 #include "pngex.h"
 
-#include <cassert>
-
 #include <iostream>
 #include <iomanip>
 

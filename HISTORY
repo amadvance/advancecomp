@@ -3,11 +3,13 @@
                             =======================
 
 
-1 ADVANCECOMP VERSION 1.10 2004/03
+1 ADVANCECOMP VERSION 1.10 2004/04
 ==================================
 
 * Added support for alpha channel and the new -n option
   at advmng.
+* Fixed the uncompressing error "Invalid compressed data in ..."
+  with some GZIP files [Christian Lestrade].
 
 
 2 ADVANCECOMP VERSION 1.9 2003/11

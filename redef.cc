@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 2002, 2003 Andrea Mazzoleni
+ * Copyright (C) 2002, 2003, 2004 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,10 +30,6 @@
 
 #include <iostream>
 #include <iomanip>
-
-#include <cstdio>
-
-#include <unistd.h>
 
 using namespace std;
 
@@ -116,6 +112,7 @@ void read_deflate(adv_fz* f_in, unsigned size, unsigned char*& res_data, unsigne
 
 	base = new block_t;
 	base->data = data_alloc(BLOCK_SIZE);
+	base->next = 0;
 	i = base;
 
 	memset(&z, 0, sizeof(z));
@@ -132,55 +129,57 @@ void read_deflate(adv_fz* f_in, unsigned size, unsigned char*& res_data, unsigne
 	 * after the compressed stream in order to complete decompression and
 	 * return Z_STREAM_END.
 	 */
-	/* The zlib code effectively READ the dummy byte,
-	 * this imply that the pointer MUST point to a valid data region.
-	 * The dummy byte is not always needed, only if inflate return Z_OK
-	 * instead of Z_STREAM_END.
-	 */
 
 	r = inflateInit2(&z, -15);
 
-	while (r == Z_OK && size > 0) {
-		unsigned char block[BLOCK_SIZE];
-		unsigned run = size;
-		if (run > BLOCK_SIZE)
-			run = BLOCK_SIZE;
-		size -= run;
-		if (fzread(block, run, 1, f_in) != 1)
-			throw error() << "Error reading";
-
-		z.next_in = block;
-		z.avail_in = run;
-
-		while (1) {
-			r = inflate(&z, Z_NO_FLUSH);
-			if (r == Z_OK && z.avail_out == 0) {
-				block_t* next;
-				next = new block_t;
-				next->data = data_alloc(BLOCK_SIZE);
-				i->next = next;
-
-				i = next;
-				z.next_out = i->data;
-				z.avail_out = BLOCK_SIZE;
-			} else {
-				break;
-			}
+	unsigned char block[BLOCK_SIZE];
+	unsigned char dummy;
+	int dummy_used = 0;
+	while (r == Z_OK && (size > 0 || z.avail_in != 0 || !dummy_used || z.avail_out == 0)) {
+		if (z.avail_in == 0 && size > 0) {
+			unsigned run = size;
+			if (run > BLOCK_SIZE)
+				run = BLOCK_SIZE;
+			size -= run;
+			if (fzread(block, run, 1, f_in) != 1)
+				throw error() << "Error reading";
+			z.next_in = block;
+			z.avail_in = run;
 		}
+
+		/* The zlib code effectively READ the dummy byte,
+		 * this imply that the pointer MUST point to a valid data region.
+		 * The dummy byte is not always needed, only if inflate return Z_OK
+		 * instead of Z_STREAM_END.
+		 */
+		if (z.avail_in == 0 && size == 0 && !dummy_used) {
+			dummy = 0;
+			z.next_in = &dummy;
+			z.avail_in = 1;
+			dummy_used = 1;
+		}
+
+		if (z.avail_out == 0) {
+			block_t* next;
+			next = new block_t;
+			next->data = data_alloc(BLOCK_SIZE);
+			next->next = 0;
+			i->next = next;
+			i = next;
+			z.next_out = i->data;
+			z.avail_out = BLOCK_SIZE;
+		}
+
+		r = inflate(&z, Z_NO_FLUSH);
 	}
-
-	if (r == Z_OK && size == 0) {
-		/* dummy byte */
-		unsigned char dummy = 0;
-		z.next_in = &dummy;
-		z.avail_in = 1;
-
-		r = inflate(&z, Z_SYNC_FLUSH);
-	}
-
-	inflateEnd(&z);
 
 	if (r != Z_STREAM_END) {
+		inflateEnd(&z);
+		throw error() << "Invalid compressed data";
+	}
+
+	r = inflateEnd(&z);
+	if (r != Z_OK) {
 		throw error() << "Invalid compressed data";
 	}
 
@@ -189,19 +188,25 @@ void read_deflate(adv_fz* f_in, unsigned size, unsigned char*& res_data, unsigne
 
 	pos = 0;
 	i = base;
-	while (pos < res_size) {
+	while (i) {
 		block_t* next;
-		unsigned run = BLOCK_SIZE;
-		if (run > res_size - pos)
-			run = res_size - pos;
-		memcpy(res_data + pos, i->data, run);
+
+		if (pos < res_size) {
+			unsigned run = BLOCK_SIZE;
+			if (run > res_size - pos)
+				run = res_size - pos;
+			memcpy(res_data + pos, i->data, run);
+			pos += run;
+		}
 
 		data_free(i->data);
 		next = i->next;
 		delete i;
 		i = next;
+	}
 
-		pos += run;
+	if (pos != res_size) {
+		throw error() << "Internal error";
 	}
 }
 
@@ -212,9 +217,13 @@ void read_idat(adv_fz* f, unsigned char*& data, unsigned& size, unsigned& type, 
 	block_t* i;
 	unsigned pos;
 	int r;
+	unsigned char* next_data;
+	unsigned next_size;
+	unsigned next_type;
 
 	base = new block_t;
 	base->data = data_alloc(BLOCK_SIZE);
+	base->next = 0;
 	i = base;
 
 	memset(&z, 0, sizeof(z));
@@ -222,63 +231,84 @@ void read_idat(adv_fz* f, unsigned char*& data, unsigned& size, unsigned& type, 
 	z.zfree = 0;
 	z.next_out = i->data;
 	z.avail_out = BLOCK_SIZE;
-	z.next_in = 0;
-	z.avail_in = 0;
+	z.next_in = data;
+	z.avail_in = size;
+
+	if (png_read_chunk(f, &next_data, &next_size, &next_type) != 0) {
+		throw error_png();
+	}
 
 	r = inflateInit(&z);
 
-	while (r == Z_OK && type == PNG_CN_IDAT) {
-		z.next_in = data;
-		z.avail_in = size;
+	while (r == Z_OK && (next_type == PNG_CN_IDAT || z.avail_in != 0 || z.avail_out == 0)) {
+		if (z.avail_in == 0 && next_type == PNG_CN_IDAT) {
+			free(data);
 
-		while (1) {
-			r = inflate(&z, Z_NO_FLUSH);
-			if (r == Z_OK && z.avail_out == 0) {
-				block_t* next;
-				next = new block_t;
-				next->data = data_alloc(BLOCK_SIZE);
-				i->next = next;
+			data = next_data;
+			size = next_size;
+			z.next_in = data;
+			z.avail_in = size;
 
-				i = next;
-				z.next_out = i->data;
-				z.avail_out = BLOCK_SIZE;
-			} else {
-				break;
+			if (png_read_chunk(f, &next_data, &next_size, &next_type) != 0) {
+				inflateEnd(&z);
+				throw error_png();
 			}
 		}
 
-		free(data);
-
-		if (png_read_chunk(f, &data, &size, &type) != 0) {
-			inflateEnd(&z);
-			throw error_png();
+		if (z.avail_out == 0) {
+			block_t* next;
+			next = new block_t;
+			next->data = data_alloc(BLOCK_SIZE);
+			next->next = 0;
+			i->next = next;
+			i = next;
+			z.next_out = i->data;
+			z.avail_out = BLOCK_SIZE;
 		}
-	}
 
-	inflateEnd(&z);
+		r = inflate(&z, Z_NO_FLUSH);
+	}
 
 	if (r != Z_STREAM_END) {
+		inflateEnd(&z);
 		throw error() << "Invalid compressed data";
 	}
+
+	r = inflateEnd(&z);
+	if (r != Z_OK) {
+		throw error() << "Invalid compressed data";
+	}
+
+	free(data);
+
+	data = next_data;
+	size = next_size;
+	type = next_type;
 
 	res_size = z.total_out;
 	res_data = data_alloc(res_size);
 
 	pos = 0;
 	i = base;
-	while (pos < res_size) {
+	while (i) {
 		block_t* next;
-		unsigned run = BLOCK_SIZE;
-		if (run > res_size - pos)
-			run = res_size - pos;
-		memcpy(res_data + pos, i->data, run);
+
+		if (pos < res_size) {
+			unsigned run = BLOCK_SIZE;
+			if (run > res_size - pos)
+				run = res_size - pos;
+			memcpy(res_data + pos, i->data, run);
+			pos += run;
+		}
 
 		data_free(i->data);
 		next = i->next;
 		delete i;
 		i = next;
+	}
 
-		pos += run;
+	if (pos != res_size) {
+		throw error() << "Internal error";
 	}
 }
 
@@ -691,7 +721,7 @@ void process(int argc, char* argv[])
 				// not optimal code for g++ 2.95.3
 				string opt;
 				opt = (char)optopt;
-				throw error() << "Unknow option `" << opt << "'";
+				throw error() << "Unknown option `" << opt << "'";
 			}
 		} 
 	}
@@ -716,7 +746,7 @@ int main(int argc, char* argv[])
 		cerr << "Low memory" << endl;
 		exit(EXIT_FAILURE);
 	} catch (...) {
-		cerr << "Unknow error" << endl;
+		cerr << "Unknown error" << endl;
 		exit(EXIT_FAILURE);
 	}
 

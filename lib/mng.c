@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1999, 2000, 2001, 2002, 2003 Andrea Mazzoleni
+ * Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -621,7 +621,7 @@ err:
 }
 
 /**
- * Inizialize a MNG reading stream.
+ * Initialize a MNG reading stream.
  * \param f File to read.
  * \return Return the MNG context. It must be destroied calling mng_done(). On error return 0.
  */
@@ -729,3 +729,60 @@ unsigned mng_height_get(adv_mng* mng)
 {
 	return mng->frame_height;
 }
+
+adv_error mng_write_mhdr(
+	unsigned pix_width, unsigned pix_height,
+	unsigned frequency, adv_bool is_lc,
+	adv_fz* f, unsigned* count
+) {
+	uint8 mhdr[28];
+	unsigned simplicity;
+
+	simplicity = (1 << 0) /* Enable flags */
+		| (1 << 6); /* Enable flags */
+	if (is_lc)
+		simplicity |= (1 << 1); /* Basic features */
+
+	memset(mhdr, 0, 28);
+	be_uint32_write(mhdr, pix_width);
+	be_uint32_write(mhdr + 4, pix_height);
+	be_uint32_write(mhdr + 8, frequency);
+	be_uint32_write(mhdr + 24, simplicity);
+
+	if (png_write_chunk(f, MNG_CN_MHDR, mhdr, 28, count)!=0)
+		return -1;
+
+	return 0;
+}
+
+adv_error mng_write_mend(adv_fz* f, unsigned* count)
+{
+	if (png_write_chunk(f, MNG_CN_MEND, 0, 0, count)!=0)
+		return -1;
+
+	return 0;
+}
+
+adv_error mng_write_fram(unsigned tick, adv_fz* f, unsigned* count)
+{
+	uint8 fram[10];
+	unsigned fi;
+
+	fi = tick;
+	if (fi < 1)
+		fi = 1;
+
+	fram[0] = 1; /* Framing_mode: 1 */
+	fram[1] = 0; /* Null byte */
+	fram[2] = 2; /* Reset delay */
+	fram[3] = 0; /* No timeout change */
+	fram[4] = 0; /* No clip change */
+	fram[5] = 0; /* No sync id change */
+	be_uint32_write(fram+6, fi); /* Delay in tick */
+
+	if (png_write_chunk(f, MNG_CN_FRAM, fram, 10, count)!=0)
+		return -1;
+
+	return 0;
+}
+

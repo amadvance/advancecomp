@@ -36,10 +36,6 @@
 #include <iostream>
 #include <iomanip>
 
-#include <cstdio>
-#include <cassert>
-#include <unistd.h>
-
 using namespace std;
 
 // --------------------------------------------------------------------------
@@ -1079,8 +1075,8 @@ void usage() {
 	cout << "  " SWITCH_GETOPT_LONG("-s, --scroll NxM      ", "-s NxM") "  Enable the scroll optimization with a NxM pattern" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("                      ", "      ") "  search. from -Nx-M to NxM. Example: -s 4x6" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-S, --scroll-square N ", "-S N  ") "  Enable the square scroll optimization with a NxN pattern" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-r, --reduce          ", "-r    ") "  Convert the output at palette 8 bit if possible" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-e, --expand          ", "-e    ") "  Convert the output at rgb 24 bit" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-r, --reduce          ", "-r    ") "  Convert the output to palette 8 bit (if possible)" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-e, --expand          ", "-e    ") "  Convert the output to rgb 24 bit" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-n, --noalpha         ", "-n    ") "  Remove the alpha channel" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-c, --lc              ", "-c    ") "  Use the MNG LC (Low Complexity) format" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-C, --vlc             ", "-C    ") "  Use the MNG VLC (Very Low Complexity) format" << endl;
@@ -1242,7 +1238,7 @@ void process(int argc, char* argv[]) {
 				// not optimal code for g++ 2.95.3
 				string opt;
 				opt = (char)optopt;
-				throw error() << "Unknow option `" << opt << "'";
+				throw error() << "Unknown option `" << opt << "'";
 			}
 		} 
 	}
@@ -1276,7 +1272,7 @@ int main(int argc, char* argv[]) {
 		cerr << "Low memory" << endl;
 		exit(EXIT_FAILURE);
 	} catch (...) {
-		cerr << "Unknow error" << endl;
+		cerr << "Unknown error" << endl;
 		exit(EXIT_FAILURE);
 	}
 

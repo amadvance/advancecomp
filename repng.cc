@@ -30,10 +30,6 @@
 #include <iostream>
 #include <iomanip>
 
-#include <cstdio>
-
-#include <unistd.h>
-
 using namespace std;
 
 // --------------------------------------------------------------------------
@@ -462,7 +458,7 @@ void process(int argc, char* argv[])
 				// not optimal code for g++ 2.95.3
 				string opt;
 				opt = (char)optopt;
-				throw error() << "Unknow option `" << opt << "'";
+				throw error() << "Unknown option `" << opt << "'";
 			}
 		} 
 	}
@@ -490,7 +486,7 @@ int main(int argc, char* argv[])
 		cerr << "Low memory" << endl;
 		exit(EXIT_FAILURE);
 	} catch (...) {
-		cerr << "Unknow error" << endl;
+		cerr << "Unknown error" << endl;
 		exit(EXIT_FAILURE);
 	}
 

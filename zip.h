@@ -30,10 +30,6 @@
 #include <list>
 #include <sstream>
 
-#include <ctime>
-#include <cstdio>
-#include <cassert>
-
 // --------------------------------------------------------------------------
 // Zip format
 
@@ -161,7 +157,7 @@ class zip;
 class zip_entry {
 public:
 	enum method_t {
-		unknow,
+		unknown,
 		store, shrunk, reduce1, reduce2, reduce3, reduce4,
 		implode_4kdict_2tree, implode_8kdict_2tree, implode_4kdict_3tree, implode_8kdict_3tree,
 		deflate0, deflate1, deflate2, deflate3, deflate4, deflate5, deflate6, deflate7, deflate8, deflate9,

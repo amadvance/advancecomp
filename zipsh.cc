@@ -21,8 +21,9 @@
 #include "portable.h"
 
 #include "zip.h"
-#include "zlib.h"
 #include "utility.h"
+
+#include <zlib.h>
 
 #include <iostream>
 
