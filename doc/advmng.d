@@ -2,7 +2,8 @@ Name
 	advmng - The AdvanceMNG compressor
 
 Synopsis
-	:advmng [-l, --list] [-z, --recompress] [-x, --extract]
+	:advmng [-l, --list] [-z, --recompress]
+	:[-x, --extract] [-a, --add RATE MNG_FILE PNG_FILES...]
 	:[-0, --shrink-store] [-1, --shrink-fast] [-2, --shrink-normal]
 	:[-3, --shrink-extra] [-4, --shrink-insane]
 	:[-s, --scroll HxV] [-S, --scroll-square]
@@ -29,7 +30,7 @@ Description
 	* Reduce the color depth to 8 bit (option -r).
 	* Use the 7zip Deflate implementation.
 
-Options
+Commands
 	-l, --list FILES...
 		List the content of the specified files.
 
@@ -42,9 +43,17 @@ Options
 
 	-x, --extract FILES...
 		Extract all the .png frames in the .mng clips.
-		If the -0 option is specified the .png
-		files are written without any compression.
+		You can use the --shrink options to control the
+		compression ratio of the .png files.
 
+	-a, --add RATE MNG_FILE PNG_FILES...
+		Compress all the .png files on the command line
+		as a .mng file. All the .png files must have the
+		same size and the same bit depth. You must also
+		specify an integer frame rate to use in the
+		.mng file.
+
+Options
 	-0, --shrink-store
 		Disable the compression. The file is
 		only stored and not compressed. The file is always
@@ -115,9 +124,18 @@ Options
 		Print more information on the compression process.
 
 Examples
-	A good tradeoff of compression and time is the command :
+	A good tradeoff of recompression and time is the command :
 
 		advmng -z -r -S 16 *.mng
+
+	To create a .mng file from a series of .png files use the
+	command :
+
+		advmng -a 30 video.mng video*.png
+
+	To extract all the images in a .mng file use the command :
+
+		advmng -x video.mng
 
 Copyright
 	This file is Copyright (C) 2003 Andrea Mazzoleni, Filipe Estima

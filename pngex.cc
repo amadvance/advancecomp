@@ -1,7 +1,7 @@
 /*
  * This file is part of the AdvanceSCAN project.
  *
- * Copyright (C) 1999-2002 Andrea Mazzoleni
+ * Copyright (C) 2002 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -391,7 +391,12 @@ void png_convert_4(
 			}
 		}
 	} else if (pix_pixel == 4) {
-		/* nothing to do */
+		unsigned i;
+		for(i=0;i<pix_height;++i) {
+			const unsigned char* p0 = pix_ptr + i * pix_scanline;
+			unsigned char* p1 = *dst_ptr + i * *dst_scanline;
+			memcpy(p1, p0, *dst_scanline);
+		}
 	} else {
 		throw error() << "Unsupported format";
 	}

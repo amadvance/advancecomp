@@ -1,6 +1,11 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 1.9 2003/11
+	) Added support for .tgz files at advdef.
+	) Added the -a option at advmng to create .mng files from
+		a sequence of .png files.
+
 AdvanceCOMP Version 1.8 2003/10
 	) Added support for .gz files at advdef.
 	) Fixed support for .png files with splitted IDATs.

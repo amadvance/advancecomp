@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1998-2002 Andrea Mazzoleni
+ * Copyright (C) 2002 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -122,24 +122,31 @@ int striwildcmp(const char* pattern, const char* str) {
 // Convert a string to a unsigned
 // return:
 //   0 if string contains a non digit char
-unsigned strdec(const char* s) {
+unsigned strdec(const char* s, const char** e) {
 	unsigned v = 0;
 	while (*s) {
-		if (!isdigit(*s)) return 0;
+		if (!isdigit(*s)) {
+			*e = s;
+			return 0;
+		}
 		v *= 10;
 		v += *s - '0';
 		++s;
 	}
+	*e = s;
 	return v;
 }
 
 // Convert a hex string to a unsigned
 // return:
 //   0 if string contains a non hex digit char
-unsigned strhex(const char* s) {
+unsigned strhex(const char* s, const char** e) {
 	unsigned v = 0;
 	while (*s) {
-		if (!isxdigit(*s)) return 0;
+		if (!isxdigit(*s)) {
+			*e = s;
+			return 0;
+		}
 		v *= 16;
 		if (*s>='0' && *s<='9')
 			v += *s - '0';
@@ -147,6 +154,7 @@ unsigned strhex(const char* s) {
 			v += toupper(*s) - 'A' + 10;
 		++s;
 	}
+	*e = s;
 	return v;
 }
 

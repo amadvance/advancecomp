@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1999-2002 Andrea Mazzoleni
+ * Copyright (C) 2002 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,7 +68,11 @@ void png_convert_4(
 	unsigned char* pal_ptr, unsigned pal_size,
 	unsigned char** dst_ptr, unsigned* dst_pixel, unsigned* dst_scanline
 );
-
+void png_convert_3(
+	unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline,
+	unsigned char* pal_ptr, unsigned pal_size,
+	unsigned char** dst_ptr, unsigned* dst_pixel, unsigned* dst_scanline
+);
 
 #endif
 

@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1998-2002 Andrea Mazzoleni
+ * Copyright (C) 2002 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,8 +40,8 @@
 // Generic utility
 
 int striwildcmp(const char* pattern, const char* str);
-unsigned strdec(const char* s);
-unsigned strhex(const char* s);
+unsigned strdec(const char* s, const char** e);
+unsigned strhex(const char* s, const char** e);
 
 std::string numhex(unsigned v);
 std::string numdec(unsigned v);

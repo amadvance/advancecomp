@@ -2,7 +2,11 @@
 .SH NAME
 advmng \(hy The AdvanceMNG compressor
 .SH SYNOPSIS 
-advmng [\(hyl, \(hy\(hylist] [\(hyz, \(hy\(hyrecompress] [\(hyx, \(hy\(hyextract]
+advmng [\(hyl, \(hy\(hylist] [\(hyz, \(hy\(hyrecompress]
+.PD 0
+.PP
+.PD
+[\(hyx, \(hy\(hyextract] [\(hya, \(hy\(hyadd RATE MNG_FILE PNG_FILES...]
 .PD 0
 .PP
 .PD
@@ -54,7 +58,7 @@ Reduce the color depth to 8 bit (option \(hyr).
 .IP \(bu
 Use the 7zip Deflate implementation.
 .PD
-.SH OPTIONS 
+.SH COMMANDS 
 .TP
 .B \(hyl, \(hy\(hylist FILES...
 List the content of the specified files.
@@ -68,8 +72,16 @@ file is always rewritten without any compression.
 .TP
 .B \(hyx, \(hy\(hyextract FILES...
 Extract all the .png frames in the .mng clips.
-If the \(hy0 option is specified the .png
-files are written without any compression.
+You can use the \(hy\(hyshrink options to control the
+compression ratio of the .png files.
+.TP
+.B \(hya, \(hy\(hyadd RATE MNG_FILE PNG_FILES...
+Compress all the .png files on the command line
+as a .mng file. All the .png files must have the
+same size and the same bit depth. You must also
+specify an integer frame rate to use in the
+.mng file.
+.SH OPTIONS 
 .TP
 .B \(hy0, \(hy\(hyshrink\(hystore
 Disable the compression. The file is
@@ -140,10 +152,23 @@ Don\(cqt print the filenames.
 .B \(hyv, \(hy\(hyverbose
 Print more information on the compression process.
 .SH EXAMPLES 
-A good tradeoff of compression and time is the command :
+A good tradeoff of recompression and time is the command :
 .PP
 .RS 4
 advmng \(hyz \(hyr \(hyS 16 *.mng
+.RE
+.PP
+To create a .mng file from a series of .png files use the
+command :
+.PP
+.RS 4
+advmng \(hya 30 video.mng video*.png
+.RE
+.PP
+To extract all the images in a .mng file use the command :
+.PP
+.RS 4
+advmng \(hyx video.mng
 .RE
 .SH COPYRIGHT 
 This file is Copyright (C) 2003 Andrea Mazzoleni, Filipe Estima

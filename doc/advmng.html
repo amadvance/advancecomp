@@ -8,7 +8,8 @@
 Synopsis
 </h2>
 <font face="Courier">
-advmng [-l, --list] [-z, --recompress] [-x, --extract]<br>
+advmng [-l, --list] [-z, --recompress]<br>
+[-x, --extract] [-a, --add RATE MNG_FILE PNG_FILES...]<br>
 [-0, --shrink-store] [-1, --shrink-fast] [-2, --shrink-normal]<br>
 [-3, --shrink-extra] [-4, --shrink-insane]<br>
 [-s, --scroll HxV] [-S, --scroll-square]<br>
@@ -48,19 +49,19 @@ Use the 7zip Deflate implementation.
 </li>
 </ul>
 <h2>3 
-Options
+Commands
 </h2>
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -l, --list FILES...
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 List the content of the specified files.
 </td></tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -z, --recompress FILES...
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Recompress the specified files. If the -1, -2, -3
 options are specified, it's used the smallest file
 choice from the previous compressed data and the
@@ -71,16 +72,30 @@ file is always rewritten without any compression.
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -x, --extract FILES...
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Extract all the .png frames in the .mng clips.
-If the -0 option is specified the .png
-files are written without any compression.
+You can use the --shrink options to control the
+compression ratio of the .png files.
 </td></tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
+-a, --add RATE MNG_FILE PNG_FILES...
+</strong></td></tr><tr><td>
+Compress all the .png files on the command line
+as a .mng file. All the .png files must have the
+same size and the same bit depth. You must also
+specify an integer frame rate to use in the
+.mng file.
+</td></tr>
+</table>
+<h2>4 
+Options
+</h2>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+<tr valign="top" align="left"><td><strong>
 -0, --shrink-store
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Disable the compression. The file is
 only stored and not compressed. The file is always
 rewritten also if it's bigger.
@@ -89,14 +104,14 @@ rewritten also if it's bigger.
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -1, --shrink-fast
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Set the compression level to "fast".
 </td></tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -2, --shrink-normal
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Set the compression level to "normal". This is the
 default level of compression.
 </td></tr>
@@ -104,14 +119,14 @@ default level of compression.
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -3, --shrink-extra
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Set the compression level to "extra".
 </td></tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -4, --shrink-insane
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Set the compression level to "insane". It's VERY
 SLOW.
 </td></tr>
@@ -119,7 +134,7 @@ SLOW.
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -s, --scroll HxV
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 The "-s HxV" option specifies the size of the pattern
 (H width x V height) used to check for a
 scrolling background. The size is expressed in
@@ -139,7 +154,7 @@ patterns like "-s 16x0" or "-s 0x16".
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -S, --scroll-square N
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 This option is like the option "-s NxN" but excludes
 big movement on both directions reducing the computation
 time. Specifically the check done is X+Y&lt;=N.
@@ -148,7 +163,7 @@ time. Specifically the check done is X+Y&lt;=N.
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -r, --reduce
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Force the color reduction to 8 bit. The reduction is
 really done only if any frame have less than 256 colors.
 </td></tr>
@@ -156,14 +171,14 @@ really done only if any frame have less than 256 colors.
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -e, --expand
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Force the color expansion to 24 bit.
 </td></tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -c, --lc
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Force the use of the MNG LC (Low Complexity)
 specifications. It disables the delta compression.
 The file is always rewritten also if it's bigger.
@@ -172,7 +187,7 @@ The file is always rewritten also if it's bigger.
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -C, --vlc
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Force the use of the MNG VLC (Very Low Complexity)
 specifications. It disables the delta compression
 and the precise timing. Warning! you may lose the
@@ -184,37 +199,50 @@ rewritten also if it's bigger.
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -f, --force
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Force the use of the new file also if it's bigger.
 </td></tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -q, --quiet
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Don't print the filenames.
 </td></tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -v, --verbose
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Print more information on the compression process.
 </td></tr>
 </table>
-<h2>4 
+<h2>5 
 Examples
 </h2>
-A good tradeoff of compression and time is the command :
+A good tradeoff of recompression and time is the command :
 <p>
 <table width="100%" border="0" cellspacing="0" cellpadding="2"><tr><td width="5%"></td><td width="95%">
 advmng -z -r -S 16 *.mng
 </td></tr></table>
-<h2>5 
+<p>
+To create a .mng file from a series of .png files use the
+command :
+<p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2"><tr><td width="5%"></td><td width="95%">
+advmng -a 30 video.mng video*.png
+</td></tr></table>
+<p>
+To extract all the images in a .mng file use the command :
+<p>
+<table width="100%" border="0" cellspacing="0" cellpadding="2"><tr><td width="5%"></td><td width="95%">
+advmng -x video.mng
+</td></tr></table>
+<h2>6 
 Copyright
 </h2>
 This file is Copyright (C) 2003 Andrea Mazzoleni, Filipe Estima
-<h2>6 
+<h2>7 
 See Also
 </h2>
 advzip(1), advpng(1), advdef(1)

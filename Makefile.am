@@ -66,6 +66,8 @@ advpng_SOURCES = \
 advmng_SOURCES = \
 	remng.cc \
 	pngex.cc \
+	mngex.cc \
+	scroll.cc \
 	utility.cc \
 	siglock.cc \
 	compress.cc \
@@ -140,8 +142,6 @@ EXTRA_DIST = \
 	check.lst \
 	test/mappy.png \
 	test/mappy.mng \
-	test/pengo.png \
-	test/pengo.mng \
 	test/basn2c08.png \
 	test/basn3p01.png \
 	test/basn3p02.png \
@@ -152,6 +152,8 @@ EXTRA_DIST = \
 noinst_HEADERS = \
 	snprintf.c \
 	pngex.h \
+	mngex.h \
+	scroll.h \
 	compress.h \
 	utility.h \
 	zip.h \
@@ -209,9 +211,10 @@ noinst_HEADERS = \
 man_MANS = doc/advdef.1 doc/advzip.1 doc/advpng.1 doc/advmng.1
 
 clean-local:
-	rm -f new.lst check.zip mappy.mng pengo.mng mappy.png pengo.png
+	rm -f new.lst check.zip mappy.mng mappy.png
 	rm -f basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png
 	rm -f advdef.exe advzip.exe advpng.exe advmng.exe
+	rm -f mappy*.png
 
 maintainer-clean-local:
 	rm -f README AUTHORS HISTORY INSTALL doc/copying.txt
@@ -273,12 +276,15 @@ check-local: advzip check.lst
 	@./advzip -a -4 -N check.zip $(srcdir)/COPYING
 	@./advzip -L check.zip >> new.lst
 	@./advzip -t -p check.zip
-	@cp $(srcdir)/test/pengo.mng $(srcdir)/test/mappy.mng .
-	@./advmng -f -z -S 8 pengo.mng mappy.mng
-	@./advmng -L pengo.mng mappy.mng >> new.lst
-	@cp $(srcdir)/test/pengo.png $(srcdir)/test/mappy.png .
-	@./advpng -f -z pengo.png mappy.png
-	@./advpng -L pengo.png mappy.png >> new.lst
+	@cp $(srcdir)/test/mappy.mng .
+	@./advmng -f -z -S 8 mappy.mng
+	@./advmng -L mappy.mng >> new.lst
+	@./advmng -x -1 mappy.mng
+	@./advmng -a 30 -r -S 8 mappy.mng mappy-*.png
+	@./advmng -L mappy.mng >> new.lst
+	@cp $(srcdir)/test/mappy.png .
+	@./advpng -f -z mappy.png
+	@./advpng -L mappy.png >> new.lst
 	@cp $(srcdir)/test/basn2c08.png $(srcdir)/test/basn3p01.png $(srcdir)/test/basn3p02.png $(srcdir)/test/basn3p04.png $(srcdir)/test/basn3p08.png $(srcdir)/test/basn6a08.png .
 	@./advpng -f -z basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png
 	@./advpng -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png >> new.lst

@@ -452,7 +452,7 @@ void convert_inplace(const string& path) {
 		ftype = ftype_png;
 	else if (file_compare(file_ext(path),".mng") == 0)
 		ftype = ftype_mng;
-	else if (file_compare(file_ext(path),".gz") == 0)
+	else if (file_compare(file_ext(path),".gz") == 0 || file_compare(file_ext(path),".tgz") == 0)
 		ftype = ftype_gz;
 	else
 		throw error() << "File type not supported";
