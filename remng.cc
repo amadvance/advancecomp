@@ -79,8 +79,7 @@ unsigned compare_line(unsigned width, unsigned height, unsigned char* p0, unsign
 	/* MMX ASM optimized version */
 		j = width;
 		while (j>=8) {
-			unsigned char sum[8] = { 0, 0 ,0 ,0 ,0 ,0 ,0 ,0 };
-			unsigned char mask[8] = { 1, 1, 1, 1, 1, 1, 1, 1 };
+			unsigned char data[16] = { 0, 0 ,0 ,0 ,0 ,0 ,0 ,0, 1, 1, 1, 1, 1, 1, 1, 1 };
 
 			unsigned run = j / 8;
 
@@ -91,7 +90,7 @@ unsigned compare_line(unsigned width, unsigned height, unsigned char* p0, unsign
 
 			__asm__ __volatile__(
 				"movq 0(%3), %%mm2\n"
-				"movq 0(%4), %%mm3\n"
+				"movq 8(%3), %%mm3\n"
 
 				"0:\n"
 
@@ -110,19 +109,19 @@ unsigned compare_line(unsigned width, unsigned height, unsigned char* p0, unsign
 
 				"movq %%mm2, 0(%3)\n"
 
-				: "+r" (p0), "+r" (p1), "+r" (run), "+r" (&sum), "+r" (&mask)
-				:
+				: "+r" (p0), "+r" (p1), "+r" (run)
+				: "r" (data)
 				: "cc"
 			);
 
-			count += sum[0];
-			count += sum[1];
-			count += sum[2];
-			count += sum[3];
-			count += sum[4];
-			count += sum[5];
-			count += sum[6];
-			count += sum[7];
+			count += data[0];
+			count += data[1];
+			count += data[2];
+			count += data[3];
+			count += data[4];
+			count += data[5];
+			count += data[6];
+			count += data[7];
 		}
 		while (j > 0) {
 			if (p0[0] == p1[0])
