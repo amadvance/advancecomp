@@ -19,8 +19,8 @@ Description
 
 	For experimental purpose also the 7-Zip LZMA algorithm is
 	available with the -N option. In this case, the generated
-	zips WILL NOT BE USEABLE by any other program. To make
-	them useable you need to recompress them without the -N
+	zips WILL NOT BE USABLE by any other program. To make
+	them usable you need to recompress them without the -N
 	option. Generally this algorithm gives 10-20% more
 	compression than the 7-Zip Deflate implementation.
 

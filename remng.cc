@@ -1295,7 +1295,8 @@ void extract(const string& path_src) {
 		++counter;
 
 #if 1
-		// convert to 4 byte format
+		// convert to 4 byte format.
+		// mencoder has problems with 3 byte PNG format.
 		png_convert_4(pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, &dst_ptr, &dst_pixel, &dst_scanline);
 
 		png_write(f_out, pix_width, pix_height, dst_pixel, dst_ptr, dst_scanline, 0, 0, 0, 0, opt_level);
@@ -1317,7 +1318,7 @@ void extract(const string& path_src) {
 	if (!opt_quiet) {
 		cout << endl;
 		cout << "Example mencoder call:" << endl;
-		cout << "mencoder \\*.png -mf on:w=" << mng_width_get(mng) << ":h=" << mng_height_get(mng) << ":fps=" << mng_frequency_get(mng) / first_tick << ":type=png -ovc lavc -lavcopts vcodec=mpeg4:vbitrate=1000:vhq -o " << base << ".avi" << endl;
+		cout << "mencoder " << base << "-\\*.png -mf on:w=" << mng_width_get(mng) << ":h=" << mng_height_get(mng) << ":fps=" << mng_frequency_get(mng) / first_tick << ":type=png -ovc lavc -lavcopts vcodec=mpeg4:vbitrate=1000:vhq -o " << base << ".avi" << endl;
 	}
 
 	mng_done(mng);

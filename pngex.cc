@@ -447,7 +447,7 @@ void png_convert_4(
 			}
 		}
 	} else {
-		throw error() << "Invalid format";
+		throw error() << "Unsupported format";
 	}
 }
 

@@ -3,13 +3,13 @@
                             =======================
 
 
-1 ADVANCECOMP VERSION 1.6 2003/04
+1 ADVANCECOMP VERSION 1.6 2003/05
 =================================
 
-* Added the `-x' option to export .png files from a .mng clip.
-  Usefull to compress it in an MPEG file.
-* Updated with autoconf 2.57 and automake 1.7.2.
+* Added the `-x' option at the advmng utility to export .png files
+  from a .mng clip. Useful to compress it in an MPEG file.
 * Fixed the support for zips with additional data descriptors.
+* Updated with autoconf 2.57 and automake 1.7.4.
 
 
 2 ADVANCECOMP VERSION 1.5 2003/01
@@ -32,7 +32,7 @@
 
 * Added the support for the transparency tRNS chunk at the
   advpng utility.
-* Upgraded at the lastest Advance Library.
+* Upgraded at the latest Advance Library.
 * Fixes at the docs. [by Filipe Estima]
 * Minor changes at the autoconf/automake scripts.
 
