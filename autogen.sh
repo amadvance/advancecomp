@@ -8,7 +8,7 @@ touch configure.ac
 
 # Regenerate configuration files
 aclocal
-automake --foreign --ignore-deps --add-missing
+automake --add-missing --force-missing
 autoconf
 autoheader && touch config.h.in
 

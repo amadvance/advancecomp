@@ -1,6 +1,6 @@
-# aclocal.m4 generated automatically by aclocal 1.6 -*- Autoconf -*-
+# generated automatically by aclocal 1.7.2 -*- Autoconf -*-
 
-# Copyright 1996, 1997, 1998, 1999, 2000, 2001, 2002
+# Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
 # Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -43,7 +43,7 @@
 # CC etc. in the Makefile, will ask for an AC_PROG_CC use...
 
 
-AC_PREREQ([2.52])
+AC_PREREQ([2.54])
 
 # Autoconf 2.50 wants to disallow AM_ names.  We explicitly allow
 # the ones we care about.
@@ -69,6 +69,16 @@ if test "`cd $srcdir && pwd`" != "`pwd`" &&
   AC_MSG_ERROR([source directory already configured; run "make distclean" there first])
 fi
 
+# test whether we have cygpath
+if test -z "$CYGPATH_W"; then
+  if (cygpath --version) >/dev/null 2>/dev/null; then
+    CYGPATH_W='cygpath -w'
+  else
+    CYGPATH_W=echo
+  fi
+fi
+AC_SUBST([CYGPATH_W])
+
 # Define the identity of the package.
 dnl Distinguish between old-style and new-style calls.
 m4_ifval([$2],
@@ -86,9 +96,9 @@ _AM_IF_OPTION([no-define],,
 # Some tools Automake needs.
 AC_REQUIRE([AM_SANITY_CHECK])dnl
 AC_REQUIRE([AC_ARG_PROGRAM])dnl
-AM_MISSING_PROG(ACLOCAL, "aclocal-${am__api_version}")
+AM_MISSING_PROG(ACLOCAL, aclocal-${am__api_version})
 AM_MISSING_PROG(AUTOCONF, autoconf)
-AM_MISSING_PROG(AUTOMAKE, "automake-${am__api_version}")
+AM_MISSING_PROG(AUTOMAKE, automake-${am__api_version})
 AM_MISSING_PROG(AUTOHEADER, autoheader)
 AM_MISSING_PROG(MAKEINFO, makeinfo)
 AM_MISSING_PROG(AMTAR, tar)
@@ -100,16 +110,28 @@ AC_REQUIRE([AC_PROG_AWK])dnl
 AC_REQUIRE([AC_PROG_MAKE_SET])dnl
 
 _AM_IF_OPTION([no-dependencies],,
-[AC_PROVIDE_IFELSE([AC_PROG_][CC],
+[AC_PROVIDE_IFELSE([AC_PROG_CC],
                   [_AM_DEPENDENCIES(CC)],
-                  [define([AC_PROG_][CC],
-                          defn([AC_PROG_][CC])[_AM_DEPENDENCIES(CC)])])dnl
-AC_PROVIDE_IFELSE([AC_PROG_][CXX],
+                  [define([AC_PROG_CC],
+                          defn([AC_PROG_CC])[_AM_DEPENDENCIES(CC)])])dnl
+AC_PROVIDE_IFELSE([AC_PROG_CXX],
                   [_AM_DEPENDENCIES(CXX)],
-                  [define([AC_PROG_][CXX],
-                          defn([AC_PROG_][CXX])[_AM_DEPENDENCIES(CXX)])])dnl
+                  [define([AC_PROG_CXX],
+                          defn([AC_PROG_CXX])[_AM_DEPENDENCIES(CXX)])])dnl
 ])
 ])
+
+
+# When config.status generates a header, we must update the stamp-h file.
+# This file resides in the same directory as the config header
+# that is generated.  The stamp files are numbered to have different names.
+
+# Autoconf calls _AC_AM_CONFIG_HEADER_HOOK (when defined) in the
+# loop where config.status creates the headers, so we can generate
+# our stamp files there.
+AC_DEFUN([_AC_AM_CONFIG_HEADER_HOOK],
+[_am_stamp_count=`expr ${_am_stamp_count-0} + 1`
+echo "timestamp for $1" >`AS_DIRNAME([$1])`/stamp-h[]$_am_stamp_count])
 
 # Copyright 2002  Free Software Foundation, Inc.
 
@@ -131,14 +153,14 @@ AC_PROVIDE_IFELSE([AC_PROG_][CXX],
 # ----------------------------
 # Automake X.Y traces this macro to ensure aclocal.m4 has been
 # generated from the m4 files accompanying Automake X.Y.
-AC_DEFUN([AM_AUTOMAKE_VERSION],[am__api_version="1.6"])
+AC_DEFUN([AM_AUTOMAKE_VERSION],[am__api_version="1.7"])
 
 # AM_SET_CURRENT_AUTOMAKE_VERSION
 # -------------------------------
 # Call AM_AUTOMAKE_VERSION so it can be traced.
 # This function is AC_REQUIREd by AC_INIT_AUTOMAKE.
 AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
-	 [AM_AUTOMAKE_VERSION([1.6])])
+	 [AM_AUTOMAKE_VERSION([1.7.2])])
 
 # Helper functions for option handling.                    -*- Autoconf -*-
 
@@ -470,7 +492,7 @@ AC_REQUIRE([AM_DEP_TRACK])dnl
 
 ifelse([$1], CC,   [depcc="$CC"   am_compiler_list=],
        [$1], CXX,  [depcc="$CXX"  am_compiler_list=],
-       [$1], OBJC, [depcc="$OBJC" am_compiler_list='gcc3 gcc']
+       [$1], OBJC, [depcc="$OBJC" am_compiler_list='gcc3 gcc'],
        [$1], GCJ,  [depcc="$GCJ"  am_compiler_list='gcc3 gcc'],
                    [depcc="$$1"   am_compiler_list=])
 
@@ -518,7 +540,7 @@ AC_CACHE_CHECK([dependency style of $depcc],
     if depmode=$depmode \
        source=conftest.c object=conftest.o \
        depfile=conftest.Po tmpdepfile=conftest.TPo \
-       $SHELL ./depcomp $depcc -c conftest.c -o conftest.o >/dev/null 2>&1 &&
+       $SHELL ./depcomp $depcc -c -o conftest.o conftest.c >/dev/null 2>&1 &&
        grep conftest.h conftest.Po > /dev/null 2>&1 &&
        ${MAKE-make} -s -f confmf > /dev/null 2>&1; then
       am_cv_$1_dependencies_compiler_type=$depmode
@@ -533,6 +555,9 @@ else
 fi
 ])
 AC_SUBST([$1DEPMODE], [depmode=$am_cv_$1_dependencies_compiler_type])
+AM_CONDITIONAL([am__fastdep$1], [
+  test "x$enable_dependency_tracking" != xno \
+  && test "$am_cv_$1_dependencies_compiler_type" = gcc3])
 ])
 
 
@@ -595,7 +620,13 @@ AC_DEFUN([_AM_OUTPUT_DEPENDENCY_COMMANDS],
 [for mf in $CONFIG_FILES; do
   # Strip MF so we end up with the name of the file.
   mf=`echo "$mf" | sed -e 's/:.*$//'`
-  if (sed 1q $mf | fgrep 'generated by automake') > /dev/null 2>&1; then
+  # Check whether this is an Automake generated Makefile or not.
+  # We used to match only the files named `Makefile.in', but
+  # some people rename them; so instead we look at the file content.
+  # Grep'ing the first line is not enough: some people post-process
+  # each Makefile.in and add a new line on top of each file to say so.
+  # So let's grep whole file.
+  if grep '^#.*generated by automake' $mf > /dev/null 2>&1; then
     dirpart=`AS_DIRNAME("$mf")`
   else
     continue
@@ -646,7 +677,9 @@ AC_DEFUN([AM_OUTPUT_DEPENDENCY_COMMANDS],
      [AMDEP_TRUE="$AMDEP_TRUE" ac_aux_dir="$ac_aux_dir"])
 ])
 
-# Copyright 2001 Free Software Foundation, Inc.             -*- Autoconf -*-
+# Check to see how 'make' treats includes.	-*- Autoconf -*-
+
+# Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -686,7 +719,7 @@ echo "include confinc" > confmf
 # In particular we don't look at `^make:' because GNU make might
 # be invoked under some other name (usually "gmake"), in which
 # case it prints its new name instead of `make'.
-if test "`$am_make -s -f confmf 2> /dev/null | fgrep -v 'ing directory'`" = "done"; then
+if test "`$am_make -s -f confmf 2> /dev/null | grep -v 'ing directory'`" = "done"; then
    am__include=include
    am__quote=
    _am_result=GNU
@@ -746,85 +779,7 @@ else
 fi
 AC_CONFIG_COMMANDS_PRE(
 [if test -z "${$1_TRUE}" && test -z "${$1_FALSE}"; then
-  AC_MSG_ERROR([conditional \"$1\" was never defined.
+  AC_MSG_ERROR([conditional "$1" was never defined.
 Usually this means the macro was only invoked conditionally.])
 fi])])
-
-# Like AC_CONFIG_HEADER, but automatically create stamp file. -*- Autoconf -*-
-
-# Copyright 1996, 1997, 2000, 2001 Free Software Foundation, Inc.
-
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2, or (at your option)
-# any later version.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-# 02111-1307, USA.
-
-AC_PREREQ([2.52])
-
-# serial 6
-
-# When config.status generates a header, we must update the stamp-h file.
-# This file resides in the same directory as the config header
-# that is generated.  We must strip everything past the first ":",
-# and everything past the last "/".
-
-# _AM_DIRNAME(PATH)
-# -----------------
-# Like AS_DIRNAME, only do it during macro expansion
-AC_DEFUN([_AM_DIRNAME],
-       [m4_if(regexp([$1], [^.*[^/]//*[^/][^/]*/*$]), -1,
-	      m4_if(regexp([$1], [^//\([^/]\|$\)]), -1,
-		    m4_if(regexp([$1], [^/.*]), -1,
-			  [.],
-			  patsubst([$1], [^\(/\).*], [\1])),
-		    patsubst([$1], [^\(//\)\([^/].*\|$\)], [\1])),
-	      patsubst([$1], [^\(.*[^/]\)//*[^/][^/]*/*$], [\1]))[]dnl
-])# _AM_DIRNAME
-
-
-# The stamp files are numbered to have different names.
-# We could number them on a directory basis, but that's additional
-# complications, let's have a unique counter.
-m4_define([_AM_STAMP_Count], [0])
-
-
-# _AM_STAMP(HEADER)
-# -----------------
-# The name of the stamp file for HEADER.
-AC_DEFUN([_AM_STAMP],
-[m4_define([_AM_STAMP_Count], m4_incr(_AM_STAMP_Count))dnl
-AS_ESCAPE(_AM_DIRNAME(patsubst([$1],
-                               [:.*])))/stamp-h[]_AM_STAMP_Count])
-
-
-# _AM_CONFIG_HEADER(HEADER[:SOURCES], COMMANDS, INIT-COMMANDS)
-# ------------------------------------------------------------
-# We used to try to get a real timestamp in stamp-h.  But the fear is that
-# that will cause unnecessary cvs conflicts.
-AC_DEFUN([_AM_CONFIG_HEADER],
-[# Add the stamp file to the list of files AC keeps track of,
-# along with our hook.
-AC_CONFIG_HEADERS([$1],
-                  [# update the timestamp
-echo 'timestamp for $1' >"_AM_STAMP([$1])"
-$2],
-                  [$3])
-])# _AM_CONFIG_HEADER
-
-
-# AM_CONFIG_HEADER(HEADER[:SOURCES]..., COMMANDS, INIT-COMMANDS)
-# --------------------------------------------------------------
-AC_DEFUN([AM_CONFIG_HEADER],
-[AC_FOREACH([_AM_File], [$1], [_AM_CONFIG_HEADER(_AM_File, [$2], [$3])])
-])# AM_CONFIG_HEADER
 
