@@ -577,6 +577,7 @@ unsigned char* data_alloc(unsigned size)
 	unsigned char* data = (unsigned char*)malloc(size);
 	if (!data)
 		throw std::bad_alloc();
+	return data;
 }
 
 /**
