@@ -140,12 +140,12 @@ adv_error png_read_signature(adv_fz* f)
 {
 	unsigned char signature[8];
 
-	if (fzread(signature,8,1,f) != 1) {
+	if (fzread(signature, 8, 1, f) != 1) {
 		error_set("Error reading the signature");
 		return -1;
 	}
 
-	if (memcmp(signature,PNG_Signature,8)!=0) {
+	if (memcmp(signature, PNG_Signature, 8)!=0) {
 		error_set("Invalid PNG signature");
 		return -1;
 	}
@@ -179,7 +179,7 @@ adv_error png_write_signature(adv_fz* f, unsigned* count)
  */
 void png_expand_4(unsigned width, unsigned height, unsigned char* ptr)
 {
-	unsigned i,j;
+	unsigned i, j;
 	unsigned char* p8 = ptr + height * (width + 1) - 1;
 	unsigned char* p4 = ptr + height * (width / 2 + 1) - 1;
 
@@ -204,7 +204,7 @@ void png_expand_4(unsigned width, unsigned height, unsigned char* ptr)
  */
 void png_expand_2(unsigned width, unsigned height, unsigned char* ptr)
 {
-	unsigned i,j;
+	unsigned i, j;
 	unsigned char* p8 = ptr + height * (width + 1) - 1;
 	unsigned char* p2 = ptr + height * (width / 4 + 1) - 1;
 
@@ -231,7 +231,7 @@ void png_expand_2(unsigned width, unsigned height, unsigned char* ptr)
  */
 void png_expand_1(unsigned width, unsigned height, unsigned char* ptr)
 {
-	unsigned i,j;
+	unsigned i, j;
 	unsigned char* p8 = ptr + height * (width + 1) - 1;
 	unsigned char* p1 = ptr + height * (width / 8 + 1) - 1;
 
@@ -263,7 +263,7 @@ void png_expand_1(unsigned width, unsigned height, unsigned char* ptr)
  */
 void png_unfilter_8(unsigned width, unsigned height, unsigned char* p, unsigned line)
 {
-	unsigned i,j;
+	unsigned i, j;
 
 	for(i=0;i<height;++i) {
 		unsigned char f = *p++;
@@ -309,7 +309,7 @@ void png_unfilter_8(unsigned width, unsigned height, unsigned char* p, unsigned 
 		} else if (f == 4) { /* paeth */
 			unsigned char* u = p - line;
 			for(j=0;j<width;++j) {
-				unsigned a,b,c;
+				unsigned a, b, c;
 				int v;
 				int da, db, dc;
 				a = j<1 ? 0 : p[-1];
@@ -349,7 +349,7 @@ void png_unfilter_8(unsigned width, unsigned height, unsigned char* p, unsigned 
  */
 void png_unfilter_24(unsigned width, unsigned height, unsigned char* p, unsigned line)
 {
-	unsigned i,j;
+	unsigned i, j;
 
 	for(i=0;i<height;++i) {
 		unsigned char f = *p++;
@@ -397,7 +397,7 @@ void png_unfilter_24(unsigned width, unsigned height, unsigned char* p, unsigned
 		} else if (f == 4) { /* paeth */
 			unsigned char* u = p - line;
 			for(j=0;j<width;++j) {
-				unsigned a,b,c;
+				unsigned a, b, c;
 				int v;
 				int da, db, dc;
 				a = j<3 ? 0 : p[-3];
@@ -437,7 +437,7 @@ void png_unfilter_24(unsigned width, unsigned height, unsigned char* p, unsigned
  */
 void png_unfilter_32(unsigned width, unsigned height, unsigned char* p, unsigned line)
 {
-	unsigned i,j;
+	unsigned i, j;
 
 	for(i=0;i<height;++i) {
 		unsigned char f = *p++;
@@ -486,7 +486,7 @@ void png_unfilter_32(unsigned width, unsigned height, unsigned char* p, unsigned
 		} else if (f == 4) { /* paeth */
 			unsigned char* u = p - line;
 			for(j=0;j<width;++j) {
-				unsigned a,b,c;
+				unsigned a, b, c;
 				int v;
 				int da, db, dc;
 				a = j<4 ? 0 : p[-4];
@@ -587,7 +587,8 @@ adv_error png_read_ihdr(
 	unsigned char** pal_ptr, unsigned* pal_size,
 	unsigned char** rns_ptr, unsigned* rns_size,
 	adv_fz* f, const unsigned char* data, unsigned data_size
-) {
+)
+{
 	unsigned char* ptr;
 	unsigned ptr_size;
 	unsigned type;
@@ -644,7 +645,7 @@ adv_error png_read_ihdr(
 		goto err;
 	}
 	if (data[12] != 0) { /* interlace */
-		error_unsupported_set("Unsupported interlace %d",(unsigned)data[12]);
+		error_unsupported_set("Unsupported interlace %d", (unsigned)data[12]);
 		goto err;
 	}
 
@@ -814,7 +815,8 @@ adv_error png_read_rns(
 	unsigned char** pal_ptr, unsigned* pal_size,
 	unsigned char** rns_ptr, unsigned* rns_size,
 	adv_fz* f
-) {
+)
+{
 	unsigned char* data;
 	unsigned type;
 	unsigned size;
@@ -868,7 +870,8 @@ adv_error png_read(
 	unsigned char** pix_ptr, unsigned* pix_scanline,
 	unsigned char** pal_ptr, unsigned* pal_size,
 	adv_fz* f
-) {
+)
+{
 	adv_error r;
 	unsigned char* rns_ptr;
 	unsigned rns_size;

@@ -27,25 +27,25 @@
 #include <string.h>
 
 /**************************************************************************************/
-/* adv_mng */
+/* MNG */
 
 static unsigned char MNG_Signature[] = "\x8A\x4D\x4E\x47\x0D\x0A\x1A\x0A";
 
 /**
- * Read the adv_mng file signature.
+ * Read the MNG file signature.
  * \param f File to read. 
  */
 adv_error mng_read_signature(adv_fz* f)
 {
 	unsigned char signature[8];
 
-	if (fzread(signature,8,1,f) != 1) {
+	if (fzread(signature, 8, 1, f) != 1) {
 		error_set("Error reading the signature");
 		return -1;
 	}
 
-	if (memcmp(signature,MNG_Signature,8)!=0) {
-		error_set("Invalid adv_mng signature");
+	if (memcmp(signature, MNG_Signature, 8)!=0) {
+		error_set("Invalid MNG signature");
 		return -1;
 	}
 
@@ -53,7 +53,7 @@ adv_error mng_read_signature(adv_fz* f)
 }
 
 /**
- * Write the adv_mng file signature.
+ * Write the MNG file signature.
  * \param f File to write.
  * \param count Pointer at the number of bytes written. It may be 0.
  */
@@ -289,7 +289,7 @@ static void mng_delta_replacement(adv_mng* mng, unsigned pos_x, unsigned pos_y, 
 
 static void mng_delta_addition(adv_mng* mng, unsigned pos_x, unsigned pos_y, unsigned width, unsigned height)
 {
-	unsigned i,j;
+	unsigned i, j;
 	unsigned bytes_per_run = width * mng->pixel;
 	unsigned delta_bytes_per_scanline = bytes_per_run + 1;
 	unsigned char* p0 = mng->dat_ptr + pos_y * mng->dat_line + pos_x * mng->pixel + 1;
@@ -396,7 +396,7 @@ static adv_error mng_read_delta(adv_mng* mng, adv_fz* f, unsigned char* dhdr, un
 
 		i = 1;
 		while (i < size) {
-			unsigned v0,v1,delta_size;
+			unsigned v0, v1, delta_size;
 			if (i + 2 > size) {
 				error_set("Invalid palette size in PPLT chunk");
 				goto err_data;
@@ -471,7 +471,8 @@ static void mng_import(
 	unsigned char** dat_ptr, unsigned* dat_size,
 	unsigned char** pix_ptr, unsigned* pix_scanline,
 	unsigned char** pal_ptr, unsigned* pal_size
-) {
+)
+{
 	unsigned char* current_ptr = mng->dat_ptr + mng->dat_x * mng->pixel + mng->dat_y * mng->dat_line + 1;
 
 	*pix_width = mng->frame_width;
@@ -495,8 +496,8 @@ static void mng_import(
 }
 
 /**
- * Read a adv_mng image.
- * \param mng adv_mng context previously returned by mng_init().
+ * Read a MNG image.
+ * \param mng MNG context previously returned by mng_init().
  * \param pix_width Where to put the image width.
  * \param pix_height Where to put the image height.
  * \param pix_pixel Where to put the image bytes per pixel.
@@ -521,7 +522,8 @@ adv_error mng_read(
 	unsigned char** pal_ptr, unsigned* pal_size,
 	unsigned* tick,
 	adv_fz* f
-) {
+)
+{
 	unsigned type;
 	unsigned char* data;
 	unsigned size;
@@ -537,23 +539,23 @@ adv_error mng_read(
 
 		switch (type) {
 			case MNG_CN_DEFI :
-				if (mng_read_defi(mng,data,size) != 0)
+				if (mng_read_defi(mng, data, size) != 0)
 					goto err_data;
 				free(data);
 				break;
 			case MNG_CN_MOVE :
-				if (mng_read_move(mng,f,data,size) != 0)
+				if (mng_read_move(mng, f, data, size) != 0)
 					goto err_data;
 				free(data);
 				break;
 			case PNG_CN_IHDR :
-				if (mng_read_ihdr(mng,f,data,size) != 0)
+				if (mng_read_ihdr(mng, f, data, size) != 0)
 					goto err_data;
 				free(data);
 				mng_import(mng, pix_width, pix_height, pix_pixel, dat_ptr, dat_size, pix_ptr, pix_scanline, pal_ptr, pal_size);
 				return 0;
 			case MNG_CN_DHDR :
-				if (mng_read_delta(mng, f,data,size) != 0)
+				if (mng_read_delta(mng, f, data, size) != 0)
 					goto err_data;
 				free(data);
 				mng_import(mng, pix_width, pix_height, pix_pixel, dat_ptr, dat_size, pix_ptr, pix_scanline, pal_ptr, pal_size);
@@ -616,9 +618,9 @@ err:
 }
 
 /**
- * Inizialize a adv_mng reading stream.
+ * Inizialize a MNG reading stream.
  * \param f File to read.
- * \return Return the adv_mng context. It must be destroied calling mng_done(). On error return 0.
+ * \return Return the MNG context. It must be destroied calling mng_done(). On error return 0.
  */
 adv_mng* mng_init(adv_fz* f)
 {
@@ -684,8 +686,8 @@ err:
 }
 
 /**
- * Destory a adv_mng context.
- * \param mng adv_mng context previously returned by mng_init().
+ * Destory a MNG context.
+ * \param mng MNG context previously returned by mng_init().
  */
 void mng_done(adv_mng* mng)
 {
@@ -695,29 +697,32 @@ void mng_done(adv_mng* mng)
 }
 
 /**
- * Get the base frequency of the adv_mng.
+ * Get the base frequency of the MNG.
  * This value can be used to convert the number of tick per frame in a time.
- * \param mng adv_mng context.
+ * \param mng MNG context.
  * \return Frequency in Hz.
  */
-unsigned mng_frequency_get(adv_mng* mng) {
+unsigned mng_frequency_get(adv_mng* mng)
+{
 	return mng->frame_frequency;
 }
 
 /**
  * Get the width of the frame.
- * \param mng adv_mng context.
+ * \param mng MNG context.
  * \return Width in pixel.
  */
-unsigned mng_width_get(adv_mng* mng) {
+unsigned mng_width_get(adv_mng* mng)
+{
 	return mng->frame_width;
 }
 
 /**
  * Get the height of the frame.
- * \param mng adv_mng context.
+ * \param mng MNG context.
  * \return height in pixel.
  */
-unsigned mng_height_get(adv_mng* mng) {
+unsigned mng_height_get(adv_mng* mng)
+{
 	return mng->frame_height;
 }

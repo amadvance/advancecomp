@@ -85,6 +85,30 @@ extern int optind, opterr, optopt;
 #define HAVE_SIGQUIT
 #endif
 
+// ------------------------------------------------------------------------
+// snprintf
+
+#ifndef HAVE_SNPRINTF
+#include <sys/types.h>
+int snprintf(char *str, size_t count, const char *fmt, ...);
+#else
+#include <stdio.h>
+#endif
+
+#ifndef HAVE_VSNPRINTF
+#if defined(HAVE_STDARG_H)
+#include <stdarg.h>
+#else
+#if defined(HAVE_VARARGS_H)
+#include <varargs.h>
+#endif
+#endif
+#include <sys/types.h>
+int vsnprintf(char *str, size_t count, const char *fmt, va_list arg);
+#else
+#include <stdio.h>
+#endif
+
 #ifdef __cplusplus
 }
 #endif

@@ -284,7 +284,8 @@ void zip_entry::compressed_seek(FILE* f) const {
 
 	check_local(buf);
 
-	// may differ in strange zipfile
+	// use the local extra_field_length. It may be different than the
+	// central directory version in some zips.
 	unsigned local_extra_field_length = le_uint16_read(buf+ZIP_LO_extra_field_length);
 
 	// seek to data
@@ -330,9 +331,9 @@ void zip_entry::time_set(time_t tod) {
 }
 
 void zip_entry::set(method_t method, const string& Aname, const unsigned char* compdata, unsigned compsize, unsigned size, unsigned crc, unsigned date, unsigned time, bool is_text) {
-	info.version_needed_to_extract = 20; // Version 2.0
+	info.version_needed_to_extract = 20; // version 2.0
 	info.os_needed_to_extract = 0;
-	info.version_made_by = 20; // Version 2.0
+	info.version_made_by = 20; // version 2.0
 	info.host_os = 0;
 	info.general_purpose_bit_flag = 0; // default
 	info.last_mod_file_date = date;
@@ -461,7 +462,7 @@ void zip_entry::check_local(const unsigned char* buf) const {
 	if (le_uint32_read(buf+ZIP_LO_local_file_header_signature) != ZIP_L_signature) {
 		throw error() << "Invalid signature in local header";
 	}
-#if 0 // may differ in strange zips, it can be safely ignored
+#if 0 // may differ in strange zips
 	if (info.general_purpose_bit_flag != le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag)) {
 		throw error() << "Invalid local purpose bit flag";
 	}
@@ -469,14 +470,27 @@ void zip_entry::check_local(const unsigned char* buf) const {
 	if (info.compression_method != le_uint16_read(buf+ZIP_LO_compression_method)) {
 		throw error() << "Invalid method on local header";
 	}
-	if (info.crc32 != le_uint32_read(buf+ZIP_LO_crc32)) {
-		throw error() << "Invalid crc on local header " << info.crc32 << " " << le_uint32_read(buf+ZIP_LO_crc32);
-	}
-	if (info.compressed_size != le_uint32_read(buf+ZIP_LO_compressed_size)) {
-		throw error() << "Invalid compressed size in local header";
-	}
-	if (info.uncompressed_size != le_uint32_read(buf+ZIP_LO_uncompressed_size)) {
-		throw error() << "Invalid  uncompressed size in local header";
+	if ((info.general_purpose_bit_flag & ZIP_GEN_FLAGS_DEFLATE_ZERO) != 0
+		|| (le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag) & ZIP_GEN_FLAGS_DEFLATE_ZERO) != 0) {
+		if (le_uint32_read(buf+ZIP_LO_crc32) != 0) {
+			throw error() << "Not zero crc on local header";
+		}
+		if (le_uint32_read(buf+ZIP_LO_compressed_size) != 0) {
+			throw error() << "Not zero compressed size in local header";
+		}
+		if (le_uint32_read(buf+ZIP_LO_uncompressed_size) != 0) {
+			throw error() << "Not zero uncompressed size in local header";
+		}
+	} else {
+		if (info.crc32 != le_uint32_read(buf+ZIP_LO_crc32)) {
+			throw error() << "Invalid crc on local header " << info.crc32 << " " << le_uint32_read(buf+ZIP_LO_crc32);
+		}
+		if (info.compressed_size != le_uint32_read(buf+ZIP_LO_compressed_size)) {
+			throw error() << "Invalid compressed size in local header";
+		}
+		if (info.uncompressed_size != le_uint32_read(buf+ZIP_LO_uncompressed_size)) {
+			throw error() << "Invalid uncompressed size in local header";
+		}
 	}
 	if (info.filename_length != le_uint16_read(buf+ZIP_LO_filename_length)) {
 		throw error() << "Invalid filename in local header";
@@ -565,7 +579,8 @@ void zip_entry::save_local(FILE* f) {
 	le_uint32_write(buf+ZIP_LO_local_file_header_signature, ZIP_L_signature);
 	le_uint8_write(buf+ZIP_LO_version_needed_to_extract,info.version_needed_to_extract);
 	le_uint8_write(buf+ZIP_LO_os_needed_to_extract,info.os_needed_to_extract);
-	le_uint16_write(buf+ZIP_LO_general_purpose_bit_flag,info.general_purpose_bit_flag);
+	// clear the "data descriptor" bit
+	le_uint16_write(buf+ZIP_LO_general_purpose_bit_flag, info.general_purpose_bit_flag & ~ZIP_GEN_FLAGS_DEFLATE_ZERO);
 	le_uint16_write(buf+ZIP_LO_compression_method,info.compression_method);
 	le_uint16_write(buf+ZIP_LO_last_mod_file_time,info.last_mod_file_time);
 	le_uint16_write(buf+ZIP_LO_last_mod_file_date,info.last_mod_file_date);
@@ -663,7 +678,8 @@ void zip_entry::save_cent(FILE* f) {
 	le_uint8_write(buf+ZIP_CO_host_os,info.host_os);
 	le_uint8_write(buf+ZIP_CO_version_needed_to_extract,info.version_needed_to_extract);
 	le_uint8_write(buf+ZIP_CO_os_needed_to_extract,info.os_needed_to_extract);
-	le_uint16_write(buf+ZIP_CO_general_purpose_bit_flag,info.general_purpose_bit_flag);
+	// clear the "data descriptor" bit
+	le_uint16_write(buf+ZIP_CO_general_purpose_bit_flag,info.general_purpose_bit_flag & ~ZIP_GEN_FLAGS_DEFLATE_ZERO);
 	le_uint16_write(buf+ZIP_CO_compression_method,info.compression_method);
 	le_uint16_write(buf+ZIP_CO_last_mod_file_time,info.last_mod_file_time);
 	le_uint16_write(buf+ZIP_CO_last_mod_file_date,info.last_mod_file_date);

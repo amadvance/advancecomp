@@ -26,9 +26,13 @@
 
 using namespace std;
 
+#ifdef HAVE_SIGHUP
 static void (*sig_hup)(int);
-static void (*sig_int)(int);
+#endif
+#ifdef HAVE_SIGQUIT
 static void (*sig_quit)(int);
+#endif
+static void (*sig_int)(int);
 static void (*sig_term)(int);
 
 static int sig_ignore_sig;

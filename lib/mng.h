@@ -19,7 +19,7 @@
  */
 
 /** \file
- * adv_mng file support.
+ * MNG file support.
  */
 
 #ifndef __MNG_H
@@ -49,7 +49,7 @@ extern "C" {
 /*@}*/
 
 /**
- * adv_mng context.
+ * MNG context.
  */
 typedef struct mng_struct {
 	int end_flag; /**< End flag. */

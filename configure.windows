@@ -1,8 +1,8 @@
 #!/bin/bash
 
 (
-	export CFLAGS="-O2 -march=i586 -mcpu=i686 -fomit-frame-pointer" ;
-	export CXXFLAGS="-O2 -march=i586 -mcpu=i686 -fomit-frame-pointer" ;
+	export CFLAGS="-O2 -Wall -Wno-sign-compare -march=i586 -mcpu=i686 -fomit-frame-pointer" ;
+	export CXXFLAGS="-O2 -Wall -Wno-sign-compare -Wno-reorder -march=i586 -mcpu=i686 -fomit-frame-pointer" ;
 	export LDFLAGS="-s"
 	./configure --host=i386-mingw32msvc --build=`./config.guess` $@
 )

@@ -108,3 +108,6 @@ int getopt(int nargc, char *const nargv[], const char *ostr)
 }
 
 #endif
+
+#include "snprintf.c"
+

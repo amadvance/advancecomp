@@ -47,10 +47,11 @@ extern "C" {
 const char* error_get(void);
 adv_bool error_unsupported_get(void);
 
-void error_set(const char* error, ...) __attribute__((format(printf,1,2)));
-void error_unsupported_set(const char* error, ...) __attribute__((format(printf,1,2)));
-void error_nolog_set(const char* error, ...) __attribute__((format(printf,1,2)));
-void error_nolog_cat(const char* error, ...) __attribute__((format(printf,1,2)));
+void error_reset(void);
+void error_set(const char* error, ...) __attribute__((format(printf, 1, 2)));
+void error_unsupported_set(const char* error, ...) __attribute__((format(printf, 1, 2)));
+void error_nolog_set(const char* error, ...) __attribute__((format(printf, 1, 2)));
+void error_nolog_cat(const char* error, ...) __attribute__((format(printf, 1, 2)));
 
 /*@}*/
 

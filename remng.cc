@@ -1245,6 +1245,7 @@ void extract(const string& path_src) {
 	}
 
 	counter = 0;
+	first_tick = 0;
 
 	while (1) {
 		unsigned pix_width;
@@ -1294,6 +1295,7 @@ void extract(const string& path_src) {
 		++counter;
 
 #if 1
+		// convert to 4 byte format
 		png_convert_4(pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, &dst_ptr, &dst_pixel, &dst_scanline);
 
 		png_write(f_out, pix_width, pix_height, dst_pixel, dst_ptr, dst_scanline, 0, 0, 0, 0, opt_level);

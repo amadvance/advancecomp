@@ -249,6 +249,7 @@ EXTRA_DIST = \
 
 
 noinst_HEADERS = \
+	snprintf.c \
 	pngex.h \
 	compress.h \
 	utility.h \

@@ -1,10 +1,11 @@
 Name
 	advcomp - History For AdvanceCOMP
 
-AdvanceCOMP Version 1.6 2003/03
+AdvanceCOMP Version 1.6 2003/04
 	) Added the `-x' option to export .png files from a .mng clip.
 		Usefull to compress it in an MPEG file.
 	) Updated with autoconf 2.57 and automake 1.7.2
+	) Fixed the support of some strange zips with zero crc on local header.
 
 AdvanceCOMP Version 1.5 2003/01
 	) Splitted from AdvanceSCAN

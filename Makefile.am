@@ -133,6 +133,7 @@ EXTRA_DIST = \
 	check.lst
 
 noinst_HEADERS = \
+	snprintf.c \
 	pngex.h \
 	compress.h \
 	utility.h \
