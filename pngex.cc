@@ -356,3 +356,98 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size) {
 	cout << endl;
 }
 
+void png_write(adv_fz* f, unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline, unsigned char* pal_ptr, unsigned pal_size, unsigned char* rns_ptr, unsigned rns_size, shrink_t level) {
+	unsigned char ihdr[13];
+	data_ptr z_ptr;
+	unsigned z_size;
+
+	if (png_write_signature(f, 0) != 0) {
+		throw error_png();
+	}
+
+	be_uint32_write(ihdr + 0, pix_width);
+	be_uint32_write(ihdr + 4, pix_height);
+	ihdr[8] = 8; /* bit depth */
+	if (pix_pixel == 1)
+		ihdr[9] = 3; /* color type */
+	else if (pix_pixel == 3)
+		ihdr[9] = 2; /* color type */
+	else if (pix_pixel == 4)
+		ihdr[9] = 6; /* color type */
+	else
+		throw error() << "Invalid format";
+
+	ihdr[10] = 0; /* compression */
+	ihdr[11] = 0; /* filter */
+	ihdr[12] = 0; /* interlace */
+
+	if (png_write_chunk(f, PNG_CN_IHDR, ihdr, sizeof(ihdr), 0) != 0) {
+		throw error_png();
+	}
+
+	if (pal_size) {
+		if (png_write_chunk(f, PNG_CN_PLTE, pal_ptr, pal_size, 0) != 0) {
+			throw error_png();
+		}
+	}
+
+	if (rns_size) {
+		if (png_write_chunk(f, PNG_CN_tRNS, rns_ptr, rns_size, 0) != 0) {
+			throw error_png();
+		}
+	}
+
+	png_compress(level, z_ptr, z_size, pix_ptr, pix_scanline, pix_pixel, 0, 0, pix_width, pix_height);
+
+	if (png_write_chunk(f, PNG_CN_IDAT, z_ptr, z_size, 0) != 0) {
+		throw error_png();
+	}
+
+	if (png_write_chunk(f, PNG_CN_IEND, 0, 0, 0) != 0) {
+		throw error_png();
+	}
+}
+
+void png_convert_4(
+	unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline,
+	unsigned char* pal_ptr, unsigned pal_size,
+	unsigned char** dst_ptr, unsigned* dst_pixel, unsigned* dst_scanline
+) {
+	*dst_pixel = 4;
+	*dst_scanline = 4 * pix_width;
+	*dst_ptr = (unsigned char*)malloc( *dst_scanline * pix_height );
+
+	if (pix_pixel == 3) {
+		unsigned i,j;
+		for(i=0;i<pix_height;++i) {
+			const unsigned char* p0 = pix_ptr + i * pix_scanline;
+			unsigned char* p1 = *dst_ptr + i * *dst_scanline;
+			for(j=0;j<pix_width;++j) {
+				p1[0] = p0[0];
+				p1[1] = p0[1];
+				p1[2] = p0[2];
+				p1[3] = 0xFF;
+				p0 += 3;
+				p1 += 4;
+			}
+		}
+	} else if (pix_pixel == 1) {
+		unsigned i,j;
+		for(i=0;i<pix_height;++i) {
+			const unsigned char* p0 = pix_ptr + i * pix_scanline;
+			unsigned char* p1 = *dst_ptr + i * *dst_scanline;
+			for(j=0;j<pix_width;++j) {
+				unsigned char* c = &pal_ptr[p0[0]*3];
+				p1[0] = c[0];
+				p1[1] = c[1];
+				p1[2] = c[2];
+				p1[3] = 0xFF;
+				p0 += 1;
+				p1 += 4;
+			}
+		}
+	} else {
+		throw error() << "Invalid format";
+	}
+}
+

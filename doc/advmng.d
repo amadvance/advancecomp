@@ -2,9 +2,10 @@ Name
 	advmng - The AdvanceMNG compressor
 
 Synopsis
-	:advmng [-l, --list] [-z, --recompress] [-0, --shrink-store]
-	:[-1, --shrink-fast] [-2, --shrink-normal] [-3, --shrink-extra]
-	:[-4, --shrink-insane] [-s, --scroll HxV] [-e, --expand] [-r, --reduce]
+	:advmng [-l, --list] [-z, --recompress] [-x, --extract]
+	:[-0, --shrink-store] [-1, --shrink-fast] [-2, --shrink-normal]
+	:[-3, --shrink-extra] [-4, --shrink-insane]
+	:[-s, --scroll HxV] [-e, --expand] [-r, --reduce]
 	:[-c, --lc] [-C, --vlc] [-f, --force] [-q, --quiet]
 	:[-h, --help] [-V, --version] FILES...
 
@@ -36,6 +37,11 @@ Options
 		choice from the previous compressed data and the
 		new compression. If the -0 option is specified the
 		file is always rewritten without any compression.
+
+	-x, --extract FILES...
+		Extract all the .png frames in the .mng clips.
+		If the -0 option is specified the .png
+		files are written without any compression.
 
 	-0, --shrink-store
 		Disable the compression. The file is

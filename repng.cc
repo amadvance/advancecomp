@@ -88,56 +88,9 @@ bool reduce_image(unsigned char** out_ptr, unsigned* out_scanline, unsigned char
 	return true;
 }
 
-void write_image_raw(adv_fz* f, unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline, unsigned char* pal_ptr, unsigned pal_size, unsigned char* rns_ptr, unsigned rns_size) {
-	unsigned char ihdr[13];
-	data_ptr z_ptr;
-	unsigned z_size;
-
-	if (png_write_signature(f, 0) != 0) {
-		throw error_png();
-	}
-
-	be_uint32_write(ihdr + 0, pix_width);
-	be_uint32_write(ihdr + 4, pix_height);
-	ihdr[8] = 8; /* bit depth */
-	if (pix_pixel == 1)
-		ihdr[9] = 3; /* color type */
-	else
-		ihdr[9] = 2; /* color type */
-	ihdr[10] = 0; /* compression */
-	ihdr[11] = 0; /* filter */
-	ihdr[12] = 0; /* interlace */
-
-	if (png_write_chunk(f, PNG_CN_IHDR, ihdr, sizeof(ihdr), 0) != 0) {
-		throw error_png();
-	}
-
-	if (pal_size) {
-		if (png_write_chunk(f, PNG_CN_PLTE, pal_ptr, pal_size, 0) != 0) {
-			throw error_png();
-		}
-	}
-
-	if (rns_size) {
-		if (png_write_chunk(f, PNG_CN_tRNS, rns_ptr, rns_size, 0) != 0) {
-			throw error_png();
-		}
-	}
-
-	png_compress(opt_level, z_ptr, z_size, pix_ptr, pix_scanline, pix_pixel, 0, 0, pix_width, pix_height);
-
-	if (png_write_chunk(f, PNG_CN_IDAT, z_ptr, z_size, 0) != 0) {
-		throw error_png();
-	}
-
-	if (png_write_chunk(f, PNG_CN_IEND, 0, 0, 0) != 0) {
-		throw error_png();
-	}
-}
-
 void write_image(adv_fz* f, unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline, unsigned char* pal_ptr, unsigned pal_size, unsigned char* rns_ptr, unsigned rns_size) {
 	if (pix_pixel == 1) {
-		write_image_raw(f, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, rns_ptr, rns_size);
+		png_write(f, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, rns_ptr, rns_size, opt_level);
 	} else {
 		unsigned char ovr_ptr[256*3];
 		unsigned ovr_count;
@@ -149,9 +102,9 @@ void write_image(adv_fz* f, unsigned pix_width, unsigned pix_height, unsigned pi
 		try {
 			if (rns_size == 0
 				&& reduce_image(&new_ptr, &new_scanline, ovr_ptr, &ovr_count, pix_width, pix_height, pix_ptr, pix_scanline)) {
-				write_image_raw(f, pix_width, pix_height, 1, new_ptr, new_scanline, ovr_ptr, ovr_count * 3, 0, 0);
+				png_write(f, pix_width, pix_height, 1, new_ptr, new_scanline, ovr_ptr, ovr_count * 3, 0, 0, opt_level);
 			} else {
-				write_image_raw(f, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, 0, 0, rns_ptr, rns_size);
+				png_write(f, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, 0, 0, rns_ptr, rns_size, opt_level);
 			}
 		} catch (...) {
 			data_free(new_ptr);

@@ -303,6 +303,9 @@ void analyze_f(adv_fz* f, struct scroll* sc) {
 	int dy = 0;
 
 	mng = mng_init(f);
+	if (!mng) {
+		throw error() << "Error in MNG stream";
+	}
 
 	ANALYZE.pre_ptr = 0;
 	ANALYZE.cur_ptr = 0;
@@ -1017,6 +1020,9 @@ void convert_f(adv_fz* f_in, adv_fz* f_out, unsigned* filec, unsigned* framec, s
 	bool first = true;
 
 	mng = mng_init(f_in);
+	if (!mng) {
+		throw error() << "Error in MNG stream";
+	}
 
 	*filec = 0;
 	counter = 0;
@@ -1216,6 +1222,108 @@ void mng_print(const string& path) {
 }
 
 // --------------------------------------------------------------------------
+// Extract
+
+void extract(const string& path_src) {
+	adv_fz* f_in;
+	adv_mng* mng;
+	adv_fz* f_out;
+	unsigned counter;
+	string base;
+	unsigned first_tick;
+
+	base = file_basename(path_src);
+	
+	f_in = fzopen(path_src.c_str(),"rb");
+	if (!f_in) {
+		throw error() << "Failed open for reading " << path_src;
+	}
+
+	mng = mng_init(f_in);
+	if (!mng) {
+		throw error() << "Error in MNG stream";
+	}
+
+	counter = 0;
+
+	while (1) {
+		unsigned pix_width;
+		unsigned pix_height;
+		unsigned char* pix_ptr;
+		unsigned pix_pixel;
+		unsigned pix_scanline;
+		unsigned char* dat_ptr;
+		unsigned dat_size;
+		unsigned char* pal_ptr;
+		unsigned pal_size;
+		unsigned tick;
+		unsigned char* dst_ptr;
+		unsigned dst_pixel;
+		unsigned dst_scanline;
+		int r;
+
+		r = mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr, &pal_size, &tick, f_in);
+		if (r < 0) {
+			throw error_png();
+		}
+		if (r > 0)
+			break;
+
+		if (counter == 0)
+			first_tick = tick;
+
+		ostringstream path_dst;
+		path_dst << base << "-";
+
+		// not optimal code for g++ 2.95.3
+		path_dst.setf(ios::right, ios::adjustfield);
+
+		path_dst << setw(8) << setfill('0') << counter;
+		path_dst << ".png";
+
+		if (!opt_quiet) {
+			cout << path_dst.str() << endl;
+		}
+
+		f_out = fzopen(path_dst.str().c_str(), "wb");
+		if (!f_out) {
+			fzclose(f_in);
+			throw error() << "Failed open for writing " << path_dst.str();
+		}
+
+		++counter;
+
+#if 1
+		png_convert_4(pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, &dst_ptr, &dst_pixel, &dst_scanline);
+
+		png_write(f_out, pix_width, pix_height, dst_pixel, dst_ptr, dst_scanline, 0, 0, 0, 0, opt_level);
+
+		free(dst_ptr);
+#else
+		png_write(f_out, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, 0, 0, opt_level);
+#endif
+
+		fzclose(f_out);
+
+		free(dat_ptr);
+		free(pal_ptr);
+	}
+
+	if (first_tick)
+		cout << mng_frequency_get(mng) / (double)first_tick << endl;
+
+	if (!opt_quiet) {
+		cout << endl;
+		cout << "Example mencoder call:" << endl;
+		cout << "mencoder \\*.png -mf on:w=" << mng_width_get(mng) << ":h=" << mng_height_get(mng) << ":fps=" << mng_frequency_get(mng) / first_tick << ":type=png -ovc lavc -lavcopts vcodec=mpeg4:vbitrate=1000:vhq -o " << base << ".avi" << endl;
+	}
+
+	mng_done(mng);
+
+	fzclose(f_in);
+}
+
+// --------------------------------------------------------------------------
 // Command interface
 
 void rezip_single(const string& file, unsigned long long& total_0, unsigned long long& total_1) {
@@ -1289,10 +1397,17 @@ void list_all(int argc, char* argv[]) {
 	}
 }
 
+void extract_all(int argc, char* argv[]) {
+	for(int i=0;i<argc;++i) {
+		extract(argv[i]);
+	}
+}
+
 #ifdef HAVE_GETOPT_LONG
 struct option long_options[] = {
 	{"recompress", 0, 0, 'z'},
 	{"list", 0, 0, 'l'},
+	{"extract", 0, 0, 'x'},
 
 	{"shrink-store", 0, 0, '0'},
 	{"shrink-fast", 0, 0, '1'},
@@ -1314,7 +1429,7 @@ struct option long_options[] = {
 };
 #endif
 
-#define OPTIONS "zl01234s:recCfqhV"
+#define OPTIONS "zlx01234s:recCfqhV"
 
 void version() {
 	cout << PACKAGE " v" VERSION " by Andrea Mazzoleni" << endl;
@@ -1328,6 +1443,7 @@ void usage() {
 	cout << "Modes:" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-l, --list          ", "-l    ") "  List the content of the files" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-z, --recompress    ", "-z    ") "  Recompress the specified files" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-x, --extract       ", "-x    ") "  Extract all the .PNG frames" << endl;
 	cout << "Options:" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-0, --shrink-store  ", "-0    ") "  Don't compress" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-1, --shrink-fast   ", "-1    ") "  Compress fast" << endl;
@@ -1348,7 +1464,7 @@ void usage() {
 
 void process(int argc, char* argv[]) {
 	enum cmd_t {
-		cmd_unset, cmd_recompress, cmd_list
+		cmd_unset, cmd_recompress, cmd_list, cmd_extract
 	} cmd = cmd_unset;
 
 	opt_quiet = false;
@@ -1388,6 +1504,11 @@ void process(int argc, char* argv[]) {
 				if (cmd != cmd_unset)
 					throw error() << "Too many commands";
 				cmd = cmd_list;
+				break;
+			case 'x' :
+				if (cmd != cmd_unset)
+					throw error() << "Too many commands";
+				cmd = cmd_extract;
 				break;
 			case '0' :
 				opt_level = shrink_none;
@@ -1462,6 +1583,9 @@ void process(int argc, char* argv[]) {
 		break;
 	case cmd_list :
 		list_all(argc - optind, argv + optind);
+		break;
+	case cmd_extract :
+		extract_all(argc - optind, argv + optind);
 		break;
 	case cmd_unset :
 		throw error() << "No command specified";

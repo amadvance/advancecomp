@@ -62,6 +62,19 @@ void png_compress_palette_delta(
 	const unsigned char* pal_ptr, unsigned pal_size,
 	const unsigned char* prev_ptr
 );
+void png_write(
+	adv_fz* f,
+	unsigned pix_width, unsigned pix_height, unsigned pix_pixel,
+	unsigned char* pix_ptr, unsigned pix_scanline,
+	unsigned char* pal_ptr, unsigned pal_size,
+	unsigned char* rns_ptr, unsigned rns_size,
+	shrink_t level
+);
+void png_convert_4(
+	unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline,
+	unsigned char* pal_ptr, unsigned pal_size,
+	unsigned char** dst_ptr, unsigned* dst_pixel, unsigned* dst_scanline
+);
 
 
 #endif

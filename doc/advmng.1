@@ -2,15 +2,19 @@
 .SH NAME
 advmng \(hy The AdvanceMNG compressor
 .SH SYNOPSIS 
-advmng [\(hyl, \(hy\(hylist] [\(hyz, \(hy\(hyrecompress] [\(hy0, \(hy\(hyshrink\(hystore]
+advmng [\(hyl, \(hy\(hylist] [\(hyz, \(hy\(hyrecompress] [\(hyx, \(hy\(hyextract]
 .PD 0
 .PP
 .PD
-[\(hy1, \(hy\(hyshrink\(hyfast] [\(hy2, \(hy\(hyshrink\(hynormal] [\(hy3, \(hy\(hyshrink\(hyextra]
+[\(hy0, \(hy\(hyshrink\(hystore] [\(hy1, \(hy\(hyshrink\(hyfast] [\(hy2, \(hy\(hyshrink\(hynormal]
 .PD 0
 .PP
 .PD
-[\(hy4, \(hy\(hyshrink\(hyinsane] [\(hys, \(hy\(hyscroll HxV] [\(hye, \(hy\(hyexpand] [\(hyr, \(hy\(hyreduce]
+[\(hy3, \(hy\(hyshrink\(hyextra] [\(hy4, \(hy\(hyshrink\(hyinsane]
+.PD 0
+.PP
+.PD
+[\(hys, \(hy\(hyscroll HxV] [\(hye, \(hy\(hyexpand] [\(hyr, \(hy\(hyreduce]
 .PD 0
 .PP
 .PD
@@ -58,6 +62,11 @@ options are specified, it\(cqs used the smallest file
 choice from the previous compressed data and the
 new compression. If the \(hy0 option is specified the
 file is always rewritten without any compression.
+.TP
+.B \(hyx, \(hy\(hyextract FILES...
+Extract all the .png frames in the .mng clips.
+If the \(hy0 option is specified the .png
+files are written without any compression.
 .TP
 .B \(hy0, \(hy\(hyshrink\(hystore
 Disable the compression. The file is
