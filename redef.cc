@@ -400,6 +400,8 @@ void convert_gz(adv_fz* f_in, adv_fz* f_out) {
 	unsigned cmp_size = oversize_deflate(res_size);
 	unsigned char* cmp_data = data_alloc(cmp_size);
 
+	unsigned crc = crc32(0, res_data, res_size);
+
 	if (!compress_deflate(opt_level, cmp_data, cmp_size, res_data, res_size))
 		throw error() << "Error compressing";
 
@@ -410,7 +412,15 @@ void convert_gz(adv_fz* f_in, adv_fz* f_out) {
 
 	data_free(cmp_data);
 
-	copy_data(f_in, f_out, 8);
+	unsigned char footer[8];
+
+	copy_data(f_in, f_out, footer, 8);
+
+	if (crc != le_uint32_read(footer))
+		throw error() << "Invalid crc";
+
+	if ((res_size & 0xFFFFFFFF) != le_uint32_read(footer + 4))
+		throw error() << "Invalid size";
 }
 
 // --------------------------------------------------------------------------

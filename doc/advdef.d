@@ -9,7 +9,7 @@ Synopsis
 
 Description
 	The main purpose of this utility is to recompress the
-	data present in the png, mng and gz files.
+	data present in the .png, .mng and .gz files.
 
 	The internal structure of the files isn't changed.
 	Only the compressed data is modified.
@@ -53,5 +53,5 @@ Copyright
 	This file is Copyright (C) 2003 Andrea Mazzoleni
 
 See Also
-	advpng(1), advmng(1), advzip(1), gzip(1)
+	advpng(1), advmng(1), advzip(1), gzip(1), bzip2(1)
 
