@@ -18,10 +18,6 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include "portable.h"
 
 #include "png.h"
@@ -40,7 +36,7 @@ static unsigned char PNG_Signature[] = "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A";
  * \param size Where to put the size of the chunk.
  * \param type Where to put the type of the chunk. 
  */
-adv_error png_read_chunk(adv_fz* f, unsigned char** data, unsigned* size, unsigned* type)
+adv_error adv_png_read_chunk(adv_fz* f, unsigned char** data, unsigned* size, unsigned* type)
 {
 	unsigned char cl[4];
 	unsigned char ct[4];
@@ -95,7 +91,7 @@ err:
  * \param size Size of the chunk.
  * \param count Pointer at the incremental counter of bytes written. Use 0 for disabling it.
  */
-adv_error png_write_chunk(adv_fz* f, unsigned type, const unsigned char* data, unsigned size, unsigned* count)
+adv_error adv_png_write_chunk(adv_fz* f, unsigned type, const unsigned char* data, unsigned size, unsigned* count)
 {
 	unsigned char v[4];
 	unsigned crc;
@@ -138,7 +134,7 @@ adv_error png_write_chunk(adv_fz* f, unsigned type, const unsigned char* data, u
  * Read the PNG file signature.
  * \param f File to read.
  */
-adv_error png_read_signature(adv_fz* f)
+adv_error adv_png_read_signature(adv_fz* f)
 {
 	unsigned char signature[8];
 
@@ -160,7 +156,7 @@ adv_error png_read_signature(adv_fz* f)
  * \param f File to write.
  * \param count Pointer at the incremental counter of bytes written. Use 0 for disabling it.
  */
-adv_error png_write_signature(adv_fz* f, unsigned* count)
+adv_error adv_png_write_signature(adv_fz* f, unsigned* count)
 {
 	if (fzwrite(PNG_Signature, 8, 1, f) != 1) {
 		error_set("Error writing the signature");
@@ -179,7 +175,7 @@ adv_error png_write_signature(adv_fz* f, unsigned* count)
  * \param height Height of the image.
  * \param ptr Data pointer. It must point at the first filter type byte.
  */
-void png_expand_4(unsigned width, unsigned height, unsigned char* ptr)
+void adv_png_expand_4(unsigned width, unsigned height, unsigned char* ptr)
 {
 	unsigned i, j;
 	unsigned char* p8 = ptr + height * (width + 1) - 1;
@@ -204,7 +200,7 @@ void png_expand_4(unsigned width, unsigned height, unsigned char* ptr)
  * \param height Height of the image.
  * \param ptr Data pointer. It must point at the first filter type byte.
  */
-void png_expand_2(unsigned width, unsigned height, unsigned char* ptr)
+void adv_png_expand_2(unsigned width, unsigned height, unsigned char* ptr)
 {
 	unsigned i, j;
 	unsigned char* p8 = ptr + height * (width + 1) - 1;
@@ -231,7 +227,7 @@ void png_expand_2(unsigned width, unsigned height, unsigned char* ptr)
  * \param height Height of the image.
  * \param ptr Data pointer. It must point at the first filter type byte.
  */
-void png_expand_1(unsigned width, unsigned height, unsigned char* ptr)
+void adv_png_expand_1(unsigned width, unsigned height, unsigned char* ptr)
 {
 	unsigned i, j;
 	unsigned char* p8 = ptr + height * (width + 1) - 1;
@@ -263,7 +259,7 @@ void png_expand_1(unsigned width, unsigned height, unsigned char* ptr)
  * \param p Data pointer. It must point at the first filter type byte.
  * \param line Scanline size of row.
  */
-void png_unfilter_8(unsigned width, unsigned height, unsigned char* p, unsigned line)
+void adv_png_unfilter_8(unsigned width, unsigned height, unsigned char* p, unsigned line)
 {
 	unsigned i, j;
 
@@ -349,7 +345,7 @@ void png_unfilter_8(unsigned width, unsigned height, unsigned char* p, unsigned 
  * \param p Data pointer. It must point at the first filter type byte.
  * \param line Scanline size of row.
  */
-void png_unfilter_24(unsigned width, unsigned height, unsigned char* p, unsigned line)
+void adv_png_unfilter_24(unsigned width, unsigned height, unsigned char* p, unsigned line)
 {
 	unsigned i, j;
 
@@ -437,7 +433,7 @@ void png_unfilter_24(unsigned width, unsigned height, unsigned char* p, unsigned
  * \param p Data pointer. It must point at the first filter type byte.
  * \param line Scanline size of row.
  */
-void png_unfilter_32(unsigned width, unsigned height, unsigned char* p, unsigned line)
+void adv_png_unfilter_32(unsigned width, unsigned height, unsigned char* p, unsigned line)
 {
 	unsigned i, j;
 
@@ -526,9 +522,9 @@ void png_unfilter_32(unsigned width, unsigned height, unsigned char* p, unsigned
  * \param data_size Size of the data chunk.
  * \param type Type of the data chunk.
  */
-adv_error png_read_iend(adv_fz* f, const unsigned char* data, unsigned data_size, unsigned type)
+adv_error adv_png_read_iend(adv_fz* f, const unsigned char* data, unsigned data_size, unsigned type)
 {
-	if (type == PNG_CN_IEND)
+	if (type == ADV_PNG_CN_IEND)
 		return 0;
 
 	/* ancillary bit. bit 5 of first byte. 0 (uppercase) = critical, 1 (lowercase) = ancillary. */
@@ -544,13 +540,13 @@ adv_error png_read_iend(adv_fz* f, const unsigned char* data, unsigned data_size
 		unsigned ptr_size;
 
 		/* read next */
-		if (png_read_chunk(f, &ptr, &ptr_size, &type) != 0) {
+		if (adv_png_read_chunk(f, &ptr, &ptr_size, &type) != 0) {
 			return -1;
 		}
 
 		free(ptr);
 
-		if (type == PNG_CN_IEND)
+		if (type == ADV_PNG_CN_IEND)
 			break;
 
 		/* ancillary bit. bit 5 of first byte. 0 (uppercase) = critical, 1 (lowercase) = ancillary. */
@@ -582,7 +578,7 @@ adv_error png_read_iend(adv_fz* f, const unsigned char* data, unsigned data_size
  * \param data Pointer at the IHDR chunk. This chunk is not deallocated.
  * \param data_size Size of the IHDR chuck.
  */
-adv_error png_read_ihdr(
+adv_error adv_png_read_ihdr(
 	unsigned* pix_width, unsigned* pix_height, unsigned* pix_pixel,
 	unsigned char** dat_ptr, unsigned* dat_size,
 	unsigned char** pix_ptr, unsigned* pix_scanline,
@@ -661,17 +657,17 @@ adv_error png_read_ihdr(
 		goto err;
 	}
 
-	if (png_read_chunk(f, &ptr, &ptr_size, &type) != 0)
+	if (adv_png_read_chunk(f, &ptr, &ptr_size, &type) != 0)
 		goto err;
 
-	while (type != PNG_CN_PLTE && type != PNG_CN_IDAT) {
+	while (type != ADV_PNG_CN_PLTE && type != ADV_PNG_CN_IDAT) {
 		free(ptr);
 
-		if (png_read_chunk(f, &ptr, &ptr_size, &type) != 0)
+		if (adv_png_read_chunk(f, &ptr, &ptr_size, &type) != 0)
 			goto err;
 	}
 
-	if (type == PNG_CN_PLTE) {
+	if (type == ADV_PNG_CN_PLTE) {
 		if (!has_palette) {
 			error_set("Unexpected PLTE chunk");
 			goto err_ptr;
@@ -685,7 +681,7 @@ adv_error png_read_ihdr(
 		*pal_ptr = ptr;
 		*pal_size = ptr_size;
 
-		if (png_read_chunk(f, &ptr, &ptr_size, &type) != 0)
+		if (adv_png_read_chunk(f, &ptr, &ptr_size, &type) != 0)
 			goto err;
 	} else {
 		if (has_palette) {
@@ -698,15 +694,15 @@ adv_error png_read_ihdr(
 	}
 
 	*rns_size = 0;
-	while (type != PNG_CN_IDAT) {
-		if (type == PNG_CN_tRNS) {
+	while (type != ADV_PNG_CN_IDAT) {
+		if (type == ADV_PNG_CN_tRNS) {
 			*rns_ptr = ptr;
 			*rns_size = ptr_size;
 		} else {
 			free(ptr);
 		}
 
-		if (png_read_chunk(f, &ptr, &ptr_size, &type) != 0)
+		if (adv_png_read_chunk(f, &ptr, &ptr_size, &type) != 0)
 			goto err;
 	}
 
@@ -724,7 +720,7 @@ adv_error png_read_ihdr(
 
 	r = inflateInit(&z);
 
-	while (r == Z_OK && type == PNG_CN_IDAT) {
+	while (r == Z_OK && type == ADV_PNG_CN_IDAT) {
 		z.next_in = ptr;
 		z.avail_in = ptr_size;
 
@@ -732,7 +728,7 @@ adv_error png_read_ihdr(
 
 		free(ptr);
 
-		if (png_read_chunk(f, &ptr, &ptr_size, &type) != 0) {
+		if (adv_png_read_chunk(f, &ptr, &ptr_size, &type) != 0) {
 			inflateEnd(&z);
 			goto err;
 		}
@@ -754,11 +750,11 @@ adv_error png_read_ihdr(
 		}
 
 		if (pixel == 1)
-			png_unfilter_8(width * pixel, height, *dat_ptr, width_align * pixel + 1);
+			adv_png_unfilter_8(width * pixel, height, *dat_ptr, width_align * pixel + 1);
 		else if (pixel == 3)
-			png_unfilter_24(width * pixel, height, *dat_ptr, width_align * pixel + 1);
+			adv_png_unfilter_24(width * pixel, height, *dat_ptr, width_align * pixel + 1);
 		else if (pixel == 4)
-			png_unfilter_32(width * pixel, height, *dat_ptr, width_align * pixel + 1);
+			adv_png_unfilter_32(width * pixel, height, *dat_ptr, width_align * pixel + 1);
 		else {
 			error_set("Unsupported format");
 			goto err_ptr;
@@ -769,30 +765,30 @@ adv_error png_read_ihdr(
 			goto err_ptr;
 		}
 
-		png_unfilter_8(width_align / 2, height, *dat_ptr, width_align / 2 + 1);
+		adv_png_unfilter_8(width_align / 2, height, *dat_ptr, width_align / 2 + 1);
 
-		png_expand_4(width_align, height, *dat_ptr);
+		adv_png_expand_4(width_align, height, *dat_ptr);
 	} else if (depth == 2) {
 		if (res_size != height * (width_align / 4 + 1)) {
 			error_set("Invalid decompressed size");
 			goto err_ptr;
 		}
 
-		png_unfilter_8(width_align / 4, height, *dat_ptr, width_align / 4 + 1);
+		adv_png_unfilter_8(width_align / 4, height, *dat_ptr, width_align / 4 + 1);
 
-		png_expand_2(width_align, height, *dat_ptr);
+		adv_png_expand_2(width_align, height, *dat_ptr);
 	} else if (depth == 1) {
 		if (res_size != height * (width_align / 8 + 1)) {
 			error_set("Invalid decompressed size");
 			goto err_ptr;
 		}
 
-		png_unfilter_8(width_align / 8, height, *dat_ptr, width_align / 8 + 1);
+		adv_png_unfilter_8(width_align / 8, height, *dat_ptr, width_align / 8 + 1);
 
-		png_expand_1(width_align, height, *dat_ptr);
+		adv_png_expand_1(width_align, height, *dat_ptr);
 	}
 
-	if (png_read_iend(f, ptr, ptr_size, type)!=0) {
+	if (adv_png_read_iend(f, ptr, ptr_size, type)!=0) {
 		goto err_ptr;
 	}
 
@@ -825,7 +821,7 @@ err:
  * \param rns_size Where to put the transparency size in number of bytes. Set to 0 if the image hasn't transparency.
  * \param f File to read.
  */
-adv_error png_read_rns(
+adv_error adv_png_read_rns(
 	unsigned* pix_width, unsigned* pix_height, unsigned* pix_pixel,
 	unsigned char** dat_ptr, unsigned* dat_size,
 	unsigned char** pix_ptr, unsigned* pix_scanline,
@@ -838,18 +834,18 @@ adv_error png_read_rns(
 	unsigned type;
 	unsigned size;
 
-	if (png_read_signature(f) != 0) {
+	if (adv_png_read_signature(f) != 0) {
 		goto err;
 	}
 
 	do {
-		if (png_read_chunk(f, &data, &size, &type) != 0) {
+		if (adv_png_read_chunk(f, &data, &size, &type) != 0) {
 			goto err;
 		}
 
 		switch (type) {
-			case PNG_CN_IHDR :
-				if (png_read_ihdr(pix_width, pix_height, pix_pixel, dat_ptr, dat_size, pix_ptr, pix_scanline, pal_ptr, pal_size, rns_ptr, rns_size, f, data, size) != 0)
+			case ADV_PNG_CN_IHDR :
+				if (adv_png_read_ihdr(pix_width, pix_height, pix_pixel, dat_ptr, dat_size, pix_ptr, pix_scanline, pal_ptr, pal_size, rns_ptr, rns_size, f, data, size) != 0)
 					goto err_data;
 				free(data);
 				return 0;
@@ -867,7 +863,7 @@ adv_error png_read_rns(
 
 		free(data);
 
-	} while (type != PNG_CN_IEND);
+	} while (type != ADV_PNG_CN_IEND);
 
 	error_set("Invalid PNG file");
 	return -1;
@@ -882,7 +878,7 @@ err:
  * Load a PNG image.
  * Like png_read_rns() but without transparency.
  */
-adv_error png_read(
+adv_error adv_png_read(
 	unsigned* pix_width, unsigned* pix_height, unsigned* pix_pixel,
 	unsigned char** dat_ptr, unsigned* dat_size,
 	unsigned char** pix_ptr, unsigned* pix_scanline,
@@ -894,7 +890,7 @@ adv_error png_read(
 	unsigned char* rns_ptr;
 	unsigned rns_size;
 
-	r = png_read_rns(pix_width, pix_height, pix_pixel, dat_ptr, dat_size, pix_ptr, pix_scanline, pal_ptr, pal_size, &rns_ptr, &rns_size, f);
+	r = adv_png_read_rns(pix_width, pix_height, pix_pixel, dat_ptr, dat_size, pix_ptr, pix_scanline, pal_ptr, pal_size, &rns_ptr, &rns_size, f);
 
 	if (r == 0)
 		free(rns_ptr);
@@ -907,7 +903,7 @@ adv_error png_read(
  * \param f File to write.
  * \param count Pointer at the incremental counter of bytes written. Use 0 for disabling it.
  */
-adv_error png_write_ihdr(
+adv_error adv_png_write_ihdr(
 	unsigned pix_width, unsigned pix_height,
 	unsigned pix_depth, unsigned pix_type,
 	adv_fz* f, unsigned* count
@@ -923,15 +919,15 @@ adv_error png_write_ihdr(
 	ihdr[11] = 0; /* filter */
 	ihdr[12] = 0; /* interlace */
 
-	if (png_write_chunk(f, PNG_CN_IHDR, ihdr, 13, count)!=0)
+	if (adv_png_write_chunk(f, ADV_PNG_CN_IHDR, ihdr, 13, count)!=0)
 		return -1;
 
 	return 0;
 }
 
-adv_error png_write_iend(adv_fz* f, unsigned* count)
+adv_error adv_png_write_iend(adv_fz* f, unsigned* count)
 {
-	if (png_write_chunk(f, PNG_CN_IEND, 0, 0, count)!=0)
+	if (adv_png_write_chunk(f, ADV_PNG_CN_IEND, 0, 0, count)!=0)
 		return -1;
 
 	return 0;
@@ -942,7 +938,7 @@ adv_error png_write_iend(adv_fz* f, unsigned* count)
  * \param f File to write.
  * \param count Pointer at the incremental counter of bytes written. Use 0 for disabling it.
  */
-adv_error png_write_idat(
+adv_error adv_png_write_idat(
 	unsigned pix_width, unsigned pix_height, unsigned pix_pixel,
 	const uint8* pix_ptr, int pix_pixel_pitch, int pix_scanline_pitch,
 	adv_bool fast,
@@ -1040,7 +1036,7 @@ adv_error png_write_idat(
 		goto err_free;
 	}
 
-	if (png_write_chunk(f, PNG_CN_IDAT, z_ptr, res_size, count)!=0)
+	if (adv_png_write_chunk(f, ADV_PNG_CN_IDAT, z_ptr, res_size, count)!=0)
 		goto err_free;
 
 	free(z_ptr);
@@ -1073,7 +1069,7 @@ err:
  * \param f File to write.
  * \param count Pointer at the incremental counter of bytes written. Use 0 for disabling it.
  */
-adv_error png_write_raw(
+adv_error adv_png_write_raw(
 	unsigned pix_width, unsigned pix_height, unsigned pix_pixel,
 	const unsigned char* pix_ptr, int pix_pixel_pitch, int pix_scanline_pitch,
 	const unsigned char* pal_ptr, unsigned pal_size,
@@ -1101,27 +1097,27 @@ adv_error png_write_raw(
 		goto err;
 	}
 
-	if (png_write_ihdr(pix_width, pix_height, depth, color, f, count) != 0) {
+	if (adv_png_write_ihdr(pix_width, pix_height, depth, color, f, count) != 0) {
 		goto err;
 	}
 
 	if (pal_size) {
-		if (png_write_chunk(f, PNG_CN_PLTE, pal_ptr, pal_size, count) != 0) {
+		if (adv_png_write_chunk(f, ADV_PNG_CN_PLTE, pal_ptr, pal_size, count) != 0) {
 			goto err;
 		}
 	}
 
 	if (rns_size) {
-		if (png_write_chunk(f, PNG_CN_tRNS, rns_ptr, rns_size, count) != 0) {
+		if (adv_png_write_chunk(f, ADV_PNG_CN_tRNS, rns_ptr, rns_size, count) != 0) {
 			goto err;
 		}
 	}
 
-	if (png_write_idat(pix_width, pix_height, pix_pixel, pix_ptr, pix_pixel_pitch, pix_scanline_pitch, 0, f, count) != 0) {
+	if (adv_png_write_idat(pix_width, pix_height, pix_pixel, pix_ptr, pix_pixel_pitch, pix_scanline_pitch, 0, f, count) != 0) {
 		goto err;
 	}
 
-	if (png_write_iend(f, count) != 0) {
+	if (adv_png_write_iend(f, count) != 0) {
 		goto err;
 	}
 
@@ -1146,7 +1142,7 @@ err:
  * \param f File to write.
  * \param count Pointer at the incremental counter of bytes written. Use 0 for disabling it.
  */
-adv_error png_write_rns(
+adv_error adv_png_write_rns(
 	unsigned pix_width, unsigned pix_height, unsigned pix_pixel,
 	const unsigned char* pix_ptr, int pix_pixel_pitch, int pix_scanline_pitch,
 	const unsigned char* pal_ptr, unsigned pal_size,
@@ -1154,11 +1150,11 @@ adv_error png_write_rns(
 	adv_bool fast,
 	adv_fz* f, unsigned* count
 ) {
-	if (png_write_signature(f, count) != 0) {
+	if (adv_png_write_signature(f, count) != 0) {
 		return -1;
 	}
 
-	return png_write_raw(
+	return adv_png_write_raw(
 		pix_width, pix_height, pix_pixel,
 		pix_ptr, pix_pixel_pitch, pix_scanline_pitch,
 		pal_ptr, pal_size,
@@ -1181,18 +1177,18 @@ adv_error png_write_rns(
  * \param f File to write.
  * \param count Pointer at the incremental counter of bytes written. Use 0 for disabling it.
  */
-adv_error png_write(
+adv_error adv_png_write(
 	unsigned pix_width, unsigned pix_height, unsigned pix_pixel,
 	const unsigned char* pix_ptr, int pix_pixel_pitch, int pix_scanline_pitch,
 	const unsigned char* pal_ptr, unsigned pal_size,
 	adv_bool fast,
 	adv_fz* f, unsigned* count
 ) {
-	if (png_write_signature(f, count) != 0) {
+	if (adv_png_write_signature(f, count) != 0) {
 		return -1;
 	}
 
-	return png_write_raw(
+	return adv_png_write_raw(
 		pix_width, pix_height, pix_pixel,
 		pix_ptr, pix_pixel_pitch, pix_scanline_pitch,
 		pal_ptr, pal_size,

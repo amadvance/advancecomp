@@ -25,8 +25,8 @@
 extern "C" {
 #endif
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
+#if HAVE_CONFIG_H
+#include "config.h" /* Use " to include first in the same directory of this file */
 #endif
 
 /* Include some standard headers */
@@ -39,7 +39,6 @@ extern "C" {
 #include <assert.h>
 #include <errno.h>
 #include <signal.h>
-#include <time.h>
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
@@ -129,10 +128,7 @@ extern int optind, opterr, optopt;
 #endif
 
 #if !HAVE_SNPRINTF
-#include <sys/types.h>
 int snprintf(char *str, size_t count, const char *fmt, ...);
-#else
-#include <stdio.h>
 #endif
 
 #if !HAVE_VSNPRINTF
@@ -143,10 +139,7 @@ int snprintf(char *str, size_t count, const char *fmt, ...);
 #include <varargs.h>
 #endif
 #endif
-#include <sys/types.h>
 int vsnprintf(char *str, size_t count, const char *fmt, va_list arg);
-#else
-#include <stdio.h>
 #endif
 
 #ifdef __cplusplus

@@ -70,7 +70,7 @@ adv_scroll_info* analyze_f_mng(adv_fz* f) {
 	int dx = 0;
 	int dy = 0;
 
-	mng = mng_init(f);
+	mng = adv_mng_init(f);
 	if (!mng) {
 		throw error() << "Error in the mng stream";
 	}
@@ -93,7 +93,7 @@ adv_scroll_info* analyze_f_mng(adv_fz* f) {
 			unsigned tick;
 			int r;
 
-			r = mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr_ext, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr_ext, &pal_size, &tick, f);
+			r = adv_mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr_ext, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr_ext, &pal_size, &tick, f);
 			if (r < 0) {
 				throw error_png();
 			}
@@ -119,7 +119,7 @@ adv_scroll_info* analyze_f_mng(adv_fz* f) {
 			}
 		}
 	} catch (...) {
-		mng_done(mng);
+		adv_mng_done(mng);
 		scroll_done(scroll);
 		if (opt_verbose) {
 			cout << endl;
@@ -127,7 +127,7 @@ adv_scroll_info* analyze_f_mng(adv_fz* f) {
 		throw;
 	}
 
-	mng_done(mng);
+	adv_mng_done(mng);
 	if (opt_verbose) {
 		clear_line();
 	}
@@ -191,7 +191,7 @@ adv_scroll_info* analyze_png(int argc, char* argv[]) {
 				unsigned char* pix_ptr;
 				unsigned pix_scanline;
 
-				if (png_read(
+				if (adv_png_read(
 					&pix_width, &pix_height, &pix_pixel,
 					&dat_ptr_ext, &dat_size,
 					&pix_ptr, &pix_scanline,
@@ -292,7 +292,7 @@ bool is_reducible_mng(const string& path) {
 		reducible = true;
 		adv_mng* mng;
 
-		mng = mng_init(f);
+		mng = adv_mng_init(f);
 		if (!mng) {
 			throw error() << "Error in the mng stream";
 		}
@@ -316,7 +316,7 @@ bool is_reducible_mng(const string& path) {
 				unsigned tick;
 				int r;
 
-				r = mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr_ext, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr_ext, &pal_size, &tick, f);
+				r = adv_mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr_ext, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr_ext, &pal_size, &tick, f);
 				if (r < 0) {
 					throw error_png();
 				}
@@ -330,14 +330,14 @@ bool is_reducible_mng(const string& path) {
 					reducible = false;
 			}
 		} catch (...) {
-			mng_done(mng);
+			adv_mng_done(mng);
 			if (opt_verbose) {
 				cout << endl;
 			}
 			throw;
 		}
 
-		mng_done(mng);
+		adv_mng_done(mng);
 		if (opt_verbose) {
 			clear_line();
 		}
@@ -377,7 +377,7 @@ bool is_reducible_png(int argc, char* argv[]) {
 			unsigned char* pix_ptr;
 			unsigned pix_scanline;
 
-			if (png_read(
+			if (adv_png_read(
 				&pix_width, &pix_height, &pix_pixel,
 				&dat_ptr_ext, &dat_size,
 				&pix_ptr, &pix_scanline,
@@ -452,7 +452,7 @@ void convert_f_mng(adv_fz* f_in, adv_fz* f_out, unsigned* filec, unsigned* frame
 	adv_mng_write* mng_write;
 	bool first = true;
 
-	mng = mng_init(f_in);
+	mng = adv_mng_init(f_in);
 	if (!mng) {
 		throw error() << "Error in the mng stream";
 	}
@@ -479,7 +479,7 @@ void convert_f_mng(adv_fz* f_in, adv_fz* f_out, unsigned* filec, unsigned* frame
 			unsigned tick;
 			int r;
 
-			r = mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr_ext, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr_ext, &pal_size, &tick, f_in);
+			r = adv_mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr_ext, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr_ext, &pal_size, &tick, f_in);
 			if (r < 0) {
 				throw error_png();
 			}
@@ -490,14 +490,14 @@ void convert_f_mng(adv_fz* f_in, adv_fz* f_out, unsigned* filec, unsigned* frame
 			data_ptr pal_ptr(pal_ptr_ext);
 
 			if (first) {
-				unsigned frequency = mng_frequency_get(mng);
+				unsigned frequency = adv_mng_frequency_get(mng);
 				if (opt_type == mng_vlc && tick!=1) {
 					// adjust the frequency
 					frequency = (frequency + tick / 2) / tick;
 					if (frequency == 0)
 						frequency = 1;
 				}
-				convert_header(mng_write, f_out, filec, mng_width_get(mng), mng_height_get(mng), frequency, info, pix_pixel == 4 && !opt_noalpha);
+				convert_header(mng_write, f_out, filec, adv_mng_width_get(mng), adv_mng_height_get(mng), frequency, info, pix_pixel == 4 && !opt_noalpha);
 				first = false;
 			}
 
@@ -523,7 +523,7 @@ void convert_f_mng(adv_fz* f_in, adv_fz* f_out, unsigned* filec, unsigned* frame
 			}
 		}
 	} catch (...) {
-		mng_done(mng);
+		adv_mng_done(mng);
 		mng_write_done(mng_write);
 		if (opt_verbose) {
 			cout << endl;
@@ -533,7 +533,7 @@ void convert_f_mng(adv_fz* f_in, adv_fz* f_out, unsigned* filec, unsigned* frame
 
 	mng_write_footer(mng_write, f_out, filec);
 
-	mng_done(mng);
+	adv_mng_done(mng);
 	mng_write_done(mng_write);
 
 	if (opt_verbose) {
@@ -654,14 +654,14 @@ void mng_print(const string& path) {
 	}
 
 	try {
-		if (mng_read_signature(f_in) != 0) {
+		if (adv_mng_read_signature(f_in) != 0) {
 			throw error_png();
 		}
 
 		do {
 			unsigned char* data_ext;
 
-			if (png_read_chunk(f_in, &data_ext, &size, &type) != 0) {
+			if (adv_png_read_chunk(f_in, &data_ext, &size, &type) != 0) {
 				throw error_png();
 			}
 
@@ -676,7 +676,7 @@ void mng_print(const string& path) {
 				png_print_chunk(type, data, size);
 			}
 
-		} while (type != MNG_CN_MEND);
+		} while (type != ADV_MNG_CN_MEND);
 
 	} catch (...) {
 		fzclose(f_in);
@@ -704,7 +704,7 @@ void extract(const string& path_src) {
 		throw error() << "Failed open for reading " << path_src;
 	}
 
-	mng = mng_init(f_in);
+	mng = adv_mng_init(f_in);
 	if (!mng) {
 		throw error() << "Error in the mng stream";
 	}
@@ -728,7 +728,7 @@ void extract(const string& path_src) {
 		unsigned dst_scanline;
 		int r;
 
-		r = mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr_ext, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr_ext, &pal_size, &tick, f_in);
+		r = adv_mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr_ext, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr_ext, &pal_size, &tick, f_in);
 		if (r < 0) {
 			throw error_png();
 		}
@@ -780,15 +780,15 @@ void extract(const string& path_src) {
 		fzclose(f_out);
 	}
 
-	cout << mng_frequency_get(mng) / (double)first_tick << endl;
+	cout << adv_mng_frequency_get(mng) / (double)first_tick << endl;
 
 	if (opt_verbose) {
 		cout << endl;
 		cout << "Example mencoder call:" << endl;
-		cout << "mencoder " << base << "-\\*.png -mf on:w=" << mng_width_get(mng) << ":h=" << mng_height_get(mng) << ":fps=" << mng_frequency_get(mng) / first_tick << ":type=png -ovc lavc -lavcopts vcodec=mpeg4:vbitrate=1000:vhq -o " << base << ".avi" << endl;
+		cout << "mencoder " << base << "-\\*.png -mf on:w=" << adv_mng_width_get(mng) << ":h=" << adv_mng_height_get(mng) << ":fps=" << adv_mng_frequency_get(mng) / first_tick << ":type=png -ovc lavc -lavcopts vcodec=mpeg4:vbitrate=1000:vhq -o " << base << ".avi" << endl;
 	}
 
-	mng_done(mng);
+	adv_mng_done(mng);
 
 	fzclose(f_in);
 }
@@ -870,7 +870,7 @@ void add_all(int argc, char* argv[], unsigned frequency) {
 				unsigned char* pix_ptr;
 				unsigned pix_scanline;
 
-				if (png_read(
+				if (adv_png_read(
 					&pix_width, &pix_height, &pix_pixel,
 					&dat_ptr_ext, &dat_size,
 					&pix_ptr, &pix_scanline,

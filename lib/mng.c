@@ -18,10 +18,6 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include "portable.h"
 
 #include "mng.h"
@@ -38,7 +34,7 @@ static unsigned char MNG_Signature[] = "\x8A\x4D\x4E\x47\x0D\x0A\x1A\x0A";
  * Read the MNG file signature.
  * \param f File to read. 
  */
-adv_error mng_read_signature(adv_fz* f)
+adv_error adv_mng_read_signature(adv_fz* f)
 {
 	unsigned char signature[8];
 
@@ -60,7 +56,7 @@ adv_error mng_read_signature(adv_fz* f)
  * \param f File to write.
  * \param count Pointer at the number of bytes written. It may be 0.
  */
-adv_error mng_write_signature(adv_fz* f, unsigned* count)
+adv_error adv_mng_write_signature(adv_fz* f, unsigned* count)
 {
 	if (fzwrite(MNG_Signature, 8, 1, f) != 1) {
 		error_set("Error writing the signature");
@@ -141,10 +137,10 @@ static adv_error mng_read_ihdr(adv_mng* mng, adv_fz* f, const unsigned char* ihd
 	}
 
 	if (mng->pixel == 1) {
-		if (png_read_chunk(f, &data, &size, &type) != 0)
+		if (adv_png_read_chunk(f, &data, &size, &type) != 0)
 			goto err;
 
-		if (type != PNG_CN_PLTE) {
+		if (type != ADV_PNG_CN_PLTE) {
 			error_set("Missing PLTE chunk");
 			goto err_data;
 		}
@@ -162,10 +158,10 @@ static adv_error mng_read_ihdr(adv_mng* mng, adv_fz* f, const unsigned char* ihd
 		mng->pal_size = 0;
 	}
 
-	if (png_read_chunk(f, &data, &size, &type) != 0)
+	if (adv_png_read_chunk(f, &data, &size, &type) != 0)
 		goto err;
 
-	if (type != PNG_CN_IDAT) {
+	if (type != ADV_PNG_CN_IDAT) {
 		error_set("Missing IDAT chunk");
 		goto err_data;
 	}
@@ -184,16 +180,16 @@ static adv_error mng_read_ihdr(adv_mng* mng, adv_fz* f, const unsigned char* ihd
 	}
 
 	if (mng->pixel == 1)
-		png_unfilter_8(mng->dat_width * mng->pixel, mng->dat_height, mng->dat_ptr, mng->dat_line);
+		adv_png_unfilter_8(mng->dat_width * mng->pixel, mng->dat_height, mng->dat_ptr, mng->dat_line);
 	else if (mng->pixel == 3)
-		png_unfilter_24(mng->dat_width * mng->pixel, mng->dat_height, mng->dat_ptr, mng->dat_line);
+		adv_png_unfilter_24(mng->dat_width * mng->pixel, mng->dat_height, mng->dat_ptr, mng->dat_line);
 	else if (mng->pixel == 4)
-		png_unfilter_32(mng->dat_width * mng->pixel, mng->dat_height, mng->dat_ptr, mng->dat_line);
+		adv_png_unfilter_32(mng->dat_width * mng->pixel, mng->dat_height, mng->dat_ptr, mng->dat_line);
 
-	if (png_read_chunk(f, &data, &size, &type) != 0)
+	if (adv_png_read_chunk(f, &data, &size, &type) != 0)
 		goto err;
 
-	if (png_read_iend(f, data, size, type) != 0)
+	if (adv_png_read_iend(f, data, size, type) != 0)
 		goto err_data;
 
 	free(data);
@@ -362,10 +358,10 @@ static adv_error mng_read_delta(adv_mng* mng, adv_fz* f, unsigned char* dhdr, un
 		pos_y = 0;
 	}
 
-	if (png_read_chunk(f, &data, &size, &type) != 0)
+	if (adv_png_read_chunk(f, &data, &size, &type) != 0)
 		goto err;
 
-	if (type == PNG_CN_PLTE) {
+	if (type == ADV_PNG_CN_PLTE) {
 		if (mng->pixel != 1) {
 			error_set("Unexpected PLTE chunk");
 			goto err_data;
@@ -381,11 +377,11 @@ static adv_error mng_read_delta(adv_mng* mng, adv_fz* f, unsigned char* dhdr, un
 
 		free(data);
 
-		if (png_read_chunk(f, &data, &size, &type) != 0)
+		if (adv_png_read_chunk(f, &data, &size, &type) != 0)
 			goto err;
 	}
 
-	if (type == MNG_CN_PPLT) {
+	if (type == ADV_MNG_CN_PPLT) {
 		unsigned i;
 		if (mng->pixel != 1) {
 			error_set("Unexpected PPLT chunk");
@@ -417,11 +413,11 @@ static adv_error mng_read_delta(adv_mng* mng, adv_fz* f, unsigned char* dhdr, un
 
 		free(data);
 
-		if (png_read_chunk(f, &data, &size, &type) != 0)
+		if (adv_png_read_chunk(f, &data, &size, &type) != 0)
 			goto err;
 	}
 
-	if (type == PNG_CN_IDAT) {
+	if (type == ADV_PNG_CN_IDAT) {
 		unsigned long dlt_size;
 
 		if (pos_x + width > mng->dat_width || pos_y + height > mng->dat_height) {
@@ -446,7 +442,7 @@ static adv_error mng_read_delta(adv_mng* mng, adv_fz* f, unsigned char* dhdr, un
 
 		free(data);
 
-		if (png_read_chunk(f, &data, &size, &type) != 0)
+		if (adv_png_read_chunk(f, &data, &size, &type) != 0)
 			goto err;
 	} else {
 		if (ope != 7) {
@@ -455,7 +451,7 @@ static adv_error mng_read_delta(adv_mng* mng, adv_fz* f, unsigned char* dhdr, un
 		}
 	}
 
-	if (png_read_iend(f, data, size, type) != 0)
+	if (adv_png_read_iend(f, data, size, type) != 0)
 		goto err_data;
 
 	free(data);
@@ -517,7 +513,7 @@ static void mng_import(
  *   - == 1 end of the mng stream
  *   - < 0 error
  */
-adv_error mng_read(
+adv_error adv_mng_read(
 	adv_mng* mng,
 	unsigned* pix_width, unsigned* pix_height, unsigned* pix_pixel,
 	unsigned char** dat_ptr, unsigned* dat_size,
@@ -537,37 +533,37 @@ adv_error mng_read(
 	*tick = mng->frame_tick;
 
 	while (1) {
-		if (png_read_chunk(f, &data, &size, &type) != 0)
+		if (adv_png_read_chunk(f, &data, &size, &type) != 0)
 			goto err;
 
 		switch (type) {
-			case MNG_CN_DEFI :
+			case ADV_MNG_CN_DEFI :
 				if (mng_read_defi(mng, data, size) != 0)
 					goto err_data;
 				free(data);
 				break;
-			case MNG_CN_MOVE :
+			case ADV_MNG_CN_MOVE :
 				if (mng_read_move(mng, f, data, size) != 0)
 					goto err_data;
 				free(data);
 				break;
-			case PNG_CN_IHDR :
+			case ADV_PNG_CN_IHDR :
 				if (mng_read_ihdr(mng, f, data, size) != 0)
 					goto err_data;
 				free(data);
 				mng_import(mng, pix_width, pix_height, pix_pixel, dat_ptr, dat_size, pix_ptr, pix_scanline, pal_ptr, pal_size);
 				return 0;
-			case MNG_CN_DHDR :
+			case ADV_MNG_CN_DHDR :
 				if (mng_read_delta(mng, f, data, size) != 0)
 					goto err_data;
 				free(data);
 				mng_import(mng, pix_width, pix_height, pix_pixel, dat_ptr, dat_size, pix_ptr, pix_scanline, pal_ptr, pal_size);
 				return 0;
-			case MNG_CN_MEND :
+			case ADV_MNG_CN_MEND :
 				mng->end_flag = 1;
 				free(data);
 				return 1;
-			case MNG_CN_FRAM :
+			case ADV_MNG_CN_FRAM :
 				if (size > 1) {
 					unsigned i = 1;
 					while (i < size && data[i])
@@ -584,15 +580,15 @@ adv_error mng_read(
 				}
 				free(data);
 				break;
-			case MNG_CN_BACK :
+			case ADV_MNG_CN_BACK :
 				/* ignored OUTOFSPEC */
 				free(data);
 				break;
-			case MNG_CN_LOOP :
-			case MNG_CN_ENDL :
-			case MNG_CN_SAVE :
-			case MNG_CN_SEEK :
-			case MNG_CN_TERM :
+			case ADV_MNG_CN_LOOP :
+			case ADV_MNG_CN_ENDL :
+			case ADV_MNG_CN_SAVE :
+			case ADV_MNG_CN_SEEK :
+			case ADV_MNG_CN_TERM :
 				/* ignored */
 				free(data);
 				break;
@@ -625,7 +621,7 @@ err:
  * \param f File to read.
  * \return Return the MNG context. It must be destroied calling mng_done(). On error return 0.
  */
-adv_mng* mng_init(adv_fz* f)
+adv_mng* adv_mng_init(adv_fz* f)
 {
 	adv_mng* mng;
 
@@ -652,13 +648,13 @@ adv_mng* mng_init(adv_fz* f)
 	mng->dlt_line = 0;
 	mng->pal_size = 0;
 
-	if (mng_read_signature(f) != 0)
+	if (adv_mng_read_signature(f) != 0)
 		goto err_mng;
 
-	if (png_read_chunk(f, &data, &size, &type) != 0)
+	if (adv_png_read_chunk(f, &data, &size, &type) != 0)
 		goto err_mng;
 
-	if (type != MNG_CN_MHDR) {
+	if (type != ADV_MNG_CN_MHDR) {
 		error_set("Missing MHDR chunk\n");
 		goto err_data;
 	}
@@ -692,7 +688,7 @@ err:
  * Destory a MNG context.
  * \param mng MNG context previously returned by mng_init().
  */
-void mng_done(adv_mng* mng)
+void adv_mng_done(adv_mng* mng)
 {
 	free(mng->dat_ptr);
 	free(mng->dlt_ptr);
@@ -705,7 +701,7 @@ void mng_done(adv_mng* mng)
  * \param mng MNG context.
  * \return Frequency in Hz.
  */
-unsigned mng_frequency_get(adv_mng* mng)
+unsigned adv_mng_frequency_get(adv_mng* mng)
 {
 	return mng->frame_frequency;
 }
@@ -715,7 +711,7 @@ unsigned mng_frequency_get(adv_mng* mng)
  * \param mng MNG context.
  * \return Width in pixel.
  */
-unsigned mng_width_get(adv_mng* mng)
+unsigned adv_mng_width_get(adv_mng* mng)
 {
 	return mng->frame_width;
 }
@@ -725,12 +721,12 @@ unsigned mng_width_get(adv_mng* mng)
  * \param mng MNG context.
  * \return height in pixel.
  */
-unsigned mng_height_get(adv_mng* mng)
+unsigned adv_mng_height_get(adv_mng* mng)
 {
 	return mng->frame_height;
 }
 
-adv_error mng_write_mhdr(
+adv_error adv_mng_write_mhdr(
 	unsigned pix_width, unsigned pix_height,
 	unsigned frequency, adv_bool is_lc,
 	adv_fz* f, unsigned* count
@@ -749,21 +745,21 @@ adv_error mng_write_mhdr(
 	be_uint32_write(mhdr + 8, frequency);
 	be_uint32_write(mhdr + 24, simplicity);
 
-	if (png_write_chunk(f, MNG_CN_MHDR, mhdr, 28, count)!=0)
+	if (adv_png_write_chunk(f, ADV_MNG_CN_MHDR, mhdr, 28, count)!=0)
 		return -1;
 
 	return 0;
 }
 
-adv_error mng_write_mend(adv_fz* f, unsigned* count)
+adv_error adv_mng_write_mend(adv_fz* f, unsigned* count)
 {
-	if (png_write_chunk(f, MNG_CN_MEND, 0, 0, count)!=0)
+	if (adv_png_write_chunk(f, ADV_MNG_CN_MEND, 0, 0, count)!=0)
 		return -1;
 
 	return 0;
 }
 
-adv_error mng_write_fram(unsigned tick, adv_fz* f, unsigned* count)
+adv_error adv_mng_write_fram(unsigned tick, adv_fz* f, unsigned* count)
 {
 	uint8 fram[10];
 	unsigned fi;
@@ -780,7 +776,7 @@ adv_error mng_write_fram(unsigned tick, adv_fz* f, unsigned* count)
 	fram[5] = 0; /* No sync id change */
 	be_uint32_write(fram+6, fi); /* Delay in tick */
 
-	if (png_write_chunk(f, MNG_CN_FRAM, fram, 10, count)!=0)
+	if (adv_png_write_chunk(f, ADV_MNG_CN_FRAM, fram, 10, count)!=0)
 		return -1;
 
 	return 0;

@@ -234,14 +234,14 @@ void read_idat(adv_fz* f, unsigned char*& data, unsigned& size, unsigned& type, 
 	z.next_in = data;
 	z.avail_in = size;
 
-	if (png_read_chunk(f, &next_data, &next_size, &next_type) != 0) {
+	if (adv_png_read_chunk(f, &next_data, &next_size, &next_type) != 0) {
 		throw error_png();
 	}
 
 	r = inflateInit(&z);
 
-	while (r == Z_OK && (next_type == PNG_CN_IDAT || z.avail_in != 0 || z.avail_out == 0)) {
-		if (z.avail_in == 0 && next_type == PNG_CN_IDAT) {
+	while (r == Z_OK && (next_type == ADV_PNG_CN_IDAT || z.avail_in != 0 || z.avail_out == 0)) {
+		if (z.avail_in == 0 && next_type == ADV_PNG_CN_IDAT) {
 			free(data);
 
 			data = next_data;
@@ -249,7 +249,7 @@ void read_idat(adv_fz* f, unsigned char*& data, unsigned& size, unsigned& type, 
 			z.next_in = data;
 			z.avail_in = size;
 
-			if (png_read_chunk(f, &next_data, &next_size, &next_type) != 0) {
+			if (adv_png_read_chunk(f, &next_data, &next_size, &next_type) != 0) {
 				inflateEnd(&z);
 				throw error_png();
 			}
@@ -322,11 +322,11 @@ void convert_dat(adv_fz* f_in, adv_fz* f_out, unsigned end)
 	unsigned size;
 
 	while (1) {
-		if (png_read_chunk(f_in, &data, &size, &type) != 0) {
+		if (adv_png_read_chunk(f_in, &data, &size, &type) != 0) {
 			throw error_png();
 		}
 
-		if (type == PNG_CN_IDAT) {
+		if (type == ADV_PNG_CN_IDAT) {
 			unsigned char* res_data;
 			unsigned res_size;
 
@@ -341,7 +341,7 @@ void convert_dat(adv_fz* f_in, adv_fz* f_out, unsigned end)
 
 			data_free(res_data);
 
-			if (png_write_chunk(f_out, PNG_CN_IDAT, cmp_data, cmp_size, 0) != 0) {
+			if (adv_png_write_chunk(f_out, ADV_PNG_CN_IDAT, cmp_data, cmp_size, 0) != 0) {
 				throw error_png();
 			}
 
@@ -349,7 +349,7 @@ void convert_dat(adv_fz* f_in, adv_fz* f_out, unsigned end)
 
 		}
 
-		if (png_write_chunk(f_out, type, data, size, 0) != 0) {
+		if (adv_png_write_chunk(f_out, type, data, size, 0) != 0) {
 			throw error_png();
 		}
 
@@ -362,28 +362,28 @@ void convert_dat(adv_fz* f_in, adv_fz* f_out, unsigned end)
 
 void convert_png(adv_fz* f_in, adv_fz* f_out)
 {
-	if (png_read_signature(f_in) != 0) {
+	if (adv_png_read_signature(f_in) != 0) {
 		throw error_png();
 	}
 
-	if (png_write_signature(f_out, 0) != 0) {
+	if (adv_png_write_signature(f_out, 0) != 0) {
 		throw error_png();
 	}
 
-	convert_dat(f_in, f_out, PNG_CN_IEND);
+	convert_dat(f_in, f_out, ADV_PNG_CN_IEND);
 }
 
 void convert_mng(adv_fz* f_in, adv_fz* f_out)
 {
-	if (mng_read_signature(f_in) != 0) {
+	if (adv_mng_read_signature(f_in) != 0) {
 		throw error_png();
 	}
 
-	if (mng_write_signature(f_out, 0) != 0) {
+	if (adv_mng_write_signature(f_out, 0) != 0) {
 		throw error_png();
 	}
 
-	convert_dat(f_in, f_out, MNG_CN_MEND);
+	convert_dat(f_in, f_out, ADV_MNG_CN_MEND);
 }
 
 // --------------------------------------------------------------------------
@@ -427,7 +427,15 @@ void convert_gz(adv_fz* f_in, adv_fz* f_out)
 		copy_data(f_in, f_out, 2);
 	}
 
-	unsigned size = fzsize(f_in) - fztell(f_in);
+	long size = fzsize(f_in);
+	if (size < 0) {
+		throw error(true) << "Error reading";
+	}
+	long pos = fztell(f_in);
+	if (pos < 0) {
+		throw error(true) << "Error reading";
+	}
+	size -= pos;
 	if (size < 8) {
 		throw error(true) << "Invalid file format";
 	}
@@ -499,12 +507,12 @@ void convert_inplace(const string& path)
 	else
 		throw error() << "File type not supported";
 
-	f_in = fzopen(path.c_str(),"rb");
+	f_in = fzopen(path.c_str(), "rb");
 	if (!f_in) {
 		throw error() << "Failed open for reading " << path;
 	}
 
-	f_out = fzopen(path_dst.c_str(),"wb");
+	f_out = fzopen(path_dst.c_str(), "wb");
 	if (!f_out) {
 		fzclose(f_in);
 		throw error() << "Failed open for writing " << path_dst;

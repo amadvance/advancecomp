@@ -28,10 +28,6 @@
  * do so, delete this exception statement from your version.
  */
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include "portable.h"
 
 #include "snstring.h"
@@ -178,4 +174,44 @@ const char* stoken(char* c, int* p, char* s, const char* sep, const char* ignore
 	return s + begin;
 }
 
+/**
+ * Match a glob pattern to a string.
+ * \param s String to compare.
+ * \param glob Pattern to use. The glob chars * and ? are allowed. You can prefix
+ * these char with a backslash to prevent globbing expansion.
+ * \return If the pattern match.
+ */
+adv_bool sglob(const char* s, const char* glob)
+{
+	while (*s && *glob) {
+		if (*glob == '*') {
+			if (sglob(s, glob+1))
+				return 1;
+			++s;
+			continue;
+		}
+
+		if (*glob == '?') {
+			++glob;
+			++s;
+			continue;
+		}
+
+		if (glob[0] == '\\' && (glob[1] == '\\' || glob[1] == '*' || glob[1] == '?')) {
+			++glob;
+		}
+
+		if (*glob != *s) {
+			return 0;
+		}
+
+		++glob;
+		++s;
+	}
+
+	while (*glob == '*')
+		++glob;
+
+	return !*s && !*glob;
+}
 

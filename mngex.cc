@@ -149,7 +149,7 @@ void mng_write_header(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned widt
 	unsigned simplicity;
 	unsigned char mhdr[28];
 
-	if (mng_write_signature(f, fc) != 0) {
+	if (adv_mng_write_signature(f, fc) != 0) {
 		throw error_png();
 	}
 
@@ -187,7 +187,7 @@ void mng_write_header(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned widt
 	be_uint32_write(mhdr + 20, 0 ); /* nominal play time */
 	be_uint32_write(mhdr + 24, simplicity); /* simplicity profile */
 
-	if (png_write_chunk(f, MNG_CN_MHDR, mhdr, sizeof(mhdr), fc) != 0) {
+	if (adv_png_write_chunk(f, ADV_MNG_CN_MHDR, mhdr, sizeof(mhdr), fc) != 0) {
 		throw error_png();
 	}
 
@@ -323,7 +323,7 @@ static void mng_write_first(adv_mng_write* mng, adv_fz* f, unsigned* fc)
 			defi_size = 12;
 		} else
 			defi_size = 4;
-		if (png_write_chunk(f, MNG_CN_DEFI, defi, defi_size, fc) != 0) {
+		if (adv_png_write_chunk(f, ADV_MNG_CN_DEFI, defi, defi_size, fc) != 0) {
 			throw error_png();
 		}
 	}
@@ -341,23 +341,23 @@ static void mng_write_first(adv_mng_write* mng, adv_fz* f, unsigned* fc)
 	ihdr[11] = 0; /* filter */
 	ihdr[12] = 0; /* interlace */
 
-	if (png_write_chunk(f, PNG_CN_IHDR, ihdr, sizeof(ihdr), fc) != 0) {
+	if (adv_png_write_chunk(f, ADV_PNG_CN_IHDR, ihdr, sizeof(ihdr), fc) != 0) {
 		throw error_png();
 	}
 
 	if (mng->pal_size) {
-		if (png_write_chunk(f, PNG_CN_PLTE, mng->pal_ptr, mng->pal_size, fc) != 0) {
+		if (adv_png_write_chunk(f, ADV_PNG_CN_PLTE, mng->pal_ptr, mng->pal_size, fc) != 0) {
 			throw error_png();
 		}
 	}
 
 	png_compress(mng->level, z_ptr, z_size, mng->scroll_ptr, mng->line, mng->pixel, 0, 0, mng->width + mng->scroll_width, mng->height + mng->scroll_height);
 
-	if (png_write_chunk(f, PNG_CN_IDAT, z_ptr, z_size, fc) != 0) {
+	if (adv_png_write_chunk(f, ADV_PNG_CN_IDAT, z_ptr, z_size, fc) != 0) {
 		throw error_png();
 	}
 
-	if (png_write_chunk(f, PNG_CN_IEND, 0, 0, fc) != 0) {
+	if (adv_png_write_chunk(f, ADV_PNG_CN_IEND, 0, 0, fc) != 0) {
 		throw error_png();
 	}
 }
@@ -374,7 +374,7 @@ static void mng_write_move(adv_mng_write* mng, adv_fz* f, unsigned* fc, int shif
 		be_uint32_write(move + 5, - shift_x);
 		be_uint32_write(move + 9, - shift_y);
 
-		if (png_write_chunk(f, MNG_CN_MOVE, move, sizeof(move), fc)!=0) {
+		if (adv_png_write_chunk(f, ADV_MNG_CN_MOVE, move, sizeof(move), fc)!=0) {
 			throw error_png();
 		}
 	}
@@ -443,17 +443,17 @@ static void mng_write_delta_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, u
 	be_uint32_write(dhdr + 12, x + mng->current_x);
 	be_uint32_write(dhdr + 16, y + mng->current_y);
 
-	if (png_write_chunk(f, MNG_CN_DHDR, dhdr, dhdr_size, fc) != 0) {
+	if (adv_png_write_chunk(f, ADV_MNG_CN_DHDR, dhdr, dhdr_size, fc) != 0) {
 		throw error_png();
 	}
 
 	if (pal_d_size) {
 		if (pal_d_size < pal_r_size) {
-			if (png_write_chunk(f, MNG_CN_PPLT, pal_d_ptr, pal_d_size, fc) != 0) {
+			if (adv_png_write_chunk(f, ADV_MNG_CN_PPLT, pal_d_ptr, pal_d_size, fc) != 0) {
 				throw error_png();
 			}
 		} else {
-			if (png_write_chunk(f, PNG_CN_PLTE, pal_r_ptr, pal_r_size, fc) != 0) {
+			if (adv_png_write_chunk(f, ADV_PNG_CN_PLTE, pal_r_ptr, pal_r_size, fc) != 0) {
 				throw error_png();
 			}
 		}
@@ -461,17 +461,17 @@ static void mng_write_delta_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, u
 
 	if (z_d_size) {
 		if (z_d_size < z_r_size) {
-			if (png_write_chunk(f, PNG_CN_IDAT, z_d_ptr, z_d_size, fc) != 0) {
+			if (adv_png_write_chunk(f, ADV_PNG_CN_IDAT, z_d_ptr, z_d_size, fc) != 0) {
 				throw error_png();
 			}
 		} else {
-			if (png_write_chunk(f, PNG_CN_IDAT, z_r_ptr, z_r_size, fc) != 0) {
+			if (adv_png_write_chunk(f, ADV_PNG_CN_IDAT, z_r_ptr, z_r_size, fc) != 0) {
 				throw error_png();
 			}
 		}
 	}
 
-	if (png_write_chunk(f, PNG_CN_IEND, 0, 0, fc) != 0) {
+	if (adv_png_write_chunk(f, ADV_PNG_CN_IEND, 0, 0, fc) != 0) {
 		throw error_png();
 	}
 
@@ -509,21 +509,21 @@ static void mng_write_base_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, un
 	ihdr[12] = 0; /* interlace */
 	ihdr_size = 13;
 
-	if (png_write_chunk(f, PNG_CN_IHDR, ihdr, ihdr_size, fc) != 0) {
+	if (adv_png_write_chunk(f, ADV_PNG_CN_IHDR, ihdr, ihdr_size, fc) != 0) {
 		throw error_png();
 	}
 
 	if (pal_r_size) {
-		if (png_write_chunk(f, PNG_CN_PLTE, pal_r_ptr, pal_r_size, fc) != 0) {
+		if (adv_png_write_chunk(f, ADV_PNG_CN_PLTE, pal_r_ptr, pal_r_size, fc) != 0) {
 			throw error_png();
 		}
 	}
 
-	if (png_write_chunk(f, PNG_CN_IDAT, z_r_ptr, z_r_size, fc) != 0) {
+	if (adv_png_write_chunk(f, ADV_PNG_CN_IDAT, z_r_ptr, z_r_size, fc) != 0) {
 		throw error_png();
 	}
 
-	if (png_write_chunk(f, PNG_CN_IEND, 0, 0, fc) != 0) {
+	if (adv_png_write_chunk(f, ADV_PNG_CN_IEND, 0, 0, fc) != 0) {
 		throw error_png();
 	}
 
@@ -666,7 +666,7 @@ void mng_write_frame(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned tick)
 
 	mng->tick = tick;
 
-	if (png_write_chunk(f, MNG_CN_FRAM, fram, fram_size, fc) != 0) {
+	if (adv_png_write_chunk(f, ADV_MNG_CN_FRAM, fram, fram_size, fc) != 0) {
 		throw error_png();
 	}
 }
@@ -674,7 +674,7 @@ void mng_write_frame(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned tick)
 
 void mng_write_footer(adv_mng_write* mng, adv_fz* f, unsigned* fc)
 {
-	if (png_write_chunk(f, MNG_CN_MEND, 0, 0, fc) != 0) {
+	if (adv_png_write_chunk(f, ADV_MNG_CN_MEND, 0, 0, fc) != 0) {
 		throw error_png();
 	}
 }

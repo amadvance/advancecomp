@@ -128,7 +128,7 @@ void convert_f(adv_fz* f_in, adv_fz* f_out)
 	unsigned char* pix_ptr;
 	unsigned pix_scanline;
 
-	if (png_read_rns(
+	if (adv_png_read_rns(
 		&pix_width, &pix_height, &pix_pixel,
 		&dat_ptr, &dat_size,
 		&pix_ptr, &pix_scanline,
@@ -227,14 +227,14 @@ void png_print(const string& path)
 	}
 
 	try {
-		if (png_read_signature(f_in) != 0) {
+		if (adv_png_read_signature(f_in) != 0) {
 			throw error_png();
 		}
 
 		do {
 			unsigned char* data;
 
-			if (png_read_chunk(f_in, &data, &size, &type) != 0) {
+			if (adv_png_read_chunk(f_in, &data, &size, &type) != 0) {
 				throw error_png();
 			}
 
@@ -249,7 +249,7 @@ void png_print(const string& path)
 
 			free(data);
 
-		} while (type != PNG_CN_IEND);
+		} while (type != ADV_PNG_CN_IEND);
 	} catch (...) {
 		fzclose(f_in);
 		throw;

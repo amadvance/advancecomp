@@ -158,7 +158,7 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size) {
 	cout << tag << setw(8) << size;
 
 	switch (type) {
-		case MNG_CN_MHDR :
+		case ADV_MNG_CN_MHDR :
 			cout << " width:" << be_uint32_read(data+0) << " height:" << be_uint32_read(data+4) << " frequency:" << be_uint32_read(data+8);
 			cout << " simplicity:" << be_uint32_read(data+24);
 			cout << "(bit";
@@ -169,7 +169,7 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size) {
 			}
 			cout << ")";
 		break;
-		case MNG_CN_DHDR :
+		case ADV_MNG_CN_DHDR :
 			cout << " id:" << be_uint16_read(data+0);
 			switch (data[2]) {
 				case 0 : cout << " img:unspecified"; break;
@@ -195,7 +195,7 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size) {
 				cout << " x:" << (int)be_uint32_read(data + 12) << " y:" << (int)be_uint32_read(data + 16);
 			}
 		break;
-		case MNG_CN_FRAM :
+		case ADV_MNG_CN_FRAM :
 			if (size >= 1) {
 				cout << " mode:" << (unsigned)data[0];
 			}
@@ -238,7 +238,7 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size) {
 				}
 			}
 			break;
-		case MNG_CN_DEFI :
+		case ADV_MNG_CN_DEFI :
 			cout << " id:" << be_uint16_read(data+0);
 			if (size >= 3) {
 				switch (data[2]) {
@@ -261,7 +261,7 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size) {
 				cout << " left:" << be_uint32_read(data + 12) << " right:" << be_uint32_read(data + 16) << " top:" << be_uint32_read(data + 20) << " bottom:" << be_uint32_read(data + 24);
 			}
 		break;
-		case MNG_CN_MOVE :
+		case ADV_MNG_CN_MOVE :
 			cout << " id_from:" << be_uint16_read(data+0) << " id_to:" << be_uint16_read(data+2);
 			switch (data[4]) {
 				case 0 : cout << " type:replace"; break;
@@ -270,7 +270,7 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size) {
 			}
 			cout << " x:" << (int)be_uint32_read(data + 5) << " y:" << (int)be_uint32_read(data + 9);
 			break;
-		case MNG_CN_PPLT :
+		case ADV_MNG_CN_PPLT :
 			switch (data[0]) {
 				case 0 : cout << " type:replacement_rgb"; break;
 				case 1 : cout << " type:delta_rgb"; break;
@@ -293,7 +293,7 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size) {
 				i += 2 + (data[i+1] - data[i] + 1) * ssize;
 			}
 			break;
-		case PNG_CN_IHDR :
+		case ADV_PNG_CN_IHDR :
 			cout << " width:" << be_uint32_read(data) << " height:" << be_uint32_read(data + 4);
 			cout << " depth:" << (unsigned)data[8];
 			cout << " color_type:" << (unsigned)data[9];
@@ -311,7 +311,7 @@ void png_write(adv_fz* f, unsigned pix_width, unsigned pix_height, unsigned pix_
 	data_ptr z_ptr;
 	unsigned z_size;
 
-	if (png_write_signature(f, 0) != 0) {
+	if (adv_png_write_signature(f, 0) != 0) {
 		throw error_png();
 	}
 
@@ -331,29 +331,29 @@ void png_write(adv_fz* f, unsigned pix_width, unsigned pix_height, unsigned pix_
 	ihdr[11] = 0; /* filter */
 	ihdr[12] = 0; /* interlace */
 
-	if (png_write_chunk(f, PNG_CN_IHDR, ihdr, sizeof(ihdr), 0) != 0) {
+	if (adv_png_write_chunk(f, ADV_PNG_CN_IHDR, ihdr, sizeof(ihdr), 0) != 0) {
 		throw error_png();
 	}
 
 	if (pal_size) {
-		if (png_write_chunk(f, PNG_CN_PLTE, pal_ptr, pal_size, 0) != 0) {
+		if (adv_png_write_chunk(f, ADV_PNG_CN_PLTE, pal_ptr, pal_size, 0) != 0) {
 			throw error_png();
 		}
 	}
 
 	if (rns_size) {
-		if (png_write_chunk(f, PNG_CN_tRNS, rns_ptr, rns_size, 0) != 0) {
+		if (adv_png_write_chunk(f, ADV_PNG_CN_tRNS, rns_ptr, rns_size, 0) != 0) {
 			throw error_png();
 		}
 	}
 
 	png_compress(level, z_ptr, z_size, pix_ptr, pix_scanline, pix_pixel, 0, 0, pix_width, pix_height);
 
-	if (png_write_chunk(f, PNG_CN_IDAT, z_ptr, z_size, 0) != 0) {
+	if (adv_png_write_chunk(f, ADV_PNG_CN_IDAT, z_ptr, z_size, 0) != 0) {
 		throw error_png();
 	}
 
-	if (png_write_chunk(f, PNG_CN_IEND, 0, 0, 0) != 0) {
+	if (adv_png_write_chunk(f, ADV_PNG_CN_IEND, 0, 0, 0) != 0) {
 		throw error_png();
 	}
 }

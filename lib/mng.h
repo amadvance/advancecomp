@@ -31,27 +31,27 @@
 extern "C" {
 #endif
 
-/** \name MNG_CHUNK */
+/** \name ADV_MNG_CHUNK */
 /*@{*/
-#define MNG_CN_DHDR 0x44484452
-#define MNG_CN_MHDR 0x4D484452
-#define MNG_CN_MEND 0x4D454E44
-#define MNG_CN_DEFI 0x44454649
-#define MNG_CN_PPLT 0x50504c54
-#define MNG_CN_MOVE 0x4d4f5645
-#define MNG_CN_TERM 0x5445524d
-#define MNG_CN_SAVE 0x53415645
-#define MNG_CN_SEEK 0x5345454b
-#define MNG_CN_LOOP 0x4c4f4f50
-#define MNG_CN_ENDL 0x454e444c
-#define MNG_CN_BACK 0x4241434b
-#define MNG_CN_FRAM 0x4652414d
+#define ADV_MNG_CN_DHDR 0x44484452
+#define ADV_MNG_CN_MHDR 0x4D484452
+#define ADV_MNG_CN_MEND 0x4D454E44
+#define ADV_MNG_CN_DEFI 0x44454649
+#define ADV_MNG_CN_PPLT 0x50504c54
+#define ADV_MNG_CN_MOVE 0x4d4f5645
+#define ADV_MNG_CN_TERM 0x5445524d
+#define ADV_MNG_CN_SAVE 0x53415645
+#define ADV_MNG_CN_SEEK 0x5345454b
+#define ADV_MNG_CN_LOOP 0x4c4f4f50
+#define ADV_MNG_CN_ENDL 0x454e444c
+#define ADV_MNG_CN_BACK 0x4241434b
+#define ADV_MNG_CN_FRAM 0x4652414d
 /*@}*/
 
 /**
  * MNG context.
  */
-typedef struct mng_struct {
+typedef struct adv_mng_struct {
 	int end_flag; /**< End flag. */
 	unsigned pixel; /**< Bytes per pixel. */
 	unsigned char* dat_ptr; /**< Current image buffer. */
@@ -76,22 +76,22 @@ typedef struct mng_struct {
 	unsigned frame_height; /**< Frame height. */
 } adv_mng;
 
-adv_error mng_read_signature(adv_fz* f);
-adv_error mng_write_signature(adv_fz* f, unsigned* count);
-adv_error mng_write_mhdr(
+adv_error adv_mng_read_signature(adv_fz* f);
+adv_error adv_mng_write_signature(adv_fz* f, unsigned* count);
+adv_error adv_mng_write_mhdr(
 	unsigned pix_width, unsigned pix_height,
 	unsigned frequency, adv_bool is_lc,
 	adv_fz* f, unsigned* count
 );
-adv_error mng_write_mend(adv_fz* f, unsigned* count);
-adv_error mng_write_fram(unsigned tick, adv_fz* f, unsigned* count);
+adv_error adv_mng_write_mend(adv_fz* f, unsigned* count);
+adv_error adv_mng_write_fram(unsigned tick, adv_fz* f, unsigned* count);
 
 /** \addtogroup VideoFile */
 /*@{*/
 
-adv_mng* mng_init(adv_fz* f);
-void mng_done(adv_mng* mng);
-adv_error mng_read(
+adv_mng* adv_mng_init(adv_fz* f);
+void adv_mng_done(adv_mng* mng);
+adv_error adv_mng_read(
 	adv_mng* mng,
 	unsigned* pix_width, unsigned* pix_height, unsigned* pix_pixel,
 	unsigned char** dat_ptr, unsigned* dat_size,
@@ -100,9 +100,9 @@ adv_error mng_read(
 	unsigned* tick,
 	adv_fz* f
 );
-unsigned mng_frequency_get(adv_mng* mng);
-unsigned mng_width_get(adv_mng* mng);
-unsigned mng_height_get(adv_mng* mng);
+unsigned adv_mng_frequency_get(adv_mng* mng);
+unsigned adv_mng_width_get(adv_mng* mng);
+unsigned adv_mng_height_get(adv_mng* mng);
 
 /*@}*/
 

@@ -34,23 +34,23 @@ extern "C" {
 
 /** \name PNG_CHUNK */
 /*@{*/
-#define PNG_CN_IHDR 0x49484452
-#define PNG_CN_PLTE 0x504C5445
-#define PNG_CN_IDAT 0x49444154
-#define PNG_CN_IEND 0x49454E44
-#define PNG_CN_tRNS 0x74524e53
+#define ADV_PNG_CN_IHDR 0x49484452
+#define ADV_PNG_CN_PLTE 0x504C5445
+#define ADV_PNG_CN_IDAT 0x49444154
+#define ADV_PNG_CN_IEND 0x49454E44
+#define ADV_PNG_CN_tRNS 0x74524e53
 /*@}*/
 
-adv_error png_read_chunk(adv_fz* f, unsigned char** data, unsigned* size, unsigned* type);
-adv_error png_write_chunk(adv_fz* f, unsigned type, const unsigned char* data, unsigned size, unsigned* count);
+adv_error adv_png_read_chunk(adv_fz* f, unsigned char** data, unsigned* size, unsigned* type);
+adv_error adv_png_write_chunk(adv_fz* f, unsigned type, const unsigned char* data, unsigned size, unsigned* count);
 
-adv_error png_read_signature(adv_fz* f);
-adv_error png_write_signature(adv_fz* f, unsigned* count);
+adv_error adv_png_read_signature(adv_fz* f);
+adv_error adv_png_write_signature(adv_fz* f, unsigned* count);
 
-adv_error png_read_iend(adv_fz* f, const unsigned char* data, unsigned data_size, unsigned type);
-adv_error png_write_iend(adv_fz* f, unsigned* count);
+adv_error adv_png_read_iend(adv_fz* f, const unsigned char* data, unsigned data_size, unsigned type);
+adv_error adv_png_write_iend(adv_fz* f, unsigned* count);
 
-adv_error png_read_ihdr(
+adv_error adv_png_read_ihdr(
 	unsigned* pix_width, unsigned* pix_height, unsigned* pix_pixel,
 	unsigned char** dat_ptr, unsigned* dat_size,
 	unsigned char** pix_ptr, unsigned* pix_scanline,
@@ -59,20 +59,20 @@ adv_error png_read_ihdr(
 	adv_fz* f, const unsigned char* data, unsigned data_size
 );
 
-adv_error png_write_ihdr(
+adv_error adv_png_write_ihdr(
 	unsigned pix_width, unsigned pix_height,
 	unsigned pix_depth, unsigned pix_type,
 	adv_fz* f, unsigned* count
 );
 
-adv_error png_write_idat(
+adv_error adv_png_write_idat(
 	unsigned pix_width, unsigned pix_height, unsigned pix_pixel,
 	const uint8* pix_ptr, int pix_pixel_pitch, int pix_scanline_pitch,
 	adv_bool fast,
 	adv_fz* f, unsigned* count
 );
 
-adv_error png_write_raw(
+adv_error adv_png_write_raw(
 	unsigned pix_width, unsigned pix_height, unsigned pix_pixel,
 	const unsigned char* pix_ptr, int pix_pixel_pitch, int pix_scanline_pitch,
 	const unsigned char* pal_ptr, unsigned pal_size,
@@ -81,17 +81,17 @@ adv_error png_write_raw(
 	adv_fz* f, unsigned* count
 );
 
-void png_expand_4(unsigned width, unsigned height, unsigned char* ptr);
-void png_expand_2(unsigned width, unsigned height, unsigned char* ptr);
-void png_expand_1(unsigned width, unsigned height, unsigned char* ptr);
-void png_unfilter_8(unsigned width, unsigned height, unsigned char* ptr, unsigned line);
-void png_unfilter_24(unsigned width, unsigned height, unsigned char* ptr, unsigned line);
-void png_unfilter_32(unsigned width, unsigned height, unsigned char* ptr, unsigned line);
+void adv_png_expand_4(unsigned width, unsigned height, unsigned char* ptr);
+void adv_png_expand_2(unsigned width, unsigned height, unsigned char* ptr);
+void adv_png_expand_1(unsigned width, unsigned height, unsigned char* ptr);
+void adv_png_unfilter_8(unsigned width, unsigned height, unsigned char* ptr, unsigned line);
+void adv_png_unfilter_24(unsigned width, unsigned height, unsigned char* ptr, unsigned line);
+void adv_png_unfilter_32(unsigned width, unsigned height, unsigned char* ptr, unsigned line);
 
 /** \addtogroup VideoFile */
 /*@{*/
 
-adv_error png_read(
+adv_error adv_png_read(
 	unsigned* pix_width, unsigned* pix_height, unsigned* pix_pixel,
 	unsigned char** dat_ptr, unsigned* dat_size,
 	unsigned char** pix_ptr, unsigned* pix_scanline,
@@ -99,7 +99,7 @@ adv_error png_read(
 	adv_fz* f
 );
 
-adv_error png_read_rns(
+adv_error adv_png_read_rns(
 	unsigned* pix_width, unsigned* pix_height, unsigned* pix_pixel,
 	unsigned char** dat_ptr, unsigned* dat_size,
 	unsigned char** pix_ptr, unsigned* pix_scanline,
@@ -108,7 +108,7 @@ adv_error png_read_rns(
 	adv_fz* f
 );
 
-adv_error png_write(
+adv_error adv_png_write(
 	unsigned pix_width, unsigned pix_height, unsigned pix_pixel,
 	const unsigned char* pix_ptr, int pix_pixel_pitch, int pix_scanline_pitch,
 	const unsigned char* pal_ptr, unsigned pal_size,
@@ -116,7 +116,7 @@ adv_error png_write(
 	adv_fz* f, unsigned* count
 );
 
-adv_error png_write_rns(
+adv_error adv_png_write_rns(
 	unsigned pix_width, unsigned pix_height, unsigned pix_pixel,
 	const unsigned char* pix_ptr, int pix_pixel_pitch, int pix_scanline_pitch,
 	const unsigned char* pal_ptr, unsigned pal_size,
