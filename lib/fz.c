@@ -132,13 +132,14 @@ adv_fz* fzopen(const char* file, const char* mode)
 	f->real_offset = 0;
 	f->real_size = -1; /* not used */
 
+	f->data = 0;
 	f->f = fopen(file, mode);
 	if (!f->f) {
 		free(f);
 		return 0;
 	}
 
-	if (stat(file, &st) != 0) {
+	if (fstat(fileno(f->f), &st) != 0) {
 		f->virtual_size = 0;
 	} else {
 		f->virtual_size = st.st_size;
@@ -164,6 +165,8 @@ adv_fz* fzopenzipuncompressed(const char* file, unsigned offset, unsigned size)
 	f->virtual_pos = -1; /* not used */
 	f->virtual_size = size;
 	f->real_size = -1; /* not used */
+
+	f->data = 0;
 	f->f = fopen(file, "rb");
 	if (!f->f) {
 		free(f);
@@ -247,6 +250,8 @@ adv_fz* fzopenzipcompressed(const char* file, unsigned offset, unsigned size_com
 	f->type = fz_file_compressed;
 	f->virtual_pos = 0;
 	f->virtual_size = size_uncompressed;
+
+	f->data = 0;
 	f->f = fopen(file, "rb");
 	if (!f->f) {
 		free(f);
@@ -258,7 +263,6 @@ adv_fz* fzopenzipcompressed(const char* file, unsigned offset, unsigned size_com
 		free(f);
 		return 0;
 	}
-
 	if (fread(buf, ZIP_LO_FIXED, 1, f->f)!=1) {
 		fclose(f->f);
 		free(f);
@@ -291,13 +295,14 @@ adv_fz* fzopenzipcompressed(const char* file, unsigned offset, unsigned size_com
  */
 adv_fz* fzopenmemory(const unsigned char* data, unsigned size)
 {
-	adv_fz* f = malloc(sizeof(struct fz_struct*));
+	adv_fz* f = malloc(sizeof(adv_fz));
 	f->type = fz_memory;
 	f->virtual_pos = 0;
 	f->virtual_size = size;
 	f->real_offset = -1; /* not used */
 	f->real_size = -1; /* not used */
 	f->data = data;
+	f->f = 0;
 	return f;
 }
 
@@ -510,3 +515,37 @@ adv_error fzseek(adv_fz* f, long offset, int mode)
 		}
 	}
 }
+
+adv_error le_uint8_fzread(adv_fz* f, unsigned* v)
+{
+	unsigned char p[1];
+
+	if (fzread(p, 1, 1, f) != 1)
+		return -1;
+	*v = le_uint8_read(p);
+
+	return 0;
+}
+
+adv_error le_uint16_fzread(adv_fz* f, unsigned* v)
+{
+	unsigned char p[2];
+
+	if (fzread(p, 2, 1, f) != 1)
+		return -1;
+	*v = le_uint16_read(p);
+
+	return 0;
+}
+
+adv_error le_uint32_fzread(adv_fz* f, unsigned* v)
+{
+	unsigned char p[4];
+
+	if (fzread(p, 4, 1, f) != 1)
+		return -1;
+	*v = le_uint32_read(p);
+
+	return 0;
+}
+

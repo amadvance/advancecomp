@@ -110,6 +110,8 @@ typedef unsigned short uint16; /**< Unsigned 16 bit integer. */
 typedef signed short int16; /**< Signed 16 bit integer. */
 typedef unsigned int uint32; /**< Unsigned 32 bit integer. */
 typedef signed int int32; /**< Signed 32 bit integer. */
+typedef unsigned long long int uint64; /**< Unsigned 64 bit integer. */
+typedef signed long long int int64; /**< Signed 64 bit integer. */
 
 /** \name Align
  * Alignment.

@@ -6,6 +6,7 @@ AdvanceCOMP Version 1.6 2003/05
 		from a .mng clip. Useful to compress it in an MPEG file.
 	) Fixed the support for zips with additional data descriptors.
 	) Updated with autoconf 2.57 and automake 1.7.4.
+	) Some fixes for the gcc 3.3 compiler.
 
 AdvanceCOMP Version 1.5 2003/01
 	) Splitted from AdvanceSCAN

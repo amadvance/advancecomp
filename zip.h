@@ -32,6 +32,7 @@
 
 #include <ctime>
 #include <cstdio>
+#include <cassert>
 
 // --------------------------------------------------------------------------
 // Zip format

@@ -5,6 +5,9 @@
 AdvanceCOMP contains recompression utilities for your .ZIP roms, .PNG
 snapshots and .MNG clips.
 
+It runs in Linux, Mac OS X, DOS, Windows and in all the other
+Unix like platforms.
+
 The official site of AdvanceCOMP is:
 
     http://advancemame.sourceforge.net

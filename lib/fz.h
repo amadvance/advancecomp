@@ -93,6 +93,9 @@ int fzgetc(adv_fz* f);
 adv_error fzungetc(int c, adv_fz* f);
 char* fzgets(char *s, int n, adv_fz* f);
 adv_error fzeof(adv_fz* f);
+adv_error le_uint8_fzread(adv_fz* f, unsigned* v);
+adv_error le_uint16_fzread(adv_fz* f, unsigned* v);
+adv_error le_uint32_fzread(adv_fz* f, unsigned* v);
 
 /*@}*/
 
