@@ -130,11 +130,6 @@ static adv_error mng_read_ihdr(adv_mng* mng, adv_fz* f, const unsigned char* ihd
 			goto err;
 		}
 	}
-	if (!mng->dlt_ptr) {
-		mng->dlt_line = mng->frame_width * mng->pixel + 1; /* +1 for the filter byte */
-		mng->dlt_size = mng->frame_height * mng->dlt_line;
-		mng->dlt_ptr = malloc(mng->dlt_size);
-	}
 
 	if (mng->pixel == 1) {
 		if (adv_png_read_chunk(f, &data, &size, &type) != 0)
@@ -337,9 +332,15 @@ static adv_error mng_read_delta(adv_mng* mng, adv_fz* f, unsigned char* dhdr, un
 		goto err;
 	}
 
-	if (!mng->dat_ptr || !mng->dlt_ptr) {
+	if (!mng->dat_ptr) {
 		error_set("Invalid delta context in DHDR chunk");
 		goto err;
+	}
+
+	if (!mng->dlt_ptr) {
+		mng->dlt_line = mng->frame_width * mng->pixel + 1; /* +1 for the filter byte */
+		mng->dlt_size = mng->frame_height * mng->dlt_line;
+		mng->dlt_ptr = malloc(mng->dlt_size);
 	}
 
 	if (dhdr_size >= 12) {
@@ -469,8 +470,8 @@ static void mng_import(
 	unsigned* pix_width, unsigned* pix_height, unsigned* pix_pixel,
 	unsigned char** dat_ptr, unsigned* dat_size,
 	unsigned char** pix_ptr, unsigned* pix_scanline,
-	unsigned char** pal_ptr, unsigned* pal_size
-)
+	unsigned char** pal_ptr, unsigned* pal_size,
+	adv_bool own)
 {
 	unsigned char* current_ptr = mng->dat_ptr + mng->dat_x * mng->pixel + mng->dat_y * mng->dat_line + 1;
 
@@ -487,41 +488,27 @@ static void mng_import(
 		*pal_size = 0;
 	}
 
-	*dat_ptr = 0;
-	*dat_size = 0;
+	if (own) {
+		*dat_ptr = mng->dat_ptr;
+		*dat_size = mng->dat_size;
+	} else {
+		*dat_ptr = 0;
+		*dat_size = 0;
+	}
 
 	*pix_ptr = current_ptr;
 	*pix_scanline = mng->dat_line;
 }
 
-/**
- * Read a MNG image.
- * \param mng MNG context previously returned by mng_init().
- * \param pix_width Where to put the image width.
- * \param pix_height Where to put the image height.
- * \param pix_pixel Where to put the image bytes per pixel.
- * \param dat_ptr Where to put the allocated data pointer.
- * \param dat_size Where to put the allocated data size.
- * \param pix_ptr Where to put pointer at the start of the image data.
- * \param pix_scanline Where to put the length of a scanline in bytes.
- * \param pal_ptr Where to put the allocated palette data pointer. Set to 0 if the image is RGB.
- * \param pal_size Where to put the palette size in number of colors. Set to 0 if the image is RGB.
- * \param tick Where to put the number of tick of the frame. The effective time can be computed dividing by mng_frequency_get().
- * \param f File to read. 
- * \return
- *   - == 0 ok
- *   - == 1 end of the mng stream
- *   - < 0 error
- */
-adv_error adv_mng_read(
+static adv_error mng_read(
 	adv_mng* mng,
 	unsigned* pix_width, unsigned* pix_height, unsigned* pix_pixel,
 	unsigned char** dat_ptr, unsigned* dat_size,
 	unsigned char** pix_ptr, unsigned* pix_scanline,
 	unsigned char** pal_ptr, unsigned* pal_size,
 	unsigned* tick,
-	adv_fz* f
-)
+	adv_fz* f,
+	adv_bool own)
 {
 	unsigned type;
 	unsigned char* data;
@@ -551,13 +538,13 @@ adv_error adv_mng_read(
 				if (mng_read_ihdr(mng, f, data, size) != 0)
 					goto err_data;
 				free(data);
-				mng_import(mng, pix_width, pix_height, pix_pixel, dat_ptr, dat_size, pix_ptr, pix_scanline, pal_ptr, pal_size);
+				mng_import(mng, pix_width, pix_height, pix_pixel, dat_ptr, dat_size, pix_ptr, pix_scanline, pal_ptr, pal_size, own);
 				return 0;
 			case ADV_MNG_CN_DHDR :
 				if (mng_read_delta(mng, f, data, size) != 0)
 					goto err_data;
 				free(data);
-				mng_import(mng, pix_width, pix_height, pix_pixel, dat_ptr, dat_size, pix_ptr, pix_scanline, pal_ptr, pal_size);
+				mng_import(mng, pix_width, pix_height, pix_pixel, dat_ptr, dat_size, pix_ptr, pix_scanline, pal_ptr, pal_size, own);
 				return 0;
 			case ADV_MNG_CN_MEND :
 				mng->end_flag = 1;
@@ -614,6 +601,70 @@ err_data:
 	free(data);
 err:
 	return -1;
+}
+
+/**
+ * Read a MNG image.
+ * This function returns always a null dat_ptr pointer because the
+ * referenced image is stored in the mng context.
+ * \param mng MNG context previously returned by mng_init().
+ * \param pix_width Where to put the image width.
+ * \param pix_height Where to put the image height.
+ * \param pix_pixel Where to put the image bytes per pixel.
+ * \param dat_ptr Where to put the allocated data pointer.
+ * \param dat_size Where to put the allocated data size.
+ * \param pix_ptr Where to put pointer at the start of the image data.
+ * \param pix_scanline Where to put the length of a scanline in bytes.
+ * \param pal_ptr Where to put the allocated palette data pointer. Set to 0 if the image is RGB.
+ * \param pal_size Where to put the palette size in number of colors. Set to 0 if the image is RGB.
+ * \param tick Where to put the number of tick of the frame. The effective time can be computed dividing by mng_frequency_get().
+ * \param f File to read. 
+ * \return
+ *   - == 0 ok
+ *   - == 1 end of the mng stream
+ *   - < 0 error
+ */
+adv_error adv_mng_read(
+	adv_mng* mng,
+	unsigned* pix_width, unsigned* pix_height, unsigned* pix_pixel,
+	unsigned char** dat_ptr, unsigned* dat_size,
+	unsigned char** pix_ptr, unsigned* pix_scanline,
+	unsigned char** pal_ptr, unsigned* pal_size,
+	unsigned* tick,
+	adv_fz* f)
+{
+	return mng_read(mng, pix_width, pix_height, pix_pixel,
+		dat_ptr, dat_size, pix_ptr, pix_scanline,
+		pal_ptr, pal_size, tick, f, 0);
+}
+
+/**
+ * Read a MNG image and implicitely call adv_mng_done().
+ * This function returns always a not null dat_ptr pointer.
+ * The mng context is always destroyed. Also if an error
+ * is returned.
+ */
+adv_error adv_mng_read_done(
+	adv_mng* mng,
+	unsigned* pix_width, unsigned* pix_height, unsigned* pix_pixel,
+	unsigned char** dat_ptr, unsigned* dat_size,
+	unsigned char** pix_ptr, unsigned* pix_scanline,
+	unsigned char** pal_ptr, unsigned* pal_size,
+	unsigned* tick,
+	adv_fz* f)
+{
+	adv_error r;
+
+	r = mng_read(mng, pix_width, pix_height, pix_pixel,
+		dat_ptr, dat_size, pix_ptr, pix_scanline,
+		pal_ptr, pal_size, tick, f, 1);
+
+	if (r != 0)
+		free(mng->dat_ptr);
+	free(mng->dlt_ptr);
+	free(mng);
+
+	return r;
 }
 
 /**
@@ -729,8 +780,8 @@ unsigned adv_mng_height_get(adv_mng* mng)
 adv_error adv_mng_write_mhdr(
 	unsigned pix_width, unsigned pix_height,
 	unsigned frequency, adv_bool is_lc,
-	adv_fz* f, unsigned* count
-) {
+	adv_fz* f, unsigned* count)
+{
 	uint8 mhdr[28];
 	unsigned simplicity;
 

@@ -584,8 +584,7 @@ adv_error adv_png_read_ihdr(
 	unsigned char** pix_ptr, unsigned* pix_scanline,
 	unsigned char** pal_ptr, unsigned* pal_size,
 	unsigned char** rns_ptr, unsigned* rns_size,
-	adv_fz* f, const unsigned char* data, unsigned data_size
-)
+	adv_fz* f, const unsigned char* data, unsigned data_size)
 {
 	unsigned char* ptr;
 	unsigned ptr_size;
@@ -827,8 +826,7 @@ adv_error adv_png_read_rns(
 	unsigned char** pix_ptr, unsigned* pix_scanline,
 	unsigned char** pal_ptr, unsigned* pal_size,
 	unsigned char** rns_ptr, unsigned* rns_size,
-	adv_fz* f
-)
+	adv_fz* f)
 {
 	unsigned char* data;
 	unsigned type;
@@ -883,8 +881,7 @@ adv_error adv_png_read(
 	unsigned char** dat_ptr, unsigned* dat_size,
 	unsigned char** pix_ptr, unsigned* pix_scanline,
 	unsigned char** pal_ptr, unsigned* pal_size,
-	adv_fz* f
-)
+	adv_fz* f)
 {
 	adv_error r;
 	unsigned char* rns_ptr;
@@ -906,8 +903,8 @@ adv_error adv_png_read(
 adv_error adv_png_write_ihdr(
 	unsigned pix_width, unsigned pix_height,
 	unsigned pix_depth, unsigned pix_type,
-	adv_fz* f, unsigned* count
-) {
+	adv_fz* f, unsigned* count)
+{
 	uint8 ihdr[13];
 
 	be_uint32_write(ihdr, pix_width);
@@ -942,8 +939,8 @@ adv_error adv_png_write_idat(
 	unsigned pix_width, unsigned pix_height, unsigned pix_pixel,
 	const uint8* pix_ptr, int pix_pixel_pitch, int pix_scanline_pitch,
 	adv_bool fast,
-	adv_fz* f, unsigned* count
-) {
+	adv_fz* f, unsigned* count)
+{
 	uint8* z_ptr;
 	uint8* r_ptr;
 	unsigned char filter;
@@ -1075,8 +1072,8 @@ adv_error adv_png_write_raw(
 	const unsigned char* pal_ptr, unsigned pal_size,
 	const unsigned char* rns_ptr, unsigned rns_size,
 	adv_bool fast,
-	adv_fz* f, unsigned* count
-) {
+	adv_fz* f, unsigned* count)
+{
 	unsigned color;
 	unsigned depth;
 
@@ -1148,8 +1145,8 @@ adv_error adv_png_write_rns(
 	const unsigned char* pal_ptr, unsigned pal_size,
 	const unsigned char* rns_ptr, unsigned rns_size,
 	adv_bool fast,
-	adv_fz* f, unsigned* count
-) {
+	adv_fz* f, unsigned* count)
+{
 	if (adv_png_write_signature(f, count) != 0) {
 		return -1;
 	}
@@ -1182,8 +1179,8 @@ adv_error adv_png_write(
 	const unsigned char* pix_ptr, int pix_pixel_pitch, int pix_scanline_pitch,
 	const unsigned char* pal_ptr, unsigned pal_size,
 	adv_bool fast,
-	adv_fz* f, unsigned* count
-) {
+	adv_fz* f, unsigned* count)
+{
 	if (adv_png_write_signature(f, count) != 0) {
 		return -1;
 	}

@@ -243,9 +243,9 @@ static inline void be_uint24_write(void* ptr, unsigned v)
 static inline void cpu_uint24_write(void* ptr, unsigned v)
 {
 #ifdef USE_LSB
-	le_uint24_write(ptr,v);
+	le_uint24_write(ptr, v);
 #else
-	be_uint24_write(ptr,v);
+	be_uint24_write(ptr, v);
 #endif
 }
 

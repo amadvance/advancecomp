@@ -37,8 +37,9 @@
 
 #include "extra.h"
 
-#include <stdio.h>
 #include <zlib.h>
+
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -107,5 +108,4 @@ adv_error le_uint32_fzread(adv_fz* f, unsigned* v);
 #endif
 
 #endif
-
 

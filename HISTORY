@@ -3,9 +3,10 @@
                             =======================
 
 
-1 ADVANCECOMP VERSION 1.12 2004/08
+1 ADVANCECOMP VERSION 1.12 2004/09
 ==================================
 
+* Fixed a compilation problem with gcc 3.4.
 
 
 2 ADVANCECOMP VERSION 1.11 2004/07

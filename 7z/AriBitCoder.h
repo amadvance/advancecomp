@@ -51,13 +51,13 @@ class CBitEncoder: public CBitModel<aNumMoveBits>
 public:
   void Encode(CRangeEncoder *aRangeEncoder, UINT32 aSymbol)
   {
-    aRangeEncoder->EncodeBit(m_Probability, kNumBitModelTotalBits, aSymbol);
-    UpdateModel(aSymbol);
+    aRangeEncoder->EncodeBit(CBitModel<aNumMoveBits>::m_Probability, kNumBitModelTotalBits, aSymbol);
+    CBitModel<aNumMoveBits>::UpdateModel(aSymbol);
   }
   UINT32 GetPrice(UINT32 aSymbol) const
   {
     return g_PriceTables.m_StatePrices[
-      (((m_Probability - aSymbol) ^ ((-(int)aSymbol))) & (kBitModelTotal - 1)) >> kNumMoveReducingBits];
+      (((CBitModel<aNumMoveBits>::m_Probability - aSymbol) ^ ((-(int)aSymbol))) & (kBitModelTotal - 1)) >> kNumMoveReducingBits];
   }
 };
 
@@ -68,11 +68,11 @@ class CBitDecoder: public CBitModel<aNumMoveBits>
 public:
   UINT32 Decode(CRangeDecoder *aRangeDecoder)
   {
-    UINT32 aNewBound = (aRangeDecoder->m_Range >> kNumBitModelTotalBits) * m_Probability;
+    UINT32 aNewBound = (aRangeDecoder->m_Range >> kNumBitModelTotalBits) * CBitModel<aNumMoveBits>::m_Probability;
     if (aRangeDecoder->m_Code < aNewBound)
     {
       aRangeDecoder->m_Range = aNewBound;
-      m_Probability += (kBitModelTotal - m_Probability) >> aNumMoveBits;
+      CBitModel<aNumMoveBits>::m_Probability += (kBitModelTotal - CBitModel<aNumMoveBits>::m_Probability) >> aNumMoveBits;
       if (aRangeDecoder->m_Range < kTopValue)
       {
         aRangeDecoder->m_Code = (aRangeDecoder->m_Code << 8) | aRangeDecoder->m_Stream.ReadByte();
@@ -84,7 +84,7 @@ public:
     {
       aRangeDecoder->m_Range -= aNewBound;
       aRangeDecoder->m_Code -= aNewBound;
-      m_Probability -= (m_Probability) >> aNumMoveBits;
+      CBitModel<aNumMoveBits>::m_Probability -= (CBitModel<aNumMoveBits>::m_Probability) >> aNumMoveBits;
       if (aRangeDecoder->m_Range < kTopValue)
       {
         aRangeDecoder->m_Code = (aRangeDecoder->m_Code << 8) | aRangeDecoder->m_Stream.ReadByte();

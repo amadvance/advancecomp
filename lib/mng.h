@@ -100,6 +100,15 @@ adv_error adv_mng_read(
 	unsigned* tick,
 	adv_fz* f
 );
+adv_error adv_mng_read_done(
+	adv_mng* mng,
+	unsigned* pix_width, unsigned* pix_height, unsigned* pix_pixel,
+	unsigned char** dat_ptr, unsigned* dat_size,
+	unsigned char** pix_ptr, unsigned* pix_scanline,
+	unsigned char** pal_ptr, unsigned* pal_size,
+	unsigned* tick,
+	adv_fz* f
+);
 unsigned adv_mng_frequency_get(adv_mng* mng);
 unsigned adv_mng_width_get(adv_mng* mng);
 unsigned adv_mng_height_get(adv_mng* mng);
