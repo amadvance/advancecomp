@@ -23,10 +23,10 @@
 #include "scroll.h"
 #include "data.h"
 
-#if defined(__i386__)
+#if defined(__GNUC__) && defined(__i386__)
 #define USE_MMX
-// USE_OPTC
 #endif
+// #define USE_OPTC
 
 static unsigned compare_line(unsigned width, unsigned height, unsigned char* p0, unsigned char* p1, unsigned line)
 {

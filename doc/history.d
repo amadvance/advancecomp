@@ -3,6 +3,7 @@ Name
 
 AdvanceCOMP Version 1.13 2004/10
 	) Added support for .svgz files at advdef [rener].
+	) Fixed the 8 bit color reduction of 32 bit png files.
 
 AdvanceCOMP Version 1.12 2004/09
 	) Fixed a compilation problem with gcc 3.4.

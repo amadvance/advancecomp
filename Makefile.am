@@ -151,7 +151,8 @@ EXTRA_DIST = \
 	test/basn3p02.png \
 	test/basn3p04.png \
 	test/basn3p08.png \
-	test/basn6a08.png
+	test/basn6a08.png \
+	test/basn6a04.png
 
 noinst_HEADERS = \
 	snprintf.c \
@@ -217,7 +218,7 @@ man_MANS = doc/advdef.1 doc/advzip.1 doc/advpng.1 doc/advmng.1
 
 clean-local:
 	rm -f check.lst check.zip mappy.mng mappy.png
-	rm -f basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png
+	rm -f basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png
 	rm -f advdef.exe advzip.exe advpng.exe advmng.exe
 	rm -f mappy*.png
 
@@ -294,9 +295,9 @@ check-local: advzip test/test.lst
 	@cp $(srcdir)/test/mappy.png .
 	@./advpng -f -z mappy.png
 	@./advpng -L mappy.png >> check.lst
-	@cp $(srcdir)/test/basn2c08.png $(srcdir)/test/basn3p01.png $(srcdir)/test/basn3p02.png $(srcdir)/test/basn3p04.png $(srcdir)/test/basn3p08.png $(srcdir)/test/basn6a08.png .
-	@./advpng -f -z basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png
-	@./advpng -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png >> check.lst
+	@cp $(srcdir)/test/basn2c08.png $(srcdir)/test/basn3p01.png $(srcdir)/test/basn3p02.png $(srcdir)/test/basn3p04.png $(srcdir)/test/basn3p08.png $(srcdir)/test/basn6a08.png $(srcdir)/test/basn6a04.png .
+	@./advpng -f -z basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png
+	@./advpng -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png >> check.lst
 	@cmp check.lst $(srcdir)/test/test.lst
 	@echo Success!
 

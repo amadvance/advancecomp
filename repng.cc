@@ -94,6 +94,7 @@ void write_image(adv_fz* f, unsigned pix_width, unsigned pix_height, unsigned pi
 
 		try {
 			if (rns_size == 0
+				&& pix_pixel == 3
 				&& reduce_image(&new_ptr, &new_scanline, ovr_ptr, &ovr_count, pix_width, pix_height, pix_ptr, pix_scanline)) {
 				png_write(f, pix_width, pix_height, 1, new_ptr, new_scanline, ovr_ptr, ovr_count * 3, 0, 0, opt_level);
 			} else {
