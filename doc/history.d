@@ -1,7 +1,7 @@
 Name
 	advcomp - History For AdvanceCOMP
 
-AdvanceCOMP Version 1.13 2004/10
+AdvanceCOMP Version 1.13 2004/11
 	) Added support for .svgz files at advdef [rener].
 	) Fixed the 8 bit color reduction of 32 bit png files.
 
