@@ -32,11 +32,12 @@
 
 using namespace std;
 
-static bool mng_write_reduce(adv_mng_write* mng, data_ptr& out_ptr, unsigned& out_scanline, unsigned char* ovr_ptr, unsigned* ovr_used, unsigned char* img_ptr, unsigned img_scanline)
+static bool mng_write_reduce(adv_mng_write* mng, data_ptr& out_ptr, unsigned& out_scanline, unsigned char* ovr_ptr, unsigned char* img_ptr, unsigned img_scanline)
 {
 	unsigned char col_ptr[256*3];
 	unsigned col_mapped[256];
 	unsigned col_count;
+	adv_bool ovr_used[256];
 	unsigned i,j,k;
 	unsigned char* new_ptr;
 	unsigned new_scanline;
@@ -66,6 +67,8 @@ static bool mng_write_reduce(adv_mng_write* mng, data_ptr& out_ptr, unsigned& ou
 		ovr_used[i] = 0;
 		col_mapped[i] = 0;
 	}
+
+	/* start from the last valid palette */
 	memcpy(ovr_ptr, mng->pal_ptr, 256*3);
 
 	/* map colors already present in the old palette */
@@ -94,7 +97,7 @@ static bool mng_write_reduce(adv_mng_write* mng, data_ptr& out_ptr, unsigned& ou
 		}
 	}
 
-	/* create the new bitmap */
+	// create the new bitmap
 	new_scanline = mng->width;
 	new_ptr = data_alloc(mng->height * new_scanline);
 	for(i=0;i<mng->height;++i) {
@@ -143,7 +146,7 @@ static void mng_write_expand(adv_mng_write* mng, data_ptr& out_ptr, unsigned& ou
 	out_scanline = new_scanline;
 }
 
-void mng_write_header(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned width, unsigned height, unsigned frequency, int scroll_x, int scroll_y, unsigned scroll_width, unsigned scroll_height)
+void mng_write_header(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned width, unsigned height, unsigned frequency, int scroll_x, int scroll_y, unsigned scroll_width, unsigned scroll_height, adv_bool alpha)
 {
 	unsigned simplicity;
 	unsigned char mhdr[28];
@@ -171,6 +174,11 @@ void mng_write_header(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned widt
 			| (1 << 6) /* Enable flags */
 			| (1 << 9); /* Object buffers must be stored */
 		break;
+	}
+
+	if (alpha) {
+		simplicity |= (1 << 3) /* Internal transparency */
+			| (1 << 8); /* Semi-transparency */
 	}
 
 	be_uint32_write(mhdr + 0, width); /* width */
@@ -203,7 +211,8 @@ void mng_write_header(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned widt
 
 	mng->tick = 1;
 
-	mng->has_header = 1;
+	mng->header_written = 1;
+	mng->header_simplicity = simplicity;
 }
 
 static bool row_equal(adv_mng_write* mng, unsigned y, unsigned char* img_ptr, unsigned img_scanline)
@@ -232,13 +241,22 @@ static bool col_equal(adv_mng_write* mng, unsigned x, unsigned char* img_ptr, un
 			p0 += mng->line;
 			p1 += img_scanline;
 		}
-	} else {
+	} else if (mng->pixel == 3) {
 		for(i=0;i<mng->height;++i) {
 			if (p0[0] != p1[0] || p0[1] != p1[1] || p0[2] != p1[2])
 				return false;
 			p0 += mng->line;
 			p1 += img_scanline;
 		}
+	} else if (mng->pixel == 4) {
+		for(i=0;i<mng->height;++i) {
+			if (p0[0] != p1[0] || p0[1] != p1[1] || p0[2] != p1[2] || p0[3] != p1[3])
+				return false;
+			p0 += mng->line;
+			p1 += img_scanline;
+		}
+	} else {
+		throw error() << "Unsupported bit depth";
 	}
 
 	return true;
@@ -285,7 +303,7 @@ static void mng_write_store(adv_mng_write* mng, unsigned char* img_ptr, unsigned
 	}
 
 	for(i=0;i<mng->height;++i) {
-		memcpy( &mng->current_ptr[i * mng->line], &img_ptr[i * img_scanline], mng->width * mng->pixel);
+		memcpy(&mng->current_ptr[i * mng->line], &img_ptr[i * img_scanline], mng->width * mng->pixel);
 	}
 }
 
@@ -317,8 +335,10 @@ static void mng_write_first(adv_mng_write* mng, adv_fz* f, unsigned* fc)
 	ihdr[8] = 8; /* bit depth */
 	if (mng->pixel == 1)
 		ihdr[9] = 3; /* color type */
-	else 
+	else if (mng->pixel == 3)
 		ihdr[9] = 2; /* color type */
+	else if (mng->pixel == 4)
+		ihdr[9] = 6; /* color type */
 	ihdr[10] = 0; /* compression */
 	ihdr[11] = 0; /* filter */
 	ihdr[12] = 0; /* interlace */
@@ -480,8 +500,12 @@ static void mng_write_base_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, un
 	ihdr[8] = 8; /* bit depth */
 	if (mng->pixel == 1)
 		ihdr[9] = 3; /* color type */
+	else if (mng->pixel == 3)
+		ihdr[9] = 3; /* color type */
+	else if (mng->pixel == 4)
+		ihdr[9] = 6; /* color type */
 	else
-		ihdr[9] = 2; /* color type */
+		throw error() << "Unsupported bit depth";
 	ihdr[10] = 0; /* compression */
 	ihdr[11] = 0; /* filter */
 	ihdr[12] = 0; /* interlace */
@@ -508,8 +532,12 @@ static void mng_write_base_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, un
 	mng_write_store(mng, img_ptr, img_scanline, pal_ptr, pal_size);
 }
 
-static void mng_write_image_raw(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned width, unsigned height, unsigned pixel, unsigned char* img_ptr, unsigned img_scanline, unsigned char* pal_ptr, unsigned pal_size, int shift_x, int shift_y)
+static void mng_write_image_setup(adv_mng_write* mng, adv_fz* f, unsigned width, unsigned height, unsigned pixel)
 {
+	if (!mng->header_written) {
+		throw error() << "You must write an header before the first image";
+	}
+
 	if (width != mng->width) {
 		throw error() << "Invalid width change";
 	}
@@ -519,28 +547,51 @@ static void mng_write_image_raw(adv_mng_write* mng, adv_fz* f, unsigned* fc, uns
 	}
 
 	if (mng->first) {
-		if (shift_x!=0 || shift_y!=0) {
-			throw error() << "Internal error";
+		switch (pixel) {
+		case 1 :
+			if (mng->expand)
+				mng->pixel = 3;
+			else
+				mng->pixel = 1;
+			break;
+		case 3 :
+			if (mng->reduce)
+				mng->pixel = 1;
+			else
+				mng->pixel = 3;
+			break;
+		default:
+			mng->pixel = pixel;
+			break;
 		}
 
-		mng->first = 0;
-		mng->pixel = pixel;
-		mng->line = pixel * (mng->width + mng->scroll_width);
+		mng->line = mng->pixel * (mng->width + mng->scroll_width);
 		mng->scroll_ptr = data_alloc( (mng->height + mng->scroll_height) * mng->line);
 		mng->current_ptr = mng->scroll_ptr + mng->scroll_x * mng->pixel + mng->scroll_y * mng->line;
 		mng->current_x = mng->scroll_x;
 		mng->current_y = mng->scroll_y;
 
 		memset(mng->scroll_ptr, 0, (mng->height + mng->scroll_height) * mng->line);
-		memset(mng->pal_ptr, 0, 256*3);
+		memset(mng->pal_ptr, 0, sizeof(mng->pal_ptr));
+	}
+}
+
+static void mng_write_image_raw(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned width, unsigned height, unsigned pixel, unsigned char* img_ptr, unsigned img_scanline, unsigned char* pal_ptr, unsigned pal_size, int shift_x, int shift_y)
+{
+	if (pixel != mng->pixel) {
+		throw error() << "Invalid bit depth change";
+	}
+
+	if (mng->first) {
+		mng->first = 0;
+
+		if (shift_x != 0 || shift_y != 0) {
+			throw error() << "Internal error";
+		}
 
 		mng_write_store(mng, img_ptr, img_scanline, pal_ptr, pal_size);
 		mng_write_first(mng, f, fc);
 	} else {
-		if (pixel != mng->pixel) {
-			throw error() << "Invalid bit depth change";
-		}
-
 		mng->current_ptr += shift_x * mng->pixel + shift_y * mng->line;
 		mng->current_x += shift_x;
 		mng->current_y += shift_y;
@@ -556,6 +607,8 @@ static void mng_write_image_raw(adv_mng_write* mng, adv_fz* f, unsigned* fc, uns
 
 void mng_write_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned width, unsigned height, unsigned pixel, unsigned char* img_ptr, unsigned img_scanline, unsigned char* pal_ptr, unsigned pal_size, int shift_x, int shift_y)
 {
+	mng_write_image_setup(mng, f, width, height, pixel);
+
 	if (pixel == 1) {
 		data_ptr new_ptr;
 		unsigned new_scanline;
@@ -567,49 +620,29 @@ void mng_write_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned width
 			mng_write_image_raw(mng, f, fc, width, height, 3, new_ptr, new_scanline, 0, 0, shift_x, shift_y);
 		}
 	} else if (pixel == 3) {
-		unsigned char ovr_ptr[256*3];
-		unsigned ovr_used[256];
-		data_ptr new_ptr;
-		unsigned new_scanline;
-
 		if (!mng->reduce) {
 			mng_write_image_raw(mng, f, fc, width, height, pixel, img_ptr, img_scanline, 0, 0, shift_x, shift_y);
 		} else {
-			if (mng->first || mng->pixel == 3) {
-				memset(mng->pal_used, 0, sizeof(mng->pal_used));
-				memset(mng->pal_ptr, 0, sizeof(mng->pal_ptr));
-			}
+			unsigned char ovr_ptr[256*3];
+			data_ptr new_ptr;
+			unsigned new_scanline;
 
-			if (!mng_write_reduce(mng, new_ptr, new_scanline, ovr_ptr, ovr_used, img_ptr, img_scanline)) {
+			if (!mng_write_reduce(mng, new_ptr, new_scanline, ovr_ptr, img_ptr, img_scanline)) {
 				throw error_ignore() << "Color reduction failed";
 			} else {
 				mng_write_image_raw(mng, f, fc, width, height, 1, new_ptr, new_scanline, ovr_ptr, 256*3, shift_x, shift_y);
 
-				memcpy(mng->pal_used, ovr_used, sizeof(mng->pal_used));
+				// update the last palette used
+				memcpy(mng->pal_ptr, ovr_ptr, sizeof(mng->pal_ptr));
 			}
 		}
 	} else if (pixel == 4) {
-		/* convert to 3 bytes per pixel */
-		unsigned dst_pixel = 3;
-		unsigned dst_scanline = 3 * width;
-		data_ptr dst_ptr;
-
-		dst_ptr = data_alloc(dst_scanline * height);
-
-		unsigned i,j;
-		for(i=0;i<height;++i) {
-			const unsigned char* p0 = img_ptr + i * img_scanline;
-			unsigned char* p1 = dst_ptr + i * dst_scanline;
-			for(j=0;j<width;++j) {
-				p1[0] = p0[0];
-				p1[1] = p0[1];
-				p1[2] = p0[2];
-				p0 += 4;
-				p1 += 3;
-			}
+		unsigned required = (1 << 3) | (1 << 6) | (1 << 8);
+		if ((mng->header_simplicity & required) != required) {
+			throw error() << "You enable transparency for alpha images";
 		}
 
-		mng_write_image(mng, f, fc, width, height, dst_pixel, dst_ptr, dst_scanline, 0, 0, shift_x, shift_y);
+		mng_write_image_raw(mng, f, fc, width, height, pixel, img_ptr, img_scanline, 0, 0, shift_x, shift_y);
 	} else {
 		throw error() << "Unsupported bit depth";
 	} 
@@ -657,7 +690,8 @@ adv_mng_write* mng_write_init(adv_mng_type type, shrink_t level, adv_bool reduce
 	mng->level = level;
 	mng->reduce = reduce;
 	mng->expand = expand;
-	mng->has_header = 0;
+	mng->header_written = 0;
+	mng->header_simplicity = 0;
 
 	return mng;
 }
@@ -670,5 +704,5 @@ void mng_write_done(adv_mng_write* mng)
 
 adv_bool mng_write_has_header(adv_mng_write* mng)
 {
-	return mng->has_header;
+	return mng->header_written;
 }

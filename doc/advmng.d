@@ -3,13 +3,13 @@ Name
 
 Synopsis
 	:advmng [-l, --list] [-z, --recompress]
-	:[-x, --extract] [-a, --add RATE MNG_FILE PNG_FILES...]
-	:[-0, --shrink-store] [-1, --shrink-fast] [-2, --shrink-normal]
-	:[-3, --shrink-extra] [-4, --shrink-insane]
-	:[-s, --scroll HxV] [-S, --scroll-square]
-	:[-e, --expand] [-r, --reduce]
-	:[-c, --lc] [-C, --vlc] [-f, --force] [-q, --quiet] [-v, --verbose]
-	:[-h, --help] [-V, --version] FILES...
+	:	[-x, --extract] [-a, --add RATE MNG_FILE PNG_FILES...]
+	:	[-0, --shrink-store] [-1, --shrink-fast] [-2, --shrink-normal]
+	:	[-3, --shrink-extra] [-4, --shrink-insane]
+	:	[-s, --scroll HxV] [-S, --scroll-square]
+	:	[-e, --expand] [-r, --reduce]
+	:	[-c, --lc] [-C, --vlc] [-f, --force] [-q, --quiet] [-v, --verbose]
+	:	[-h, --help] [-V, --version] FILES...
 
 Description
 	The main purpose of this utility is to recompress MNG
@@ -44,7 +44,9 @@ Commands
 	-x, --extract FILES...
 		Extract all the .png frames in the .mng clips.
 		You can use the --shrink options to control the
-		compression ratio of the .png files.
+		compression ratio of the .png files. The extracted
+		images are always 24 bit images with alpha channel.
+		You can remove the alpha channel with the -n option.
 
 	-a, --add RATE MNG_FILE PNG_FILES...
 		Compress all the .png files on the command line
@@ -96,10 +98,15 @@ Options
 
 	-r, --reduce
 		Force the color reduction to 8 bit. The reduction is
-		really done only if any frame have less than 256 colors.
+		really done only if any frame have less than 256 colors
+		and if no alpha channel is present. To force the reduction
+		also if an alpha channel is present use the -n option.
 
 	-e, --expand
 		Force the color expansion to 24 bit.
+
+	-n, --noalpha
+		Remove the alpha channel if present.
 
 	-c, --lc
 		Force the use of the MNG LC (Low Complexity)

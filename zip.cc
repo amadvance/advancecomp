@@ -464,14 +464,14 @@ void zip_entry::check_local(const unsigned char* buf) const {
 		throw error() << "Invalid signature in local header";
 	}
 	if (info.general_purpose_bit_flag != le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag)) {
-		throw error() << "Invalid local purpose bit flag " << numhex(info.general_purpose_bit_flag) << "/" << numhex(le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag));
+		throw error() << "Invalid local purpose bit flag " << info.general_purpose_bit_flag << "/" << le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag);
 	}
 	if (info.compression_method != le_uint16_read(buf+ZIP_LO_compression_method)) {
 		throw error() << "Invalid method on local header";
 	}
 	if ((le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag) & ZIP_GEN_FLAGS_DEFLATE_ZERO) != 0) {
 		if (le_uint32_read(buf+ZIP_LO_crc32) != 0) {
-			throw error() << "Not zero crc on local header " << numhex(le_uint32_read(buf+ZIP_LO_crc32));
+			throw error() << "Not zero crc on local header " << le_uint32_read(buf+ZIP_LO_crc32);
 		}
 		if (le_uint32_read(buf+ZIP_LO_compressed_size) != 0) {
 			throw error() << "Not zero compressed size in local header " << le_uint32_read(buf+ZIP_LO_compressed_size);
@@ -481,7 +481,7 @@ void zip_entry::check_local(const unsigned char* buf) const {
 		}
 	} else {
 		if (info.crc32 != le_uint32_read(buf+ZIP_LO_crc32)) {
-			throw error() << "Invalid crc on local header " << numhex(info.crc32) << "/" << numhex(le_uint32_read(buf+ZIP_LO_crc32));
+			throw error() << "Invalid crc on local header " << info.crc32 << "/" << le_uint32_read(buf+ZIP_LO_crc32);
 		}
 		if (info.compressed_size != le_uint32_read(buf+ZIP_LO_compressed_size)) {
 			throw error() << "Invalid compressed size in local header " << info.compressed_size << "/" << le_uint32_read(buf+ZIP_LO_compressed_size);
@@ -502,7 +502,7 @@ void zip_entry::check_local(const unsigned char* buf) const {
 
 void zip_entry::check_descriptor(const unsigned char* buf) const {
 	if (info.crc32 != le_uint32_read(buf+ZIP_DO_crc32)) {
-		throw error() << "Invalid crc on data descriptor " << numhex(info.crc32) << "/" << numhex(le_uint32_read(buf+ZIP_DO_crc32));
+		throw error() << "Invalid crc on data descriptor " << info.crc32 << "/" << le_uint32_read(buf+ZIP_DO_crc32);
 	}
 	if (info.compressed_size != le_uint32_read(buf+ZIP_DO_compressed_size)) {
 		throw error() << "Invalid compressed size in data descriptor " << info.compressed_size << "/" << le_uint32_read(buf+ZIP_DO_compressed_size);

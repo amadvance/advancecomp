@@ -26,10 +26,10 @@
 
 using namespace std;
 
-#ifdef HAVE_SIGHUP
+#if HAVE_SIGHUP
 static void (*sig_hup)(int);
 #endif
-#ifdef HAVE_SIGQUIT
+#if HAVE_SIGQUIT
 static void (*sig_quit)(int);
 #endif
 static void (*sig_int)(int);
@@ -44,10 +44,10 @@ void sig_ignore(int sig) {
 
 void sig_lock() {
 	sig_ignore_sig = 0;
-#ifdef HAVE_SIGHUP
+#if HAVE_SIGHUP
 	sig_hup = signal(SIGHUP, sig_ignore);
 #endif
-#ifdef HAVE_SIGQUIT
+#if HAVE_SIGQUIT
 	sig_quit = signal(SIGQUIT, sig_ignore);
 #endif
 	sig_int = signal(SIGINT, sig_ignore);
@@ -55,10 +55,10 @@ void sig_lock() {
 }
 
 void sig_unlock() {
-#ifdef HAVE_SIGHUP
+#if HAVE_SIGHUP
 	signal(SIGHUP, sig_hup);
 #endif
-#ifdef HAVE_SIGQUIT
+#if HAVE_SIGQUIT
 	signal(SIGQUIT, sig_quit);
 #endif
 	signal(SIGINT, sig_int);

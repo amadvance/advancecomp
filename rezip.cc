@@ -419,7 +419,7 @@ void add_all(int argc, char* argv[], bool quiet, bool standard, shrink_t level) 
 	z.close();
 }
 
-#ifdef HAVE_GETOPT_LONG
+#if HAVE_GETOPT_LONG
 struct option long_options[] = {
 	{"add", 0, 0, 'a'},
 	{"extract", 0, 0, 'x'},
@@ -493,7 +493,7 @@ void process(int argc, char* argv[]) {
 	opterr = 0; // don't print errors
 
 	while ((c =
-#ifdef HAVE_GETOPT_LONG
+#if HAVE_GETOPT_LONG
 		getopt_long(argc, argv, OPTIONS, long_options, 0))
 #else
 		getopt(argc, argv, OPTIONS))

@@ -7,16 +7,16 @@
 <h2>1 
 Synopsis
 </h2>
-<font face="Courier">
-advmng [-l, --list] [-z, --recompress]<br>
-[-x, --extract] [-a, --add RATE MNG_FILE PNG_FILES...]<br>
-[-0, --shrink-store] [-1, --shrink-fast] [-2, --shrink-normal]<br>
-[-3, --shrink-extra] [-4, --shrink-insane]<br>
-[-s, --scroll HxV] [-S, --scroll-square]<br>
-[-e, --expand] [-r, --reduce]<br>
-[-c, --lc] [-C, --vlc] [-f, --force] [-q, --quiet] [-v, --verbose]<br>
-[-h, --help] [-V, --version] FILES...<br>
-</font>
+<pre>
+advmng [-l, --list] [-z, --recompress]
+&nbsp;&nbsp;&nbsp;&nbsp;[-x, --extract] [-a, --add RATE MNG_FILE PNG_FILES...]
+&nbsp;&nbsp;&nbsp;&nbsp;[-0, --shrink-store] [-1, --shrink-fast] [-2, --shrink-normal]
+&nbsp;&nbsp;&nbsp;&nbsp;[-3, --shrink-extra] [-4, --shrink-insane]
+&nbsp;&nbsp;&nbsp;&nbsp;[-s, --scroll HxV] [-S, --scroll-square]
+&nbsp;&nbsp;&nbsp;&nbsp;[-e, --expand] [-r, --reduce]
+&nbsp;&nbsp;&nbsp;&nbsp;[-c, --lc] [-C, --vlc] [-f, --force] [-q, --quiet] [-v, --verbose]
+&nbsp;&nbsp;&nbsp;&nbsp;[-h, --help] [-V, --version] FILES...
+</pre>
 <h2>2 
 Description
 </h2>
@@ -75,7 +75,9 @@ file is always rewritten without any compression.
 </strong></td></tr><tr><td>
 Extract all the .png frames in the .mng clips.
 You can use the --shrink options to control the
-compression ratio of the .png files.
+compression ratio of the .png files. The extracted
+images are always 24 bit images with alpha channel.
+You can remove the alpha channel with the -n option.
 </td></tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
@@ -165,7 +167,9 @@ time. Specifically the check done is X+Y&lt;=N.
 -r, --reduce
 </strong></td></tr><tr><td>
 Force the color reduction to 8 bit. The reduction is
-really done only if any frame have less than 256 colors.
+really done only if any frame have less than 256 colors
+and if no alpha channel is present. To force the reduction
+also if an alpha channel is present use the -n option.
 </td></tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
@@ -173,6 +177,13 @@ really done only if any frame have less than 256 colors.
 -e, --expand
 </strong></td></tr><tr><td>
 Force the color expansion to 24 bit.
+</td></tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+<tr valign="top" align="left"><td><strong>
+-n, --noalpha
+</strong></td></tr><tr><td>
+Remove the alpha channel if present.
 </td></tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="2">

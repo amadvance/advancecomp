@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1999-2002 Andrea Mazzoleni
+ * Copyright (C) 1999, 2000, 2001, 2002, 2003 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -279,6 +279,28 @@ static inline void be_uint32_write(void* ptr, unsigned v)
 	ptr8[1] = (v >> 16) & 0xFF;
 	ptr8[0] = (v >> 24) & 0xFF;
 #endif
+}
+
+static inline unsigned cpu_uint_read(void* ptr, unsigned size)
+{
+	switch (size) {
+	default:
+	case 1 : return cpu_uint8_read(ptr);
+	case 2 : return cpu_uint16_read(ptr);
+	case 3 : return cpu_uint24_read(ptr);
+	case 4 : return cpu_uint32_read(ptr);
+	}
+}
+
+static inline void cpu_uint_write(void* ptr, unsigned size, unsigned v)
+{
+	switch (size) {
+	default:
+	case 1 : cpu_uint8_write(ptr, v); break;
+	case 2 : cpu_uint16_write(ptr, v); break;
+	case 3 : cpu_uint24_write(ptr, v); break;
+	case 4 : cpu_uint32_write(ptr, v); break;
+	}
 }
 
 /*@}*/

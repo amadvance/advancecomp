@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1999-2002 Andrea Mazzoleni
+ * Copyright (C) 1999, 2000, 2001, 2002, 2003 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,13 +28,14 @@
  * do so, delete this exception statement from your version.
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include "portable.h"
+
 #include "fz.h"
 #include "endianrw.h"
-
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <sys/stat.h>
 
 /* Zip format */
 #define ZIP_LO_filename_length 0x1A
@@ -45,6 +46,22 @@
 /* fz interface */
 
 #define INFLATE_INPUT_BUFFER_MAX 4096
+
+adv_error fzgrow(adv_fz* f, unsigned size)
+{
+	if (f->type == fz_memory_write) {
+		if (f->virtual_size < size) {
+			unsigned char* data = realloc(f->data_write, size);
+			if (!data)
+				return -1;
+			f->data_write = data;
+			f->virtual_size = size;
+		}
+		return 0;
+	} else {
+			return -1;
+	}
+}
 
 /**
  * Read from a file.
@@ -66,8 +83,12 @@ unsigned fzread(void *buffer, unsigned size, unsigned number, adv_fz* f)
 			total_size = size * number;
 		}
 
-		if (f->type == fz_memory) {
-			memcpy(buffer, f->data + f->virtual_pos, total_size);
+		if (f->type == fz_memory_read) {
+			memcpy(buffer, f->data_read + f->virtual_pos, total_size);
+			f->virtual_pos += total_size;
+			return number;
+		} else if (f->type == fz_memory_write) {
+			memcpy(buffer, f->data_write + f->virtual_pos, total_size);
 			f->virtual_pos += total_size;
 			return number;
 		} else if (f->type == fz_file_compressed) {
@@ -114,9 +135,41 @@ unsigned fzwrite(const void *buffer, unsigned size, unsigned number, adv_fz* f)
 {
 	if (f->type == fz_file) {
 		return fwrite(buffer, size, number, f->f);
+	} else if (f->type == fz_memory_write) {
+		unsigned total_size;
+
+		/* adjust the number of record to write */
+		total_size = size * number;
+
+		if (fzgrow(f, f->virtual_pos + total_size) != 0)
+			return -1;
+
+		memcpy(f->data_write + f->virtual_pos, buffer, total_size);
+		f->virtual_pos += total_size;
+		return number;
 	} else {
 		return -1;
 	}
+}
+
+static adv_fz* fzalloc(void)
+{
+	adv_fz* f;
+
+	f = malloc(sizeof(adv_fz));
+	if (!f)
+		return 0;
+
+	f->type = fz_invalid;
+	f->virtual_pos = 0;
+	f->virtual_size = 0;
+	f->real_offset = 0;
+	f->real_size = 0;
+	f->data_read = 0;
+	f->data_write = 0;
+	f->f = 0;
+
+	return f;
 }
 
 /**
@@ -125,27 +178,73 @@ unsigned fzwrite(const void *buffer, unsigned size, unsigned number, adv_fz* f)
  */
 adv_fz* fzopen(const char* file, const char* mode)
 {
-	struct stat st;
-	adv_fz* f = malloc(sizeof(adv_fz));
-	f->type = fz_file;
-	f->virtual_pos = -1; /* not used */
-	f->real_offset = 0;
-	f->real_size = -1; /* not used */
+	adv_fz* f = fzalloc();
+	if (!f)
+		return 0;
 
-	f->data = 0;
+	f->type = fz_file;
 	f->f = fopen(file, mode);
 	if (!f->f) {
 		free(f);
 		return 0;
 	}
 
-	if (fstat(fileno(f->f), &st) != 0) {
-		f->virtual_size = 0;
-	} else {
+	return f;
+}
+
+/**
+ * Open a normal file doing all the write access in memory.
+ * The semantic is like the C fopen() function.
+ */
+adv_fz* fzopennullwrite(const char* file, const char* mode)
+{
+	adv_fz* f = fzalloc();
+	if (!f)
+		goto err;
+
+	f->type = fz_memory_write;
+	f->virtual_pos = 0;
+	f->f = fopen(file, "rb");
+	if (f->f) {
+		struct stat st;
+		if (fstat(fileno(f->f), &st) != 0) {
+			goto err_close;
+		}
+
+		f->data_write = malloc(st.st_size);
+		if (!f->data_write) {
+			goto err_close;
+		}
+
 		f->virtual_size = st.st_size;
+
+		if (fread(f->data_write, st.st_size, 1, f->f) != 1) {
+			goto err_data;
+		}
+
+		fclose(f->f);
+		f->f = 0;
+	} else {
+		if (strchr(mode, 'w')!=0 || strchr(mode, 'a')!=0) {
+			/* creation allowed */
+			f->data_write = 0;
+			f->virtual_size = 0;
+		} else {
+			/* creation not possible */
+			goto err_free;
+		}
 	}
 
 	return f;
+
+err_data:
+	free(f->data_write);
+err_close:
+	fclose(f->f);
+err_free:
+	free(f);
+err:
+	return 0;
 }
 
 /**
@@ -157,16 +256,16 @@ adv_fz* fzopen(const char* file, const char* mode)
 adv_fz* fzopenzipuncompressed(const char* file, unsigned offset, unsigned size)
 {
 	unsigned char buf[ZIP_LO_FIXED];
-	adv_fz* f = malloc(sizeof(adv_fz));
 	unsigned filename_length;
 	unsigned extra_field_length;
 
-	f->type = fz_file;
-	f->virtual_pos = -1; /* not used */
-	f->virtual_size = size;
-	f->real_size = -1; /* not used */
+	adv_fz* f = fzalloc();
+	if (!f)
+		return 0;
 
-	f->data = 0;
+	f->type = fz_file;
+	f->virtual_pos = 0;
+	f->virtual_size = size;
 	f->f = fopen(file, "rb");
 	if (!f->f) {
 		free(f);
@@ -190,6 +289,7 @@ adv_fz* fzopenzipuncompressed(const char* file, unsigned offset, unsigned size)
 	offset += ZIP_LO_FIXED + filename_length + extra_field_length;
 
 	f->real_offset = offset;
+	f->real_size = size;
 
 	if (fseek(f->f, f->real_offset, SEEK_SET) != 0) {
 		fclose(f->f);
@@ -204,10 +304,10 @@ static void compressed_init(adv_fz* f)
 {
 	int err;
 
+	memset(&f->z, 0, sizeof(f->z));
 	f->z.zalloc = 0;
 	f->z.zfree = 0;
 	f->z.opaque = 0;
-
 	f->z.next_in  = 0;
 	f->z.avail_in = 0;
 	f->z.next_out = 0;
@@ -243,15 +343,16 @@ static void compressed_done(adv_fz* f)
 adv_fz* fzopenzipcompressed(const char* file, unsigned offset, unsigned size_compressed, unsigned size_uncompressed)
 {
 	unsigned char buf[ZIP_LO_FIXED];
-	adv_fz* f = malloc(sizeof(adv_fz));
 	unsigned filename_length;
 	unsigned extra_field_length;
+
+	adv_fz* f = fzalloc();
+	if (!f)
+		return 0;
 
 	f->type = fz_file_compressed;
 	f->virtual_pos = 0;
 	f->virtual_size = size_uncompressed;
-
-	f->data = 0;
 	f->f = fopen(file, "rb");
 	if (!f->f) {
 		free(f);
@@ -295,14 +396,15 @@ adv_fz* fzopenzipcompressed(const char* file, unsigned offset, unsigned size_com
  */
 adv_fz* fzopenmemory(const unsigned char* data, unsigned size)
 {
-	adv_fz* f = malloc(sizeof(adv_fz));
-	f->type = fz_memory;
+	adv_fz* f = fzalloc();
+	if (!f)
+		return 0;
+
+	f->type = fz_memory_read;
 	f->virtual_pos = 0;
 	f->virtual_size = size;
-	f->real_offset = -1; /* not used */
-	f->real_size = -1; /* not used */
-	f->data = data;
-	f->f = 0;
+	f->data_read = data;
+
 	return f;
 }
 
@@ -315,11 +417,17 @@ adv_error fzclose(adv_fz* f)
 	if (f->type == fz_file) {
 		fclose(f->f);
 		free(f);
+	} else if (f->type == fz_file_part) {
+		fclose(f->f);
+		free(f);
 	} else if (f->type == fz_file_compressed) {
 		compressed_done(f);
 		fclose(f->f);
 		free(f);
-	} else if (f->type == fz_memory) {
+	} else if (f->type == fz_memory_read) {
+		free(f);
+	} else if (f->type == fz_memory_write) {
+		free(f->data_write);
 		free(f);
 	} else {
 		return -1;
@@ -425,11 +533,7 @@ adv_error fzeof(adv_fz* f)
 long fztell(adv_fz* f)
 {
 	if (f->type == fz_file) {
-		long r = ftell(f->f);
-		if (r<0)
-			return r;
-		else
-			return r - f->real_offset;
+		return ftell(f->f);
 	} else {
 		return f->virtual_pos;
 	}
@@ -440,7 +544,18 @@ long fztell(adv_fz* f)
  */
 long fzsize(adv_fz* f)
 {
-	return f->virtual_size;
+	if (f->type == fz_file) {
+		struct stat st;
+		if (fflush(f->f) != 0) {
+			return -1;
+		}
+		if (fstat(fileno(f->f), &st) != 0) {
+			return -1;
+		}
+		return st.st_size;
+	} else {
+		return f->virtual_size;
+	}
 }
 
 /**
@@ -452,7 +567,7 @@ adv_error fzseek(adv_fz* f, long offset, int mode)
 	if (f->type == fz_file) {
 		switch (mode) {
 			case SEEK_SET :
-				return fseek(f->f, offset + f->real_offset, SEEK_SET);
+				return fseek(f->f, offset, SEEK_SET);
 			case SEEK_CUR :
 				return fseek(f->f, offset, SEEK_CUR);
 			case SEEK_END :
@@ -478,7 +593,17 @@ adv_error fzseek(adv_fz* f, long offset, int mode)
 		if (pos < 0 || pos > f->virtual_size)
 			return -1;
 
-		if (f->type == fz_memory) {
+		if (f->type == fz_memory_read) {
+			f->virtual_pos = pos;
+			return 0;
+		} else if (f->type == fz_memory_write) {
+			if (fzgrow(f, pos) != 0)
+				return -1;
+			f->virtual_pos = pos;
+			return 0;
+		} else if (f->type == fz_file_part) {
+			if (fseek(f->f, f->real_offset + f->virtual_pos, SEEK_SET) != 0)
+				return -1;
 			f->virtual_pos = pos;
 			return 0;
 		} else if (f->type == fz_file_compressed) {

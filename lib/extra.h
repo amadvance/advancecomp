@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1999-2002 Andrea Mazzoleni
+ * Copyright (C) 1999, 2000, 2001, 2002, 2003 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,18 +35,21 @@
 /** \defgroup Functionality Functionalities */
 /*@{*/
 /** \defgroup Error Error */
+/** \defgroup LCD LCD */
 /** \defgroup Log Log */
 /** \defgroup Color Color */
 /** \defgroup BitMap BitMap */
 /** \defgroup Configuration Configuration */
 /** \defgroup Crtc Crtc */
 /** \defgroup Generate Crtc Generation */
+/** \defgroup Filter Filter */
 /** \defgroup Font Font */
 /** \defgroup Blit Blit */
 /** \defgroup Monitor Monitor */
 /** \defgroup Update Update */
 /** \defgroup Mode Mode */
-/** \defgroup String String */
+/** \defgroup String Dynamic String */
+/** \defgroup SafeString Safe String */
 /** \defgroup Info Info */
 /** \defgroup Mixer Mixer */
 /*@}*/
@@ -117,15 +120,19 @@ typedef signed long long int int64; /**< Signed 64 bit integer. */
  * Alignment.
  */
 /*@{*/
-
 #define ALIGN_BIT 3 /**< Number of bit of alignment required. */
 #define ALIGN (1U << ALIGN_BIT) /**< Alignment multiplicator. */
 #define ALIGN_MASK (ALIGN - 1U) /**< Alignment mask. */
 
-#define ALIGN_UNCHAINED_BIT 4 /**< Number of bit of alignment required for unchained images. */
-#define ALIGN_UNCHAINED (1U << ALIGN_UNCHAINED_BIT) /**< Alignment multiplicator for unchained images. */
-#define ALIGN_UNCHAINED_MASK (ALIGN_UNCHAINED - 1U) /**< Alignment mask for unchained images. */
+/**
+ * Align a unsigned interger at the specified byte size.
+ */
+#define ALIGN_UNSIGNED(v,a) (((v) + ((a)-1)) & ~((a)-1))
 
+/**
+ * Align a void pointer at the specified byte size.
+ */
+#define ALIGN_PTR(v,a) (void*)ALIGN_UNSIGNED((unsigned char*)(v) - (unsigned char*)0, a)
 /*@}*/
 
 /*@}*/

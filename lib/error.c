@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1999-2003 Andrea Mazzoleni
+ * Copyright (C) 1999, 2000, 2001, 2002, 2003 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,12 +28,13 @@
  * do so, delete this exception statement from your version.
  */
 
-#include "extra.h"
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
-/** \def USE_ERROR_SILENT
- * If defined USE_ERROR_SILENT the error functions don't show the error in the log.
- * This macro can be used to reduce the dependencies of the library.
- */
+#include "portable.h"
+
+#include "extra.h"
 
 #ifndef USE_ERROR_SILENT
 #include "log.h"
@@ -41,12 +42,6 @@
 
 #include "error.h"
 #include "snstring.h"
-#include "portable.h"
-
-#include <ctype.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdarg.h>
 
 /****************************************************************************/
 /* Error */

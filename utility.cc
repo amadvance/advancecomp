@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 2002 Andrea Mazzoleni
+ * Copyright (C) 2002, 2004 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,9 +34,10 @@
 using namespace std;
 
 // ------------------------------------------------------------------------
-// Generic utility
+// String
 
-string strip_space(const string& s) {
+string strip_space(const string& s)
+{
 	string r = s;
 	while (r.length() && isspace(r[0]))
 		r.erase(0,1);
@@ -45,61 +46,51 @@ string strip_space(const string& s) {
 	return r;
 }
 
-string token_get(const string& s, unsigned& ptr, const char* sep) {
+string token_get(const string& s, unsigned& ptr, const char* sep)
+{
 	unsigned start = ptr;
 	while (ptr < s.length() && strchr(sep,s[ptr])==0)
 		++ptr;
 	return string(s,start,ptr-start);
 }
 
-void token_skip(const string& s, unsigned& ptr, const char* sep) {
+void token_skip(const string& s, unsigned& ptr, const char* sep)
+{
 	while (ptr < s.length() && strchr(sep,s[ptr])!=0)
 		++ptr;
 }
 
-std::string token_get(const std::string& s, unsigned& ptr, char sep) {
+std::string token_get(const std::string& s, unsigned& ptr, char sep)
+{
 	char sep_string[2];
 	sep_string[0] = sep;
 	sep_string[1] = 0;
 	return token_get(s,ptr,sep_string);
 }
 
-void token_skip(const std::string& s, unsigned& ptr, char sep) {
+void token_skip(const std::string& s, unsigned& ptr, char sep)
+{
 	char sep_string[2];
 	sep_string[0] = sep;
 	sep_string[1] = 0;
 	token_skip(s,ptr,sep_string);
 }
 
-string numhex(unsigned v)
+/**
+ * Match one string with a shell pattern expression.
+ * \param pattern Pattern with with the globbing * and ? chars.
+ * \param str String to compare,
+ * \return
+ *  - ==0 match
+ *  - !=0 don't match
+ */
+int striwildcmp(const char* pattern, const char* str)
 {
-	ostringstream s;
-	s << setw(8) << setfill('0') << hex << v;
-	return s.str();
-}
-
-string numdec(unsigned v)
-{
-	ostringstream s;
-	s << v;
-	return s.str();
-}
-
-/* Match one string with a shell pattern expression
-   in:
-     pattern pattern with
-       *      any string, including the null string
-       ?      any single char
-   return
-      ==0 match
-      !=0 don't match
-*/
-int striwildcmp(const char* pattern, const char* str) {
 	while (*str && *pattern) {
 		if (*pattern == '*') {
 			++pattern;
 			while (*str) {
-				if (striwildcmp( pattern, str )==0) return 0;
+				if (striwildcmp(pattern, str)==0) return 0;
 				++str;
 			}
 		} else if (*pattern == '?') {
@@ -119,10 +110,14 @@ int striwildcmp(const char* pattern, const char* str) {
 	return 1;
 }
 
-// Convert a string to a unsigned
-// return:
-//   0 if string contains a non digit char
-unsigned strdec(const char* s, const char** e) {
+/**
+ * Convert a string to a unsigned.
+ * \param s String to convert.
+ * \param e First not numerical char detected.
+ * \return 0 if string contains a non digit char.
+ */
+unsigned strdec(const char* s, const char** e)
+{
 	unsigned v = 0;
 	while (*s) {
 		if (!isdigit(*s)) {
@@ -137,10 +132,14 @@ unsigned strdec(const char* s, const char** e) {
 	return v;
 }
 
-// Convert a hex string to a unsigned
-// return:
-//   0 if string contains a non hex digit char
-unsigned strhex(const char* s, const char** e) {
+/**
+ * Convert a hex string to a unsigned.
+ * \param s String to convert.
+ * \param e First not numerical char detected.
+ * \return 0 if string contains a non hex digit char.
+ */
+unsigned strhex(const char* s, const char** e)
+{
 	unsigned v = 0;
 	while (*s) {
 		if (!isxdigit(*s)) {
@@ -159,17 +158,20 @@ unsigned strhex(const char* s, const char** e) {
 }
 
 // ------------------------------------------------------------------------
-// filepath
+// Path
 
-filepath::filepath() {
+filepath::filepath()
+{
 }
 
-filepath::filepath(const filepath& A) : 
-	file(A.file) {
+filepath::filepath(const filepath& A)
+	: file(A.file)
+{
 }
 
-filepath::filepath(const string& Afile) : 
-	file(Afile) {
+filepath::filepath(const string& Afile)
+	: file(Afile)
+{
 }
 
 filepath::~filepath() {
@@ -179,42 +181,50 @@ void filepath::file_set(const string& Afile) {
 	file = Afile;
 }
 
-// ------------------------------------------------------------------------
-// zippath
-
-zippath::zippath() {
+zippath::zippath()
+{
 	readonly = true;
 	good = false;
 	size = 0;
 }
 
-zippath::zippath(const zippath& A) : 
-	filepath(A), good(A.good), size(A.size), readonly(A.readonly) {
+zippath::zippath(const zippath& A)
+	: filepath(A), good(A.good), size(A.size), readonly(A.readonly)
+{
 }
 
-zippath::zippath(const string& Afile, bool Agood, unsigned Asize, bool Areadonly) : 
-	filepath(Afile), good(Agood), size(Asize), readonly(Areadonly) {
+zippath::zippath(const string& Afile, bool Agood, unsigned Asize, bool Areadonly)
+	: filepath(Afile), good(Agood), size(Asize), readonly(Areadonly)
+{
 }
 
-zippath::~zippath() {
+zippath::~zippath()
+{
 }
 
-void zippath::good_set(bool Agood) {
+void zippath::good_set(bool Agood)
+{
 	good = Agood;
 }
 
-void zippath::size_set(unsigned Asize) {
+void zippath::size_set(unsigned Asize)
+{
 	size = Asize;
 }
 
-void zippath::readonly_set(bool Areadonly) {
+void zippath::readonly_set(bool Areadonly)
+{
 	readonly = Areadonly;
 }
 
 // ------------------------------------------------------------------------
-// File utility
+// File
 
-bool file_exists(const string& path) throw (error) {
+/**
+ * Check if a file exists.
+ */
+bool file_exists(const string& path) throw (error)
+{
 	struct stat s;
 	if (stat(path.c_str(),&s) != 0) {
 		if (errno!=ENOENT)
@@ -226,7 +236,11 @@ bool file_exists(const string& path) throw (error) {
 	return !S_ISDIR(s.st_mode);
 }
 
-void file_write(const string& path, const char* data, unsigned size) throw (error) {
+/**
+ * Write a whole file.
+ */
+void file_write(const string& path, const char* data, unsigned size) throw (error)
+{
 	FILE* f = fopen( path.c_str(), "wb" );
 	if (!f)
 		throw error() << "Failed open for write file " << path;
@@ -242,11 +256,19 @@ void file_write(const string& path, const char* data, unsigned size) throw (erro
 	fclose(f);
 }
 
-void file_read(const string& path, char* data, unsigned size) throw (error) {
+/**
+ * Read a whole file.
+ */
+void file_read(const string& path, char* data, unsigned size) throw (error)
+{
 	file_read(path, data, 0, size);
 }
 
-void file_read(const string& path, char* data, unsigned offset, unsigned size) throw (error) {
+/**
+ * Read a whole file.
+ */
+void file_read(const string& path, char* data, unsigned offset, unsigned size) throw (error)
+{
 	FILE* f = fopen( path.c_str(), "rb" );
 	if (!f)
 		throw error() << "Failed open for read file " << path;
@@ -266,7 +288,11 @@ void file_read(const string& path, char* data, unsigned offset, unsigned size) t
 	fclose(f);
 }
 
-time_t file_time(const string& path) throw (error) {
+/**
+ * Get the time of a file.
+ */
+time_t file_time(const string& path) throw (error)
+{
 	struct stat s;
 	if (stat(path.c_str(), &s)!=0)
 		throw error() << "Failed stat file " << path;
@@ -274,7 +300,11 @@ time_t file_time(const string& path) throw (error) {
 	return s.st_mtime;
 }
 
-void file_utime(const string& path, time_t tod) throw (error) {
+/**
+ * Set the time of a file.
+ */
+void file_utime(const string& path, time_t tod) throw (error)
+{
 	struct utimbuf u;
 
 	u.actime = tod;
@@ -284,7 +314,11 @@ void file_utime(const string& path, time_t tod) throw (error) {
 		throw error() << "Failed utime file " << path;
 }
 
-unsigned file_size(const string& path) throw (error) {
+/**
+ * Get the size of a file.
+ */
+unsigned file_size(const string& path) throw (error)
+{
 	struct stat s;
 	if (stat(path.c_str(), &s)!=0)
 		throw error() << "Failed stat file " << path;
@@ -292,7 +326,11 @@ unsigned file_size(const string& path) throw (error) {
 	return s.st_size;
 }
 
-crc_t file_crc(const string& path) throw (error) {
+/**
+ * Get the crc of a file.
+ */
+crc_t file_crc(const string& path) throw (error)
+{
 	unsigned size = file_size(path);
 
 	char* data = (char*)operator new(size);
@@ -311,7 +349,11 @@ crc_t file_crc(const string& path) throw (error) {
 	return crc;
 }
 
-void file_copy(const string& path1, const string& path2) throw (error) {
+/**
+ * Copy a file.
+ */
+void file_copy(const string& path1, const string& path2) throw (error)
+{
 	unsigned size;
 
 	size = file_size(path1);
@@ -329,7 +371,11 @@ void file_copy(const string& path1, const string& path2) throw (error) {
 	operator delete(data);
 }
 
-void file_move(const string& path1, const string& path2) throw (error) {
+/**
+ * Move a file.
+ */
+void file_move(const string& path1, const string& path2) throw (error)
+{
 	if (rename(path1.c_str(),path2.c_str())!=0
 		&& errno==EXDEV) {
 
@@ -347,22 +393,31 @@ void file_move(const string& path1, const string& path2) throw (error) {
 	}
 }
 
-/// Remove a file
-void file_remove(const string& path1) throw (error) {
+/**
+ * Remove a file.
+ */
+void file_remove(const string& path1) throw (error)
+{
 	if (remove(path1.c_str())!=0) {
 		throw error() << "Failed remove of " << path1;
 	}
 }
 
-/// Rename a file
-void file_rename(const string& path1, const string& path2) throw (error) {
-	if (rename(path1.c_str(),path2.c_str())!=0) {
+/**
+ * Rename a file.
+ */
+void file_rename(const string& path1, const string& path2) throw (error)
+{
+	if (rename(path1.c_str(), path2.c_str())!=0) {
 		throw error() << "Failed rename of " << path1 << " to " << path2;
 	}
 }
 
-/// Randomize a name file
-string file_randomize(const string& path, int n) throw () {
+/**
+ * Randomize a name file.
+ */
+string file_randomize(const string& path, int n) throw ()
+{
 	ostringstream os;
 
 	unsigned pos = path.rfind('.');
@@ -377,8 +432,11 @@ string file_randomize(const string& path, int n) throw () {
 	return os.str();
 }
 
-// Estrae la directory da un path
-string file_dir(const string& path) throw () {
+/**
+ * Get the directory from a path.
+ */
+string file_dir(const string& path) throw ()
+{
 	unsigned pos = path.rfind('/');
 	if (pos == string::npos) {
 		return "";
@@ -387,8 +445,11 @@ string file_dir(const string& path) throw () {
 	}
 }
 
-// Estrae il nome file da un path
-string file_name(const string& path) throw () {
+/**
+ * Get the file name from a path.
+ */
+string file_name(const string& path) throw ()
+{
 	unsigned pos = path.rfind('/');
 	if (pos == string::npos) {
 		return path;
@@ -397,7 +458,11 @@ string file_name(const string& path) throw () {
 	}
 }
 
-string file_basepath(const string& path) throw () {
+/**
+ * Get the basepath (path without extension) from a path.
+ */
+string file_basepath(const string& path) throw ()
+{
 	unsigned dot = path.rfind('.');
 	if (dot == string::npos)
 		return path;
@@ -405,7 +470,11 @@ string file_basepath(const string& path) throw () {
 		return string(path,0,dot);
 }
 
-string file_basename(const string& path) throw () { 
+/**
+ * Get the basename (name without extension) from a path.
+ */
+string file_basename(const string& path) throw ()
+{ 
 	string name = file_name(path);
 	unsigned dot = name.rfind('.');
 	if (dot == string::npos)
@@ -413,8 +482,12 @@ string file_basename(const string& path) throw () {
 	else
 		return string(name,0,dot);
 }
- 
-string file_ext(const string& path) throw () { 
+
+/**
+ * Get the extension from a path.
+ */
+string file_ext(const string& path) throw ()
+{ 
 	string name = file_name(path);
 	unsigned dot = name.rfind('.');
 	if (dot == string::npos)
@@ -423,12 +496,19 @@ string file_ext(const string& path) throw () {
 		return string(name,dot);
 } 
  
-// Compare two file name
-int file_compare(const string& path1,const string& path2) throw () {
+/**
+ * Compare two path.
+ */
+int file_compare(const string& path1,const string& path2) throw ()
+{
 	return strcasecmp(path1.c_str(),path2.c_str());
 }
 
-string file_adjust(const string& path) throw () {
+/**
+ * Convert a path to the C format.
+ */
+string file_adjust(const string& path) throw ()
+{
 	string r;
 	for(unsigned i=0;i<path.length();++i) {
 		if (path[i]=='\\' || path[i]=='/') {
@@ -442,7 +522,11 @@ string file_adjust(const string& path) throw () {
 	return r;
 }
 
-void file_mktree(const std::string& path) throw (error) {
+/**
+ * Make a drectory tree.
+ */
+void file_mktree(const std::string& path) throw (error)
+{
 	string dir = file_dir(path);
 	string name = file_name(path);
 
@@ -456,7 +540,7 @@ void file_mktree(const std::string& path) throw (error) {
 		if (stat(dir.c_str(),&s) != 0) {
 			if (errno!=ENOENT)
 				throw error() << "Failed stat dir " << dir;
-#ifdef HAVE_FUNC_MKDIR_ONEARG
+#if HAVE_FUNC_MKDIR_ONEARG
 			if (mkdir(dir.c_str()) != 0)
 #else
 			if (mkdir(dir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) != 0)
@@ -470,24 +554,36 @@ void file_mktree(const std::string& path) throw (error) {
 }
 
 // ------------------------------------------------------------------------
-// data
+// Data
 
-unsigned char* data_dup(const unsigned char* Adata, unsigned Asize) {
+/**
+ * Duplicate a memory buffer.
+ */
+unsigned char* data_dup(const unsigned char* Adata, unsigned Asize)
+{
 	if (Adata) {
-		unsigned char* data = (unsigned char*)operator new(Asize);
+		unsigned char* data = (unsigned char*)malloc(Asize);
 		if (Asize)
-			memcpy(data,Adata,Asize);
+			memcpy(data, Adata, Asize);
 		return data;
 	} else {
 		return 0;
 	}
 }
 
-unsigned char* data_alloc(unsigned size) {
-	return (unsigned char*)operator new(size);
+/**
+ * Allocate a memory buffer.
+ */
+unsigned char* data_alloc(unsigned size)
+{
+	return (unsigned char*)malloc(size);
 }
 
-void data_free(unsigned char* data) {
-	operator delete(data);
+/**
+ * Free a memory buffer.
+ */
+void data_free(unsigned char* data)
+{
+	free(data);
 }
 

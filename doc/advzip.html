@@ -7,13 +7,13 @@
 <h2>1 
 Synopsis
 </h2>
-<font face="Courier">
-advzip [-a, --add] [-x, --extract] [-l, --list]<br>
-[-z, --recompress] [-t, --test] [-0, --shrink-store]<br>
-[-1, --shrink-fast] [-2, --shrink-normal] [-3, --shrink-extra]<br>
-[-4, --shrink-insane] [-N, --not-zip] [-p, --pedantic] [-q, --quiet]<br>
-[-h, --help] [-V, --version] ARCHIVES... [FILES...]<br>
-</font>
+<pre>
+advzip [-a, --add] [-x, --extract] [-l, --list]
+&nbsp;&nbsp;&nbsp;&nbsp;[-z, --recompress] [-t, --test] [-0, --shrink-store]
+&nbsp;&nbsp;&nbsp;&nbsp;[-1, --shrink-fast] [-2, --shrink-normal] [-3, --shrink-extra]
+&nbsp;&nbsp;&nbsp;&nbsp;[-4, --shrink-insane] [-N, --not-zip] [-p, --pedantic] [-q, --quiet]
+&nbsp;&nbsp;&nbsp;&nbsp;[-h, --help] [-V, --version] ARCHIVES... [FILES...]
+</pre>
 <h2>2 
 Description
 </h2>
@@ -37,7 +37,7 @@ Options
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -a, --add ARCHIVE FILES...
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Create the specified archive with the specified
 files. You must specify only one archive.
 </td></tr>
@@ -45,7 +45,7 @@ files. You must specify only one archive.
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -x, --extract ARCHIVE
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Extract all the files on the specified archive. You
 must specify only one archive.
 </td></tr>
@@ -53,14 +53,14 @@ must specify only one archive.
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -l, --list ARCHIVES...
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 List the content of the specified archives.
 </td></tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -z, --recompress ARCHIVES...
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Recompress the specified archives. If the -1, -2,
 -3 options are specified, it's used the smallest file
 choice from: the previous compressed data, the new
@@ -72,7 +72,7 @@ without any compression.
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -t, --test ARCHIVES...
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Test the specified archives. The tests may be
 extended with the -p option.
 </td></tr>
@@ -80,7 +80,7 @@ extended with the -p option.
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -N, --not-zip
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Use the LZMA algorithm when compressing. The
 generated zips will not be readable by any other
 application!
@@ -89,7 +89,7 @@ application!
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -p, --pedantic
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Be pedantic on the zip tests. If this flag is
 enabled some more extensive tests on the zip
 integrity are done. These tests are generally not
@@ -99,7 +99,7 @@ done by other zip utilities.
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -0, --shrink-store
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Disable the compression. The file is
 only stored and not compressed. This option is
 very useful to expand the archives of .png and .mp3
@@ -111,14 +111,14 @@ and resource.
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -1, --shrink-fast
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Set the compression level to "fast".
 </td></tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -2, --shrink-normal
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Set the compression level to "normal". This is the
 default level of compression.
 </td></tr>
@@ -126,14 +126,14 @@ default level of compression.
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -3, --shrink-extra
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Set the compression level to "extra".
 </td></tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
 -4, --shrink-insane
-</em></td></tr><tr><td>
+</strong></td></tr><tr><td>
 Set the compression level to "insane".
 </td></tr>
 </table>

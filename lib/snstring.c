@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1999-2003 Andrea Mazzoleni
+ * Copyright (C) 1999, 2000, 2001, 2002, 2003 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,17 +28,13 @@
  * do so, delete this exception statement from your version.
  */
 
-/** \file
- * Implementation of safe strings.
- */
-
-#include "snstring.h"
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "portable.h"
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
+#include "snstring.h"
 
 /**
  * Copy a string with a size limit.
@@ -61,6 +57,15 @@ void sncpy(char* dst, size_t len, const char* src)
 		}
 #endif
 	}
+}
+
+/**
+ * Copy a string with a size limit.
+ * The destination string always has the terminating 0.
+ */
+void sncpyc(char* dst, size_t len, char src)
+{
+	sncpyn(dst, len, &src, 1);
 }
 
 /**
@@ -87,6 +92,20 @@ void sncat(char* dst, size_t len, const char* src)
 	}
 	sncpy(dst, len, src);
 }
+
+/**
+ * Cat a string with a size limit.
+ * The destination string always has the terminating 0.
+ */
+void sncatc(char* dst, size_t len, char src)
+{
+	while (len && *dst) {
+		++dst;
+		--len;
+	}
+	sncpyc(dst, len, src);
+}
+
 
 /**
  * Print at the end of a string with a size limit.
@@ -127,7 +146,7 @@ void sskip(int* p, const char* s, const char* sep)
  * \param s String to scan. The string is modified to put the terminating 0 at the end of the token.
  * \param sep Set of chars to use as separators.
  * \param ignore Set of chars to ignore. They are removed at the start and at the end of the token. They are not removed after the separator.
- * \param The extratect token 0 always terminated.
+ * \return The extratect token, always 0 terminated.
  */
 const char* stoken(char* c, int* p, char* s, const char* sep, const char* ignore)
 {

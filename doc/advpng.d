@@ -3,9 +3,9 @@ Name
 
 Synopsis
 	:advpng [-l, --list] [-z, --recompress] [-0, --shrink-0]
-	:[-1, --shrink-fast] [-2, --shrink-normal [-3, --shrink-extra]
-	:[-4, --shrink-insane] [-f, --force] [-q, --quiet]
-	:[-h, --help] [-V, --version] FILES...
+	:	[-1, --shrink-fast] [-2, --shrink-normal [-3, --shrink-extra]
+	:	[-4, --shrink-insane] [-f, --force] [-q, --quiet]
+	:	[-h, --help] [-V, --version] FILES...
 
 Description
 	The main purpose of this utility is to recompress png

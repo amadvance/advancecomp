@@ -50,19 +50,21 @@ typedef struct adv_mng_write_struct {
 
 	unsigned pal_size; /**< Palette size in bytes. */
 	unsigned char pal_ptr[256*3]; /**< Palette. */
-	adv_bool pal_used[256]; /**< Flag vector for the used entries in the palette. */
 
 	unsigned tick; /**< Last tick used. */
 
 	adv_mng_type type; /**< Type of the MNG stream. */
 	shrink_t level; /**< Compression level of the MNG stream. */
+
 	adv_bool reduce; /**< Try to reduce the images to 256 color. */
 	adv_bool expand; /**< Expand the images to 24 bit color. */
-	adv_bool has_header; /**< If the header was written. */
+
+	adv_bool header_written; /**< If the header was written. */
+	unsigned header_simplicity; /**< Simplicity written in the header. */
 } adv_mng_write;
 
 adv_bool mng_write_has_header(adv_mng_write* mng);
-void mng_write_header(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned width, unsigned height, unsigned frequency, int scroll_x, int scroll_y, unsigned scroll_width, unsigned scroll_height);
+void mng_write_header(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned width, unsigned height, unsigned frequency, int scroll_x, int scroll_y, unsigned scroll_width, unsigned scroll_height, adv_bool alpha);
 void mng_write_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned width, unsigned height, unsigned pixel, unsigned char* img_ptr, unsigned img_scanline, unsigned char* pal_ptr, unsigned pal_size, int shift_x, int shift_y);
 void mng_write_frame(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned tick);
 void mng_write_footer(adv_mng_write* mng, adv_fz* f, unsigned* fc);

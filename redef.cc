@@ -60,7 +60,8 @@ struct block_t {
 	block_t* next;
 };
 
-void copy_data(adv_fz* f_in, adv_fz* f_out, unsigned char* data, unsigned size) {
+void copy_data(adv_fz* f_in, adv_fz* f_out, unsigned char* data, unsigned size)
+{
 	if (fzread(data, size, 1, f_in) != 1) {
 		throw error() << "Error reading";
 	}
@@ -70,7 +71,8 @@ void copy_data(adv_fz* f_in, adv_fz* f_out, unsigned char* data, unsigned size) 
 	}
 }
 
-void copy_data(adv_fz* f_in, adv_fz* f_out, unsigned size) {
+void copy_data(adv_fz* f_in, adv_fz* f_out, unsigned size)
+{
 	while (size > 0) {
 		unsigned char c;
 
@@ -86,7 +88,8 @@ void copy_data(adv_fz* f_in, adv_fz* f_out, unsigned size) {
 	}
 }
 
-void copy_zero(adv_fz* f_in, adv_fz* f_out) {
+void copy_zero(adv_fz* f_in, adv_fz* f_out)
+{
 	while (1) {
 		unsigned char c;
 
@@ -103,7 +106,8 @@ void copy_zero(adv_fz* f_in, adv_fz* f_out) {
 	}
 }
 
-void read_deflate(adv_fz* f_in, unsigned size, unsigned char*& res_data, unsigned& res_size) {
+void read_deflate(adv_fz* f_in, unsigned size, unsigned char*& res_data, unsigned& res_size)
+{
 	z_stream z;
 	block_t* base;
 	block_t* i;
@@ -114,6 +118,7 @@ void read_deflate(adv_fz* f_in, unsigned size, unsigned char*& res_data, unsigne
 	base->data = data_alloc(BLOCK_SIZE);
 	i = base;
 
+	memset(&z, 0, sizeof(z));
 	z.zalloc = 0;
 	z.zfree = 0;
 	z.next_out = i->data;
@@ -212,6 +217,7 @@ void read_idat(adv_fz* f, unsigned char*& data, unsigned& size, unsigned& type, 
 	base->data = data_alloc(BLOCK_SIZE);
 	i = base;
 
+	memset(&z, 0, sizeof(z));
 	z.zalloc = 0;
 	z.zfree = 0;
 	z.next_out = i->data;
@@ -279,7 +285,8 @@ void read_idat(adv_fz* f, unsigned char*& data, unsigned& size, unsigned& type, 
 // --------------------------------------------------------------------------
 // Conversion PNG/MNG
 
-void convert_dat(adv_fz* f_in, adv_fz* f_out, unsigned end) {
+void convert_dat(adv_fz* f_in, adv_fz* f_out, unsigned end)
+{
 	unsigned char* data;
 	unsigned type;
 	unsigned size;
@@ -323,7 +330,8 @@ void convert_dat(adv_fz* f_in, adv_fz* f_out, unsigned end) {
 	}
 }
 
-void convert_png(adv_fz* f_in, adv_fz* f_out) {
+void convert_png(adv_fz* f_in, adv_fz* f_out)
+{
 	if (png_read_signature(f_in) != 0) {
 		throw error_png();
 	}
@@ -335,7 +343,8 @@ void convert_png(adv_fz* f_in, adv_fz* f_out) {
 	convert_dat(f_in, f_out, PNG_CN_IEND);
 }
 
-void convert_mng(adv_fz* f_in, adv_fz* f_out) {
+void convert_mng(adv_fz* f_in, adv_fz* f_out)
+{
 	if (mng_read_signature(f_in) != 0) {
 		throw error_png();
 	}
@@ -350,7 +359,8 @@ void convert_mng(adv_fz* f_in, adv_fz* f_out) {
 // --------------------------------------------------------------------------
 // Conversion GZ
 
-void convert_gz(adv_fz* f_in, adv_fz* f_out) {
+void convert_gz(adv_fz* f_in, adv_fz* f_out)
+{
 	unsigned char header[10];
 
 	copy_data(f_in, f_out, header, 10);
@@ -426,7 +436,8 @@ void convert_gz(adv_fz* f_in, adv_fz* f_out) {
 // --------------------------------------------------------------------------
 // Conversion
 
-void convert_f(ftype_t ftype, adv_fz* f_in, adv_fz* f_out) {
+void convert_f(ftype_t ftype, adv_fz* f_in, adv_fz* f_out)
+{
 	switch (ftype) {
 	case ftype_png :
 		convert_png(f_in, f_out);
@@ -440,7 +451,8 @@ void convert_f(ftype_t ftype, adv_fz* f_in, adv_fz* f_out) {
 	}
 }
 
-void convert_inplace(const string& path) {
+void convert_inplace(const string& path)
+{
 	adv_fz* f_in;
 	adv_fz* f_out;
 	ftype_t ftype;
@@ -505,7 +517,8 @@ void convert_inplace(const string& path) {
 // --------------------------------------------------------------------------
 // Command interface
 
-void rezip_single(const string& file, unsigned long long& total_0, unsigned long long& total_1) {
+void rezip_single(const string& file, unsigned long long& total_0, unsigned long long& total_1)
+{
 	unsigned size_0;
 	unsigned size_1;
 	string desc;
@@ -549,7 +562,8 @@ void rezip_single(const string& file, unsigned long long& total_0, unsigned long
 	total_1 += size_1;
 }
 
-void rezip_all(int argc, char* argv[]) {
+void rezip_all(int argc, char* argv[])
+{
 	unsigned long long total_0 = 0;
 	unsigned long long total_1 = 0;
 
@@ -568,7 +582,7 @@ void rezip_all(int argc, char* argv[]) {
 	}
 }
 
-#ifdef HAVE_GETOPT_LONG
+#if HAVE_GETOPT_LONG
 struct option long_options[] = {
 	{"recompress", 0, 0, 'z'},
 	{"list", 0, 0, 'l'},
@@ -588,11 +602,13 @@ struct option long_options[] = {
 
 #define OPTIONS "zl01234fqhV"
 
-void version() {
+void version()
+{
 	cout << PACKAGE " v" VERSION " by Andrea Mazzoleni" << endl;
 }
 
-void usage() {
+void usage()
+{
 	version();
 
 	cout << "Usage: advpng [options] [FILES...]" << endl;
@@ -611,7 +627,8 @@ void usage() {
 	cout << "  " SWITCH_GETOPT_LONG("-V, --version       ", "-V") "  Version of the program" << endl;
 }
 
-void process(int argc, char* argv[]) {
+void process(int argc, char* argv[])
+{
 	enum cmd_t {
 		cmd_unset, cmd_recompress
 	} cmd = cmd_unset;
@@ -630,7 +647,7 @@ void process(int argc, char* argv[]) {
 	opterr = 0; // don't print errors
 
 	while ((c =
-#ifdef HAVE_GETOPT_LONG
+#if HAVE_GETOPT_LONG
 		getopt_long(argc, argv, OPTIONS, long_options, 0))
 #else
 		getopt(argc, argv, OPTIONS))
@@ -688,8 +705,8 @@ void process(int argc, char* argv[]) {
 	}
 }
 
-int main(int argc, char* argv[]) {
-
+int main(int argc, char* argv[])
+{
 	try {
 		process(argc,argv);
 	} catch (error& e) {

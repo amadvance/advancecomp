@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1999-2003 Andrea Mazzoleni
+ * Copyright (C) 1999, 2000, 2001, 2002, 2003 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,15 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include "portable.h"
+
 #include "png.h"
 #include "endianrw.h"
 #include "error.h"
-
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
 
 /**************************************************************************************/
 /* PNG */
@@ -549,7 +551,7 @@ adv_error png_read_iend(adv_fz* f, const unsigned char* data, unsigned data_size
 		free(ptr);
 
 		if (type == PNG_CN_IEND)
-			return 0;
+			break;
 
 		/* ancillary bit. bit 5 of first byte. 0 (uppercase) = critical, 1 (lowercase) = ancillary. */
 		if ((type & 0x20000000) == 0) {
@@ -809,7 +811,7 @@ err:
 /**
  * Load a PNG image.
  * The image is stored in memory as present in the PNG format. It imply that the row scanline
- * is generally greather than the row size.
+ * is generally greater than the row size.
  * \param pix_width Where to put the image width.
  * \param pix_height Where to put the image height.
  * \param pix_pixel Where to put the image bytes per pixel.
@@ -849,6 +851,7 @@ adv_error png_read_rns(
 			case PNG_CN_IHDR :
 				if (png_read_ihdr(pix_width, pix_height, pix_pixel, dat_ptr, dat_size, pix_ptr, pix_scanline, pal_ptr, pal_size, rns_ptr, rns_size, f, data, size) != 0)
 					goto err_data;
+				free(data);
 				return 0;
 			default :
 				/* ancillary bit. bit 5 of first byte. 0 (uppercase) = critical, 1 (lowercase) = ancillary. */

@@ -161,7 +161,15 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size) {
 
 	switch (type) {
 		case MNG_CN_MHDR :
-			cout << " width:" << be_uint32_read(data+0) << " height:" << be_uint32_read(data+4) << " frequency:" << be_uint32_read(data+8) << " simplicity:" << be_uint32_read(data+24);
+			cout << " width:" << be_uint32_read(data+0) << " height:" << be_uint32_read(data+4) << " frequency:" << be_uint32_read(data+8);
+			cout << " simplicity:" << be_uint32_read(data+24);
+			cout << "(bit";
+			for(i=0;i<32;++i) {
+				if (be_uint32_read(data+24) & (1 << i)) {
+					cout << "," << i;
+				}
+			}
+			cout << ")";
 		break;
 		case MNG_CN_DHDR :
 			cout << " id:" << be_uint16_read(data+0);

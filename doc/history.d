@@ -1,6 +1,10 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 1.10 2004/03
+	) Added support for alpha channel and the new -n option
+		at advmng.
+
 AdvanceCOMP Version 1.9 2003/11
 	) Added support for .tgz files at advdef.
 	) Added the -a option at advmng to create .mng files from

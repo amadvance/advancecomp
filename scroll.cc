@@ -24,21 +24,18 @@
 
 #include <stdlib.h>
 
+#if defined(__i386__)
+#define USE_MMX
+// USE_OPTC
+#endif
+
 static unsigned compare_line(unsigned width, unsigned height, unsigned char* p0, unsigned char* p1, unsigned line) {
 	unsigned i,j;
 	unsigned count = 0;
 
 	for(i=0;i<height;++i) {
-#if !defined(__i386__)
-		for(j=0;j<width;++j) {
-			if (p0[0] == p1[0])
-				++count;
-			++p0;
-			++p1;
-		}
-#else
-#if 1
-	/* MMX ASM optimized version */
+#if defined(USE_MMX)
+		/* MMX ASM optimized version */
 		j = width;
 		while (j >= 8) {
 			unsigned char data[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1 };
@@ -93,6 +90,7 @@ static unsigned compare_line(unsigned width, unsigned height, unsigned char* p0,
 			--j;
 		}
 #else
+#if defined(USE_OPTC)
 		/* C optimized version */
 		j = width;
 		while (j >= 4) {
@@ -122,11 +120,25 @@ static unsigned compare_line(unsigned width, unsigned height, unsigned char* p0,
 			++p1;
 			--j;
 		}
+#else
+		/* standard C implementation */
+		for(j=0;j<width;++j) {
+			if (p0[0] == p1[0])
+				++count;
+			++p0;
+			++p1;
+		}
 #endif
 #endif
 		p0 += line - width;
 		p1 += line - width;
 	}
+
+#if defined(USE_MMX)
+	__asm__ __volatile__ (
+		"emms"
+	);
+#endif
 
 	return count;
 }

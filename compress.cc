@@ -24,9 +24,6 @@
 
 #include <cassert>
 
-// -------------------------------------------------------------------------
-// compression/decompression
-
 bool decompress_deflate_zlib(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned out_size) {
 
 	z_stream stream;
@@ -176,7 +173,7 @@ bool compress_rfc1950_zlib(const unsigned char* in_data, unsigned in_size, unsig
 	return true;
 }
 
-#ifdef USE_BZIP2
+#if USE_BZIP2
 bool compress_bzip2(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned& out_size, int blocksize, int workfactor) {
 	return BZ2_bzBuffToBuffCompress(out_data,&out_size,const_cast<unsigned char*>(in_data),in_size,blocksize,0,workfactor) == BZ_OK;
 }

@@ -6,31 +6,31 @@ advmng [\(hyl, \(hy\(hylist] [\(hyz, \(hy\(hyrecompress]
 .PD 0
 .PP
 .PD
-[\(hyx, \(hy\(hyextract] [\(hya, \(hy\(hyadd RATE MNG_FILE PNG_FILES...]
+	[\(hyx, \(hy\(hyextract] [\(hya, \(hy\(hyadd RATE MNG_FILE PNG_FILES...]
 .PD 0
 .PP
 .PD
-[\(hy0, \(hy\(hyshrink\(hystore] [\(hy1, \(hy\(hyshrink\(hyfast] [\(hy2, \(hy\(hyshrink\(hynormal]
+	[\(hy0, \(hy\(hyshrink\(hystore] [\(hy1, \(hy\(hyshrink\(hyfast] [\(hy2, \(hy\(hyshrink\(hynormal]
 .PD 0
 .PP
 .PD
-[\(hy3, \(hy\(hyshrink\(hyextra] [\(hy4, \(hy\(hyshrink\(hyinsane]
+	[\(hy3, \(hy\(hyshrink\(hyextra] [\(hy4, \(hy\(hyshrink\(hyinsane]
 .PD 0
 .PP
 .PD
-[\(hys, \(hy\(hyscroll HxV] [\(hyS, \(hy\(hyscroll\(hysquare]
+	[\(hys, \(hy\(hyscroll HxV] [\(hyS, \(hy\(hyscroll\(hysquare]
 .PD 0
 .PP
 .PD
-[\(hye, \(hy\(hyexpand] [\(hyr, \(hy\(hyreduce]
+	[\(hye, \(hy\(hyexpand] [\(hyr, \(hy\(hyreduce]
 .PD 0
 .PP
 .PD
-[\(hyc, \(hy\(hylc] [\(hyC, \(hy\(hyvlc] [\(hyf, \(hy\(hyforce] [\(hyq, \(hy\(hyquiet] [\(hyv, \(hy\(hyverbose]
+	[\(hyc, \(hy\(hylc] [\(hyC, \(hy\(hyvlc] [\(hyf, \(hy\(hyforce] [\(hyq, \(hy\(hyquiet] [\(hyv, \(hy\(hyverbose]
 .PD 0
 .PP
 .PD
-[\(hyh, \(hy\(hyhelp] [\(hyV, \(hy\(hyversion] FILES...
+	[\(hyh, \(hy\(hyhelp] [\(hyV, \(hy\(hyversion] FILES...
 .PD 0
 .PP
 .PD
@@ -73,7 +73,9 @@ file is always rewritten without any compression.
 .B \(hyx, \(hy\(hyextract FILES...
 Extract all the .png frames in the .mng clips.
 You can use the \(hy\(hyshrink options to control the
-compression ratio of the .png files.
+compression ratio of the .png files. The extracted
+images are always 24 bit images with alpha channel.
+You can remove the alpha channel with the \(hyn option.
 .TP
 .B \(hya, \(hy\(hyadd RATE MNG_FILE PNG_FILES...
 Compress all the .png files on the command line
@@ -125,10 +127,15 @@ time. Specifically the check done is X+Y<=N.
 .TP
 .B \(hyr, \(hy\(hyreduce
 Force the color reduction to 8 bit. The reduction is
-really done only if any frame have less than 256 colors.
+really done only if any frame have less than 256 colors
+and if no alpha channel is present. To force the reduction
+also if an alpha channel is present use the \(hyn option.
 .TP
 .B \(hye, \(hy\(hyexpand
 Force the color expansion to 24 bit.
+.TP
+.B \(hyn, \(hy\(hynoalpha
+Remove the alpha channel if present.
 .TP
 .B \(hyc, \(hy\(hylc
 Force the use of the MNG LC (Low Complexity)

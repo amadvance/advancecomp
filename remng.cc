@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 2002, 2003 Andrea Mazzoleni
+ * Copyright (C) 2002, 2003, 2004 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,6 +50,7 @@ int opt_dy;
 int opt_limit;
 bool opt_reduce;
 bool opt_expand;
+bool opt_noalpha;
 shrink_t opt_level;
 bool opt_quiet;
 bool opt_verbose;
@@ -255,7 +256,8 @@ bool is_reducible_image(unsigned img_width, unsigned img_height, unsigned img_pi
 	unsigned col_count;
 	unsigned i,j,k;
 
-	if (img_pixel != 3)
+	// if an alpha channel is present th eimage cannot be palettized
+	if (img_pixel != 3 && !opt_noalpha)
 		return false;
 
 	col_count = 0;
@@ -274,7 +276,7 @@ bool is_reducible_image(unsigned img_width, unsigned img_height, unsigned img_pi
 				col_ptr[col_count*3+2] = p0[2];
 				++col_count;
 			}
-			p0 += 3;
+			p0 += img_pixel;
 		}
 	}
 
@@ -408,19 +410,43 @@ bool is_reducible_png(int argc, char* argv[]) {
 // --------------------------------------------------------------------------
 // Conversion
 
-void convert_header(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned frame_width, unsigned frame_height, unsigned frame_frequency, adv_scroll_info* info) {
+void convert_header(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned frame_width, unsigned frame_height, unsigned frame_frequency, adv_scroll_info* info, bool alpha) {
 	if (info) {
-		mng_write_header(mng, f, fc, frame_width, frame_height, frame_frequency, info->x, info->y, info->width, info->height);
+		mng_write_header(mng, f, fc, frame_width, frame_height, frame_frequency, info->x, info->y, info->width, info->height, alpha);
 	} else {
-		mng_write_header(mng, f, fc, frame_width, frame_height, frame_frequency, 0, 0, 0, 0);
+		mng_write_header(mng, f, fc, frame_width, frame_height, frame_frequency, 0, 0, 0, 0, alpha);
 	}
 }
 
 void convert_image(adv_mng_write* mng, adv_fz* f_out, unsigned* fc, unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline, unsigned char* pal_ptr, unsigned pal_size, adv_scroll_coord* scc) {
-	if (scc) {
-		mng_write_image(mng, f_out, fc, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, scc->x, scc->y);
+	if (opt_noalpha && pix_pixel == 4) {
+		/* convert to 3 bytes per pixel */
+		unsigned dst_pixel = 3;
+		unsigned dst_scanline = 3 * pix_width;
+		data_ptr dst_ptr;
+
+		dst_ptr = data_alloc(dst_scanline * pix_height);
+
+		unsigned i,j;
+		for(i=0;i<pix_height;++i) {
+			const unsigned char* p0 = pix_ptr + i * pix_scanline;
+			unsigned char* p1 = dst_ptr + i * dst_scanline;
+			for(j=0;j<pix_width;++j) {
+				p1[0] = p0[0];
+				p1[1] = p0[1];
+				p1[2] = p0[2];
+				p0 += 4;
+				p1 += 3;
+			}
+		}
+
+		convert_image(mng, f_out, fc, pix_width, pix_height, dst_pixel, dst_ptr, dst_scanline, 0, 0, scc);
 	} else {
-		mng_write_image(mng, f_out, fc, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, 0, 0);
+		if (scc) {
+			mng_write_image(mng, f_out, fc, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, scc->x, scc->y);
+		} else {
+			mng_write_image(mng, f_out, fc, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, 0, 0);
+		}
 	}
 }
 
@@ -475,7 +501,7 @@ void convert_f_mng(adv_fz* f_in, adv_fz* f_out, unsigned* filec, unsigned* frame
 					if (frequency == 0)
 						frequency = 1;
 				}
-				convert_header(mng_write, f_out, filec, mng_width_get(mng), mng_height_get(mng), frequency, info);
+				convert_header(mng_write, f_out, filec, mng_width_get(mng), mng_height_get(mng), frequency, info, pix_pixel == 4 && !opt_noalpha);
 				first = false;
 			}
 
@@ -743,17 +769,17 @@ void extract(const string& path_src) {
 
 		++counter;
 
-#if 1
-		// convert to 4 byte RGBA format.
-		// mencoder 0.90 has problems with 3 byte RGB format.
-		png_convert_4(pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, &dst_ptr, &dst_pixel, &dst_scanline);
+		if (!opt_noalpha) {
+			// convert to 4 byte RGBA format.
+			// mencoder 0.90 has problems with 3 byte RGB format.
+			png_convert_4(pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, &dst_ptr, &dst_pixel, &dst_scanline);
 
-		png_write(f_out, pix_width, pix_height, dst_pixel, dst_ptr, dst_scanline, 0, 0, 0, 0, opt_level);
+			png_write(f_out, pix_width, pix_height, dst_pixel, dst_ptr, dst_scanline, 0, 0, 0, 0, opt_level);
 
-		free(dst_ptr);
-#else
-		png_write(f_out, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, 0, 0, opt_level);
-#endif
+			free(dst_ptr);
+		} else {
+			png_write(f_out, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, 0, 0, opt_level);
+		}
 
 		fzclose(f_out);
 	}
@@ -862,8 +888,11 @@ void add_all(int argc, char* argv[], unsigned frequency) {
 				data_ptr pal_ptr(pal_ptr_ext);
 
 				if (!mng_write_has_header(mng_write)) {
-					convert_header(mng_write, f_out, &filec, pix_width, pix_height, frequency, info);
+					convert_header(mng_write, f_out, &filec, pix_width, pix_height, frequency, info, pix_pixel == 4 && !opt_noalpha);
 				}
+
+				if (opt_type != mng_vlc)
+					mng_write_frame(mng_write, f_out, &filec, 1);
 
 				if (info) {
 					if (counter >= info->mac) {
@@ -995,7 +1024,7 @@ void extract_all(int argc, char* argv[]) {
 	}
 }
 
-#ifdef HAVE_GETOPT_LONG
+#if HAVE_GETOPT_LONG
 struct option long_options[] = {
 	{"recompress", 0, 0, 'z'},
 	{"list", 0, 0, 'l'},
@@ -1025,7 +1054,7 @@ struct option long_options[] = {
 };
 #endif
 
-#define OPTIONS "zlLxa:01234s:S:recCfqvhV"
+#define OPTIONS "zlLxa:01234s:S:rencCfqvhV"
 
 void version() {
 	cout << PACKAGE " v" VERSION " by Andrea Mazzoleni" << endl;
@@ -1040,7 +1069,7 @@ void usage() {
 	cout << "  " SWITCH_GETOPT_LONG("-l, --list            ", "-l    ") "  List the content of the files" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-z, --recompress      ", "-z    ") "  Recompress the specified files" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-x, --extract         ", "-x    ") "  Extract all the .PNG frames" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-a, --add F MNG PNG...", "-a    ") "  Create a .MNG file from some .PNG files" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-a, --add F MNG PNG...", "-a    ") "  Create a .MNG file at F frame/s from .PNG files" << endl;
 	cout << "Options:" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-0, --shrink-store    ", "-0    ") "  Don't compress" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-1, --shrink-fast     ", "-1    ") "  Compress fast" << endl;
@@ -1052,6 +1081,7 @@ void usage() {
 	cout << "  " SWITCH_GETOPT_LONG("-S, --scroll-square N ", "-S N  ") "  Enable the square scroll optimization with a NxN pattern" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-r, --reduce          ", "-r    ") "  Convert the output at palette 8 bit if possible" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-e, --expand          ", "-e    ") "  Convert the output at rgb 24 bit" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-n, --noalpha         ", "-n    ") "  Remove the alpha channel" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-c, --lc              ", "-c    ") "  Use the MNG LC (Low Complexity) format" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-C, --vlc             ", "-C    ") "  Use the MNG VLC (Very Low Complexity) format" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-f, --force           ", "-f    ") "  Force the new file also if it's bigger" << endl;
@@ -1072,6 +1102,7 @@ void process(int argc, char* argv[]) {
 	opt_level = shrink_normal;
 	opt_reduce = false;
 	opt_expand = false;
+	opt_noalpha = false;
 	opt_dx = 0;
 	opt_dy = 0;
 	opt_limit = 0;
@@ -1090,7 +1121,7 @@ void process(int argc, char* argv[]) {
 	opterr = 0; // don't print errors
 
 	while ((c =
-#ifdef HAVE_GETOPT_LONG
+#if HAVE_GETOPT_LONG
 		getopt_long(argc, argv, OPTIONS, long_options, 0))
 #else
 		getopt(argc, argv, OPTIONS))
@@ -1178,6 +1209,9 @@ void process(int argc, char* argv[]) {
 			case 'e' :
 				opt_reduce = false;
 				opt_expand = true;
+				break;
+			case 'n' :
+				opt_noalpha = true;
 				break;
 			case 'c' :
 				opt_type = mng_lc;

@@ -3,10 +3,10 @@ Name
 
 Synopsis
 	:advzip [-a, --add] [-x, --extract] [-l, --list]
-	:[-z, --recompress] [-t, --test] [-0, --shrink-store]
-	:[-1, --shrink-fast] [-2, --shrink-normal] [-3, --shrink-extra]
-	:[-4, --shrink-insane] [-N, --not-zip] [-p, --pedantic] [-q, --quiet]
-	:[-h, --help] [-V, --version] ARCHIVES... [FILES...]
+	:	[-z, --recompress] [-t, --test] [-0, --shrink-store]
+	:	[-1, --shrink-fast] [-2, --shrink-normal] [-3, --shrink-extra]
+	:	[-4, --shrink-insane] [-N, --not-zip] [-p, --pedantic] [-q, --quiet]
+	:	[-h, --help] [-V, --version] ARCHIVES... [FILES...]
 
 Description
 	The main purpose of this utility is to recompress and test

@@ -47,7 +47,8 @@ bool opt_crc;
 // --------------------------------------------------------------------------
 // Conversion
 
-bool reduce_image(unsigned char** out_ptr, unsigned* out_scanline, unsigned char* ovr_ptr, unsigned* ovr_count, unsigned width, unsigned height, unsigned char* img_ptr, unsigned img_scanline) {
+bool reduce_image(unsigned char** out_ptr, unsigned* out_scanline, unsigned char* ovr_ptr, unsigned* ovr_count, unsigned width, unsigned height, unsigned char* img_ptr, unsigned img_scanline)
+{
 	unsigned char col_ptr[256*3];
 	unsigned col_count;
 	unsigned i,j,k;
@@ -89,7 +90,8 @@ bool reduce_image(unsigned char** out_ptr, unsigned* out_scanline, unsigned char
 	return true;
 }
 
-void write_image(adv_fz* f, unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline, unsigned char* pal_ptr, unsigned pal_size, unsigned char* rns_ptr, unsigned rns_size) {
+void write_image(adv_fz* f, unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline, unsigned char* pal_ptr, unsigned pal_size, unsigned char* rns_ptr, unsigned rns_size)
+{
 	if (pix_pixel == 1) {
 		png_write(f, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, rns_ptr, rns_size, opt_level);
 	} else {
@@ -116,7 +118,8 @@ void write_image(adv_fz* f, unsigned pix_width, unsigned pix_height, unsigned pi
 	}
 }
 
-void convert_f(adv_fz* f_in, adv_fz* f_out) {
+void convert_f(adv_fz* f_in, adv_fz* f_out)
+{
 	unsigned char* dat_ptr;
 	unsigned dat_size;
 	unsigned pix_pixel;
@@ -160,7 +163,8 @@ void convert_f(adv_fz* f_in, adv_fz* f_out) {
 	free(rns_ptr);
 }
 
-void convert_inplace(const string& path) {
+void convert_inplace(const string& path)
+{
 	adv_fz* f_in;
 	adv_fz* f_out;
 
@@ -215,7 +219,8 @@ void convert_inplace(const string& path) {
 // --------------------------------------------------------------------------
 // List
 
-void png_print(const string& path) {
+void png_print(const string& path)
+{
 	unsigned type;
 	unsigned size;
 	adv_fz* f_in;
@@ -260,7 +265,8 @@ void png_print(const string& path) {
 // --------------------------------------------------------------------------
 // Command interface
 
-void rezip_single(const string& file, unsigned long long& total_0, unsigned long long& total_1) {
+void rezip_single(const string& file, unsigned long long& total_0, unsigned long long& total_1)
+{
 	unsigned size_0;
 	unsigned size_1;
 	string desc;
@@ -304,7 +310,8 @@ void rezip_single(const string& file, unsigned long long& total_0, unsigned long
 	total_1 += size_1;
 }
 
-void rezip_all(int argc, char* argv[]) {
+void rezip_all(int argc, char* argv[])
+{
 	unsigned long long total_0 = 0;
 	unsigned long long total_1 = 0;
 
@@ -323,7 +330,8 @@ void rezip_all(int argc, char* argv[]) {
 	}
 }
 
-void list_all(int argc, char* argv[]) {
+void list_all(int argc, char* argv[])
+{
 	for(int i=0;i<argc;++i) {
 		if (argc > 1 && !opt_crc)
 			cout << "File: " << argv[i] << endl;
@@ -331,7 +339,7 @@ void list_all(int argc, char* argv[]) {
 	}
 }
 
-#ifdef HAVE_GETOPT_LONG
+#if HAVE_GETOPT_LONG
 struct option long_options[] = {
 	{"recompress", 0, 0, 'z'},
 	{"list", 0, 0, 'l'},
@@ -352,11 +360,13 @@ struct option long_options[] = {
 
 #define OPTIONS "zlL01234fqhV"
 
-void version() {
+void version()
+{
 	cout << PACKAGE " v" VERSION " by Andrea Mazzoleni" << endl;
 }
 
-void usage() {
+void usage()
+{
 	version();
 
 	cout << "Usage: advpng [options] [FILES...]" << endl;
@@ -376,7 +386,8 @@ void usage() {
 	cout << "  " SWITCH_GETOPT_LONG("-V, --version       ", "-V") "  Version of the program" << endl;
 }
 
-void process(int argc, char* argv[]) {
+void process(int argc, char* argv[])
+{
 	enum cmd_t {
 		cmd_unset, cmd_recompress, cmd_list
 	} cmd = cmd_unset;
@@ -396,7 +407,7 @@ void process(int argc, char* argv[]) {
 	opterr = 0; // don't print errors
 
 	while ((c =
-#ifdef HAVE_GETOPT_LONG
+#if HAVE_GETOPT_LONG
 		getopt_long(argc, argv, OPTIONS, long_options, 0))
 #else
 		getopt(argc, argv, OPTIONS))
@@ -468,8 +479,8 @@ void process(int argc, char* argv[]) {
 	}
 }
 
-int main(int argc, char* argv[]) {
-
+int main(int argc, char* argv[])
+{
 	try {
 		process(argc,argv);
 	} catch (error& e) {

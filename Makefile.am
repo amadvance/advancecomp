@@ -277,10 +277,14 @@ check-local: advzip check.lst
 	@./advzip -L check.zip >> new.lst
 	@./advzip -t -p check.zip
 	@cp $(srcdir)/test/mappy.mng .
-	@./advmng -f -z -S 8 mappy.mng
+	@./advmng -v -z -1 -f -S 8 mappy.mng
 	@./advmng -L mappy.mng >> new.lst
-	@./advmng -x -1 mappy.mng
-	@./advmng -a 30 -r -S 8 mappy.mng mappy-*.png
+	@./advmng -v -x -1 mappy.mng
+	@./advmng -v -a 30 -1 -S 8 mappy.mng mappy-*.png
+	@./advmng -L mappy.mng >> new.lst
+	@./advmng -v -a 30 -n -1 -S 8 mappy.mng mappy-*.png
+	@./advmng -L mappy.mng >> new.lst
+	@./advmng -v -a 30 -n -r -1 -S 8 mappy.mng mappy-*.png
 	@./advmng -L mappy.mng >> new.lst
 	@cp $(srcdir)/test/mappy.png .
 	@./advpng -f -z mappy.png

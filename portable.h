@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 2002 Andrea Mazzoleni
+ * Copyright (C) 2002, 2004 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,15 +29,64 @@ extern "C" {
 #include <config.h>
 #endif
 
-/* ------------------------------------------------------------------------ */
-/* getopt */
-
-#if HAVE_GETOPT_H
-#include <getopt.h>
-#endif
+/* Include some standard headers */
+#include <stdio.h>
+#include <stdlib.h> /* On many systems (e.g., Darwin), `stdio.h' is a prerequisite. */
+#include <stdarg.h>
+#include <string.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <assert.h>
+#include <errno.h>
+#include <signal.h>
+#include <time.h>
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
+#if TIME_WITH_SYS_TIME
+#include <sys/time.h>
+#include <time.h>
+#else
+#if HAVE_SYS_TIME_H
+#include <sys/time.h>
+#else
+#include <time.h>
+#endif
+#endif
+
+#if HAVE_DIRENT_H
+#include <dirent.h>
+#define NAMLEN(dirent) strlen((dirent)->d_name)
+#else
+#define dirent direct
+#define NAMLEN(dirent) (dirent)->d_namlen
+#if HAVE_SYS_NDIR_H
+#include <sys/ndir.h>
+#endif
+#if HAVE_SYS_DIR_H
+#include <sys/dir.h>
+#endif
+#if HAVE_NDIR_H
+#include <ndir.h>
+#endif
+#endif
+
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+
+#if HAVE_SYS_WAIT_H
+#include <sys/wait.h>
+#endif
+
+#if HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+
+#if HAVE_GETOPT_H
+#include <getopt.h>
 #endif
 
 #if !HAVE_GETOPT
@@ -52,21 +101,12 @@ extern int optind, opterr, optopt;
 #define SWITCH_GETOPT_LONG(a,b) b
 #endif
 
-/* ------------------------------------------------------------------------ */
-/* utime */
-
-#include <time.h>
-
 #if HAVE_UTIME_H
 #include <utime.h>
 #endif
-
 #if HAVE_SYS_UTIME_H
 #include <sys/utime.h>
 #endif
-
-/* ------------------------------------------------------------------------ */
-/* directory separator */
 
 #if defined(__MSDOS__) || defined(__WIN32__)
 #define DIR_SEP ';'
@@ -74,23 +114,19 @@ extern int optind, opterr, optopt;
 #define DIR_SEP ':'
 #endif
 
-/* ------------------------------------------------------------------------ */
-/* mkdir */
+#if defined(__WIN32__)
+#define HAVE_FUNC_MKDIR_ONEARG 1
+#else
+#define HAVE_FUNC_MKDIR_ONEARG 0
+#endif
 
 #if defined(__WIN32__)
-#define HAVE_FUNC_MKDIR_ONEARG
+#define HAVE_SIGHUP 0
+#define HAVE_SIGQUIT 0
+#else
+#define HAVE_SIGHUP 1
+#define HAVE_SIGQUIT 1
 #endif
-
-// ------------------------------------------------------------------------
-// signal
-
-#if !defined(__WIN32__)
-#define HAVE_SIGHUP
-#define HAVE_SIGQUIT
-#endif
-
-/* ------------------------------------------------------------------------ */
-/* snprintf */
 
 #if !HAVE_SNPRINTF
 #include <sys/types.h>

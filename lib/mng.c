@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1999-2002 Andrea Mazzoleni
+ * Copyright (C) 1999, 2000, 2001, 2002, 2003 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,16 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include "portable.h"
+
 #include "mng.h"
 #include "png.h"
 #include "endianrw.h"
 #include "error.h"
-
-#include <stdlib.h>
-#include <string.h>
 
 /**************************************************************************************/
 /* MNG */

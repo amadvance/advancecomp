@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 2002 Andrea Mazzoleni
+ * Copyright (C) 2002, 2004 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,21 +30,12 @@
 
 #include <zlib.h>
 
-#define MESSAGE "log: "
-#define cmessage cerr
-
-#define WARNING "warning: "
-#define cwarning cerr
-
 // ------------------------------------------------------------------------
-// Generic utility
+// String
 
 int striwildcmp(const char* pattern, const char* str);
 unsigned strdec(const char* s, const char** e);
 unsigned strhex(const char* s, const char** e);
-
-std::string numhex(unsigned v);
-std::string numdec(unsigned v);
 
 std::string token_get(const std::string& s, unsigned& ptr, const char* sep);
 void token_skip(const std::string& s, unsigned& ptr, const char* sep);
@@ -53,7 +44,7 @@ void token_skip(const std::string& s, unsigned& ptr, char sep);
 std::string strip_space(const std::string& s);
 
 // ------------------------------------------------------------------------
-// pathspec
+// Path
 
 class filepath {
 	std::string file;
@@ -92,20 +83,22 @@ public:
 typedef std::list<zippath> zippath_container;
 
 // ------------------------------------------------------------------------
-// crc
+// Crc
 
 typedef unsigned crc_t;
 
-inline crc_t crc_compute(const char* data, unsigned len) {
+inline crc_t crc_compute(const char* data, unsigned len)
+{
 	return crc32(0, (unsigned char*)data, len);
 }
 
-inline crc_t crc_compute(crc_t pred, const char* data, unsigned len) {
+inline crc_t crc_compute(crc_t pred, const char* data, unsigned len)
+{
 	return crc32(pred, (unsigned char*)data, len);
 }
 
 // ------------------------------------------------------------------------
-// File utility
+// File
 
 bool file_exists(const std::string& file) throw (error);
 void file_write(const std::string& path, const char* data, unsigned size) throw (error);
@@ -130,7 +123,7 @@ int file_compare(const std::string& path1, const std::string& path2) throw ();
 std::string file_adjust(const std::string& path) throw ();
 
 // ------------------------------------------------------------------------
-// data
+// Data
 
 unsigned char* data_dup(const unsigned char* Adata, unsigned Asize);
 unsigned char* data_alloc(unsigned size);

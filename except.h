@@ -24,6 +24,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 
 class error {
 	std::string function;
