@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 2002, 2003 Andrea Mazzoleni
+ * Copyright (C) 2002, 2003, 2005 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ bool opt_quiet;
 bool opt_force;
 bool opt_crc;
 
-bool reduce_image(unsigned char** out_ptr, unsigned* out_scanline, unsigned char* ovr_ptr, unsigned* ovr_count, unsigned width, unsigned height, unsigned char* img_ptr, unsigned img_scanline)
+bool reduce_image(unsigned char** out_ptr, unsigned* out_scanline, unsigned char* pal_ptr, unsigned* pal_count, unsigned char* palrns_ptr, unsigned *palrns_count, unsigned width, unsigned height, unsigned char* img_ptr, unsigned img_scanline, const unsigned char* rns_ptr, unsigned rns_size)
 {
 	unsigned char col_ptr[256*3];
 	unsigned col_count;
@@ -45,9 +45,24 @@ bool reduce_image(unsigned char** out_ptr, unsigned* out_scanline, unsigned char
 	unsigned char* new_ptr;
 	unsigned new_scanline;
 
+	col_count = 0;
+
+	if (rns_ptr != 0 && rns_size == 6) {
+		/* assume 8 bits per pixel */
+		col_count = 1;
+		col_ptr[0] = rns_ptr[1];
+		col_ptr[1] = rns_ptr[3];
+		col_ptr[2] = rns_ptr[5];
+
+		*palrns_count = 1;
+		palrns_ptr[0] = 0x0;
+	} else {
+		*palrns_count = 0;
+	}
+
 	new_scanline = width;
 	new_ptr = data_alloc(height * new_scanline);
-	col_count = 0;
+
 	for(i=0;i<height;++i) {
 		unsigned char* p0 = img_ptr + i * img_scanline;
 		unsigned char* p1 = new_ptr + i * new_scanline;
@@ -72,8 +87,8 @@ bool reduce_image(unsigned char** out_ptr, unsigned* out_scanline, unsigned char
 		}
 	}
 
-	memcpy(ovr_ptr, col_ptr, col_count * 3);
-	*ovr_count = col_count;
+	memcpy(pal_ptr, col_ptr, col_count * 3);
+	*pal_count = col_count;
 	*out_ptr = new_ptr;
 	*out_scanline = new_scanline;
 
@@ -85,18 +100,19 @@ void write_image(adv_fz* f, unsigned pix_width, unsigned pix_height, unsigned pi
 	if (pix_pixel == 1) {
 		png_write(f, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, rns_ptr, rns_size, opt_level);
 	} else {
-		unsigned char ovr_ptr[256*3];
-		unsigned ovr_count;
+		unsigned char new_pal_ptr[256*3];
+		unsigned new_pal_count;
+		unsigned char new_rns_ptr[256];
+		unsigned new_rns_count;
 		unsigned char* new_ptr;
 		unsigned new_scanline;
 
 		new_ptr = 0;
 
 		try {
-			if (rns_size == 0
-				&& pix_pixel == 3
-				&& reduce_image(&new_ptr, &new_scanline, ovr_ptr, &ovr_count, pix_width, pix_height, pix_ptr, pix_scanline)) {
-				png_write(f, pix_width, pix_height, 1, new_ptr, new_scanline, ovr_ptr, ovr_count * 3, 0, 0, opt_level);
+			if (pix_pixel == 3
+				&& reduce_image(&new_ptr, &new_scanline, new_pal_ptr, &new_pal_count, new_rns_ptr, &new_rns_count, pix_width, pix_height, pix_ptr, pix_scanline, rns_ptr, rns_size)) {
+				png_write(f, pix_width, pix_height, 1, new_ptr, new_scanline, new_pal_ptr, new_pal_count * 3, new_rns_count ? new_rns_ptr : 0, new_rns_count, opt_level);
 			} else {
 				png_write(f, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, 0, 0, rns_ptr, rns_size, opt_level);
 			}

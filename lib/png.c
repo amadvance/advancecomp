@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Andrea Mazzoleni
+ * Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ * In addition, as a special exception, Andrea Mazzoleni
+ * gives permission to link the code of this program with
+ * the MAME library (or with modified versions of MAME that use the
+ * same license as MAME), and distribute linked combinations including
+ * the two.  You must obey the GNU General Public License in all
+ * respects for all of the code used other than MAME.  If you modify
+ * this file, you may extend this exception to your version of the
+ * file, but you are not obligated to do so.  If you do not wish to
+ * do so, delete this exception statement from your version.
  */
 
 #include "portable.h"
@@ -602,7 +612,9 @@ adv_error adv_png_read_ihdr(
 	*dat_ptr = 0;
 	*pix_ptr = 0;
 	*pal_ptr = 0;
+	*pal_size = 0;
 	*rns_ptr = 0;
+	*rns_size = 0;
 
 	if (data_size != 13) {
 		error_set("Invalid IHDR size %d instead of 13", data_size);
@@ -659,50 +671,52 @@ adv_error adv_png_read_ihdr(
 	if (adv_png_read_chunk(f, &ptr, &ptr_size, &type) != 0)
 		goto err;
 
-	while (type != ADV_PNG_CN_PLTE && type != ADV_PNG_CN_IDAT) {
-		free(ptr);
-
-		if (adv_png_read_chunk(f, &ptr, &ptr_size, &type) != 0)
-			goto err;
-	}
-
-	if (type == ADV_PNG_CN_PLTE) {
-		if (!has_palette) {
-			error_set("Unexpected PLTE chunk");
-			goto err_ptr;
-		}
-
-		if (ptr_size > 256*3) {
-			error_set("Invalid palette size in PLTE chunk");
-			goto err_ptr;
-		}
-
-		*pal_ptr = ptr;
-		*pal_size = ptr_size;
-
-		if (adv_png_read_chunk(f, &ptr, &ptr_size, &type) != 0)
-			goto err;
-	} else {
-		if (has_palette) {
-			error_set("Missing PLTE chunk");
-			goto err_ptr;
-		}
-
-		*pal_ptr = 0;
-		*pal_size = 0;
-	}
-
-	*rns_size = 0;
 	while (type != ADV_PNG_CN_IDAT) {
-		if (type == ADV_PNG_CN_tRNS) {
+		if (type == ADV_PNG_CN_PLTE) {
+			if (ptr_size > 256*3) {
+				error_set("Invalid palette size in PLTE chunk");
+				goto err_ptr;
+			}
+
+			if (*pal_ptr) {
+				error_set("Double palette specification");
+				goto err_ptr;
+			}
+
+			*pal_ptr = ptr;
+			*pal_size = ptr_size;
+		} else if (type == ADV_PNG_CN_tRNS) {
+			if (*rns_ptr) {
+				error_set("Double rns specification");
+				goto err_ptr;
+			}
+
 			*rns_ptr = ptr;
 			*rns_size = ptr_size;
 		} else {
+			/* ancillary bit. bit 5 of first byte. 0 (uppercase) = critical, 1 (lowercase) = ancillary. */
+			if ((type & 0x20000000) == 0) {
+				char buf[4];
+				be_uint32_write(buf, type);
+				error_unsupported_set("Unsupported critical chunk '%c%c%c%c'", buf[0], buf[1], buf[2], buf[3]);
+				goto err_ptr;
+			}
+
 			free(ptr);
 		}
 
 		if (adv_png_read_chunk(f, &ptr, &ptr_size, &type) != 0)
 			goto err;
+	}
+
+	if (has_palette && !*pal_ptr) {
+		error_set("Missing PLTE chunk");
+		goto err_ptr;
+	}
+
+	if (!has_palette && *pal_ptr) {
+		error_set("Unexpected PLTE chunk");
+		goto err_ptr;
 	}
 
 	*dat_size = height * (width_align * pixel + 1);

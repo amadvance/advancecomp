@@ -5,6 +5,8 @@ AdvanceCOMP Version 1.14 2005/02
 	) Relaxed a consistency check for the local header in zip files.
 		The crc and size entries are allowed to contain the real
 		value also if a data descriptor is present.
+	) Fixed the conversion of RGB images with less than 256 color
+		with transparency data.
 	) Minor fixes at the documentation.
 
 AdvanceCOMP Version 1.13 2004/11
