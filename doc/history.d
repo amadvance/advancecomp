@@ -2,7 +2,7 @@ Name
 	advcomp - History For AdvanceCOMP
 
 AdvanceCOMP Version 1.13 2004/10
-	) Added support for .svgz files at advdef.
+	) Added support for .svgz files at advdef [rener].
 
 AdvanceCOMP Version 1.12 2004/09
 	) Fixed a compilation problem with gcc 3.4.
@@ -63,7 +63,7 @@ AdvanceSCAN Version 1.3 2002/11
 	) Added the support for the transparency tRNS chunk at the
 		advpng utility.
 	) Upgraded at the latest Advance Library.
-	) Fixes at the docs. [by Filipe Estima]
+	) Fixes at the docs. [Filipe Estima]
 	) Minor changes at the autoconf/automake scripts.
 
 AdvanceSCAN Version 1.2 2002/08
