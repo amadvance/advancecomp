@@ -98,7 +98,7 @@ void rezip_all(int argc, char* argv[], bool quiet, bool standard, shrink_t level
 	}
 }
 
-void list_single(const string& file) {
+void list_single(const string& file, bool crc) {
 	if (!file_exists(file)) {
 		throw error() << "File " << file << " doesn't exist";
 	}
@@ -124,6 +124,16 @@ Archive:  /mnt/bag/home/am/data/src/advscan/prova.zip
 
 		unsigned long long compressed_size = 0;
 		unsigned long long uncompressed_size = 0;
+
+		if (crc) {
+			for(zip::iterator i=z.begin();i!=z.end();++i) {
+				cout << hex << setw(8) << setfill('0') << i->crc_get();
+				cout << " ";
+				cout << dec << setw(0) << setfill(' ') << i->compressed_size_get();
+				cout << "\n";
+			}
+
+		} else {
 
 		cout << "Archive:  " << file << endl;
 		cout << "  Length   Method    Size  Ratio   Date   Time   CRC-32    Name" << endl;
@@ -236,6 +246,8 @@ Archive:  /mnt/bag/home/am/data/src/advscan/prova.zip
 
 		cout << z.size() << " files" << endl;
 
+		}
+
 		z.close();
 
 	} catch (error& e) {
@@ -243,10 +255,10 @@ Archive:  /mnt/bag/home/am/data/src/advscan/prova.zip
 	}
 }
 
-void list_all(int argc, char* argv[]) {
+void list_all(int argc, char* argv[], bool crc) {
 	string file(argv[0]);
 	for(int i=0;i<argc;++i) {
-		list_single(argv[i]);
+		list_single(argv[i], crc);
 	}
 }
 
@@ -414,6 +426,7 @@ struct option long_options[] = {
 	{"recompress", 0, 0, 'z'},
 	{"test", 0, 0, 't'},
 	{"list", 0, 0, 'l'},
+	{"list-crc", 0, 0, 'L'},
 
 	{"not-zip", 0, 0, 'N'},
 	{"pedantic", 0, 0, 'p'},
@@ -431,7 +444,7 @@ struct option long_options[] = {
 };
 #endif
 
-#define OPTIONS "axztlNp01234qhV"
+#define OPTIONS "axztlLNp01234qhV"
 
 void version() {
 	cout << PACKAGE " v" VERSION " by Andrea Mazzoleni" << endl;
@@ -467,6 +480,7 @@ void process(int argc, char* argv[]) {
 	bool quiet = false;
 	bool notzip = false;
 	bool pedantic = false;
+	bool crc = false;
 	shrink_t level = shrink_normal;
 
 	if (argc <= 1) {
@@ -507,6 +521,12 @@ void process(int argc, char* argv[]) {
 				cmd = cmd_test;
 				break;
 			case 'l' :
+				if (cmd != cmd_unset)
+					throw error() << "Too many commands";
+				cmd = cmd_list;
+				break;
+			case 'L' :
+				crc = true;
 				if (cmd != cmd_unset)
 					throw error() << "Too many commands";
 				cmd = cmd_list;
@@ -568,7 +588,7 @@ void process(int argc, char* argv[]) {
 		test_all(argc - optind, argv + optind, quiet);
 		break;
 	case cmd_list :
-		list_all(argc - optind, argv + optind);
+		list_all(argc - optind, argv + optind, crc);
 		break;
 	case cmd_unset :
 		throw error() << "No command specified";

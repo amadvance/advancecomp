@@ -9,7 +9,7 @@
 advmng [-l, --list] [-z, --recompress] [-x, --extract]
 [-0, --shrink-store] [-1, --shrink-fast] [-2, --shrink-normal]
 [-3, --shrink-extra] [-4, --shrink-insane]
-[-s, --scroll HxV] [-S, --scroll-auto]
+[-s, --scroll HxV] [-S, --scroll-square]
 [-e, --expand] [-r, --reduce]
 [-c, --lc] [-C, --vlc] [-f, --force] [-q, --quiet] [-v, --verbose]
 [-h, --help] [-V, --version] FILES...

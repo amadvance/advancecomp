@@ -137,7 +137,17 @@ EXTRA_DIST = \
 	doc/advdef.html doc/advzip.html doc/advpng.html doc/advmng.html doc/history.html doc/readme.html doc/authors.html doc/install.html \
 	configure.msdos configure.windows autogen.sh noautomake.sh \
 	7z/README \
-	check.lst
+	check.lst \
+	test/mappy.png \
+	test/mappy.mng \
+	test/pengo.png \
+	test/pengo.mng \
+	test/basn2c08.png \
+	test/basn3p01.png \
+	test/basn3p02.png \
+	test/basn3p04.png \
+	test/basn3p08.png \
+	test/basn6a08.png
 
 noinst_HEADERS = \
 	snprintf.c \
@@ -199,7 +209,8 @@ noinst_HEADERS = \
 man_MANS = doc/advdef.1 doc/advzip.1 doc/advpng.1 doc/advmng.1
 
 clean-local:
-	rm -f new.lst check.zip
+	rm -f new.lst check.zip mappy.mng pengo.mng mappy.png pengo.png
+	rm -f basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png
 	rm -f advdef.exe advzip.exe advpng.exe advmng.exe
 
 maintainer-clean-local:
@@ -239,29 +250,38 @@ doc/copying.txt: COPYING
 
 check-local: advzip check.lst
 	@./advzip -a -1 check.zip $(srcdir)/COPYING
-	@./advzip -l check.zip > new.lst
+	@./advzip -L check.zip > new.lst
 	@./advzip -t -p check.zip
 	@./advzip -a -2 check.zip $(srcdir)/COPYING
-	@./advzip -l check.zip >> new.lst
+	@./advzip -L check.zip >> new.lst
 	@./advzip -t -p check.zip
 	@./advzip -a -3 check.zip $(srcdir)/COPYING
-	@./advzip -l check.zip >> new.lst
+	@./advzip -L check.zip >> new.lst
 	@./advzip -t -p check.zip
 	@./advzip -a -4 check.zip $(srcdir)/COPYING
-	@./advzip -l check.zip >> new.lst
+	@./advzip -L check.zip >> new.lst
 	@./advzip -t -p check.zip
 	@./advzip -a -1 -N check.zip $(srcdir)/COPYING
-	@./advzip -l check.zip >> new.lst
+	@./advzip -L check.zip >> new.lst
 	@./advzip -t -p check.zip
 	@./advzip -a -2 -N check.zip $(srcdir)/COPYING
-	@./advzip -l check.zip >> new.lst
+	@./advzip -L check.zip >> new.lst
 	@./advzip -t -p check.zip
 	@./advzip -a -3 -N check.zip $(srcdir)/COPYING
-	@./advzip -l check.zip >> new.lst
+	@./advzip -L check.zip >> new.lst
 	@./advzip -t -p check.zip
 	@./advzip -a -4 -N check.zip $(srcdir)/COPYING
-	@./advzip -l check.zip >> new.lst
+	@./advzip -L check.zip >> new.lst
 	@./advzip -t -p check.zip
+	@cp $(srcdir)/test/pengo.mng $(srcdir)/test/mappy.mng .
+	@./advmng -f -z -S 8 pengo.mng mappy.mng
+	@./advmng -L pengo.mng mappy.mng >> new.lst
+	@cp $(srcdir)/test/pengo.png $(srcdir)/test/mappy.png .
+	@./advpng -f -z pengo.png mappy.png
+	@./advpng -L pengo.png mappy.png >> new.lst
+	@cp $(srcdir)/test/basn2c08.png $(srcdir)/test/basn3p01.png $(srcdir)/test/basn3p02.png $(srcdir)/test/basn3p04.png $(srcdir)/test/basn3p08.png $(srcdir)/test/basn6a08.png .
+	@./advpng -f -z basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png
+	@./advpng -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png >> new.lst
 	@cmp new.lst $(srcdir)/check.lst
 	@echo Success!
 
@@ -306,4 +326,5 @@ DISTWEB = \
 	doc/advdef.hh doc/advzip.hh doc/advpng.hh doc/advmng.hh doc/history.hh
 
 web: $(DISTWEB)
+
 

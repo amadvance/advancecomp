@@ -34,6 +34,8 @@
 
 #include "snstring.h"
 
+#include "portable.h"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -132,9 +134,6 @@ const char* stoken(char* c, int* p, char* s, const char* sep, const char* ignore
 	unsigned begin;
 	unsigned end;
 
-	while (s[*p] && strchr(ignore, s[*p])!=0)
-		++*p;
-
 	begin = *p;
 
 	while (s[*p] && strchr(sep, s[*p])==0)
@@ -146,6 +145,10 @@ const char* stoken(char* c, int* p, char* s, const char* sep, const char* ignore
 	if (s[*p]) {
 		s[*p] = 0;
 		++*p;
+	}
+
+	while (begin < end && strchr(ignore, s[begin])!=0) {
+		++begin;
 	}
 
 	while (begin < end && strchr(ignore, s[end-1])!=0) {

@@ -42,6 +42,7 @@ using namespace std;
 shrink_t opt_level;
 bool opt_quiet;
 bool opt_force;
+bool opt_crc;
 
 // --------------------------------------------------------------------------
 // Conversion
@@ -236,7 +237,14 @@ void png_print(const string& path) {
 				throw error_png();
 			}
 
-			png_print_chunk(type, data, size);
+			if (opt_crc) {
+				cout << hex << setw(8) << setfill('0') << crc32(0, data, size);
+				cout << " ";
+				cout << dec << setw(0) << setfill(' ') << size;
+				cout << "\n";
+			} else {
+				png_print_chunk(type, data, size);
+			}
 
 			free(data);
 
@@ -317,7 +325,7 @@ void rezip_all(int argc, char* argv[]) {
 
 void list_all(int argc, char* argv[]) {
 	for(int i=0;i<argc;++i) {
-		if (argc > 1)
+		if (argc > 1 && !opt_crc)
 			cout << "File: " << argv[i] << endl;
 		png_print(argv[i]);
 	}
@@ -327,6 +335,7 @@ void list_all(int argc, char* argv[]) {
 struct option long_options[] = {
 	{"recompress", 0, 0, 'z'},
 	{"list", 0, 0, 'l'},
+	{"list-crc", 0, 0, 'L'},
 
 	{"shrink-store", 0, 0, '0'},
 	{"shrink-fast", 0, 0, '1'},
@@ -341,7 +350,7 @@ struct option long_options[] = {
 };
 #endif
 
-#define OPTIONS "zl01234fqhV"
+#define OPTIONS "zlL01234fqhV"
 
 void version() {
 	cout << PACKAGE " v" VERSION " by Andrea Mazzoleni" << endl;
@@ -375,6 +384,7 @@ void process(int argc, char* argv[]) {
 	opt_quiet = false;
 	opt_level = shrink_normal;
 	opt_force = false;
+	opt_crc = false;
 
 	if (argc <= 1) {
 		usage();
@@ -402,6 +412,12 @@ void process(int argc, char* argv[]) {
 				if (cmd != cmd_unset)
 					throw error() << "Too many commands";
 				cmd = cmd_list;
+				break;
+			case 'L' :
+				if (cmd != cmd_unset)
+					throw error() << "Too many commands";
+				cmd = cmd_list;
+				opt_crc = true;
 				break;
 			case '0' :
 				opt_level = shrink_none;

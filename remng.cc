@@ -29,12 +29,15 @@
 #include "lib/endianrw.h"
 #include "lib/mng.h"
 
+#include <zlib.h>
+
 #include <iostream>
 #include <iomanip>
 
 #include <cstdio>
 #include <cassert>
 #include <unistd.h>
+
 
 using namespace std;
 
@@ -53,6 +56,7 @@ bool opt_scroll;
 bool opt_lc;
 bool opt_vlc;
 bool opt_force;
+bool opt_crc;
 
 void clear_line()
 {
@@ -78,8 +82,8 @@ unsigned compare_line(unsigned width, unsigned height, unsigned char* p0, unsign
 #if 1
 	/* MMX ASM optimized version */
 		j = width;
-		while (j>=8) {
-			unsigned char data[16] = { 0, 0 ,0 ,0 ,0 ,0 ,0 ,0, 1, 1, 1, 1, 1, 1, 1, 1 };
+		while (j >= 8) {
+			unsigned char data[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1 };
 
 			unsigned run = j / 8;
 
@@ -111,7 +115,7 @@ unsigned compare_line(unsigned width, unsigned height, unsigned char* p0, unsign
 
 				: "+r" (p0), "+r" (p1), "+r" (run)
 				: "r" (data)
-				: "cc"
+				: "cc", "memory"
 			);
 
 			count += data[0];
@@ -1396,7 +1400,14 @@ void mng_print(const string& path) {
 				throw error_png();
 			}
 
-			png_print_chunk(type, data, size);
+			if (opt_crc) {
+				cout << hex << setw(8) << setfill('0') << crc32(0, data, size);
+				cout << " ";
+				cout << dec << setw(0) << setfill(' ') << size;
+				cout << "\n";
+			} else {
+				png_print_chunk(type, data, size);
+			}
 
 			free(data);
 
@@ -1583,7 +1594,7 @@ void rezip_all(int argc, char* argv[]) {
 
 void list_all(int argc, char* argv[]) {
 	for(int i=0;i<argc;++i) {
-		if (argc > 1)
+		if (argc > 1 && !opt_crc)
 			cout << "File: " << argv[i] << endl;
 		mng_print(argv[i]);
 	}
@@ -1599,6 +1610,7 @@ void extract_all(int argc, char* argv[]) {
 struct option long_options[] = {
 	{"recompress", 0, 0, 'z'},
 	{"list", 0, 0, 'l'},
+	{"list-crc", 0, 0, 'L'},
 	{"extract", 0, 0, 'x'},
 
 	{"shrink-store", 0, 0, '0'},
@@ -1623,7 +1635,7 @@ struct option long_options[] = {
 };
 #endif
 
-#define OPTIONS "zlx01234s:S:recCfqvhV"
+#define OPTIONS "zlLx01234s:S:recCfqvhV"
 
 void version() {
 	cout << PACKAGE " v" VERSION " by Andrea Mazzoleni" << endl;
@@ -1675,6 +1687,7 @@ void process(int argc, char* argv[]) {
 	opt_lc = false;
 	opt_vlc = false;
 	opt_force = false;
+	opt_crc = false;
 
 	if (argc <= 1) {
 		usage();
@@ -1702,6 +1715,12 @@ void process(int argc, char* argv[]) {
 				if (cmd != cmd_unset)
 					throw error() << "Too many commands";
 				cmd = cmd_list;
+				break;
+			case 'L' :
+				if (cmd != cmd_unset)
+					throw error() << "Too many commands";
+				cmd = cmd_list;
+				opt_crc = true;
 				break;
 			case 'x' :
 				if (cmd != cmd_unset)
