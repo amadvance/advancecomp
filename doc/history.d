@@ -1,6 +1,9 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 1.13 2004/10
+	) Added support for .svgz files at advdef.
+
 AdvanceCOMP Version 1.12 2004/09
 	) Fixed a compilation problem with gcc 3.4.
 

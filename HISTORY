@@ -3,13 +3,19 @@
                             =======================
 
 
-1 ADVANCECOMP VERSION 1.12 2004/09
+1 ADVANCECOMP VERSION 1.13 2004/10
+==================================
+
+* Added support for .svgz files at advdef.
+
+
+2 ADVANCECOMP VERSION 1.12 2004/09
 ==================================
 
 * Fixed a compilation problem with gcc 3.4.
 
 
-2 ADVANCECOMP VERSION 1.11 2004/07
+3 ADVANCECOMP VERSION 1.11 2004/07
 ==================================
 
 * Fixed a FreeBSD libc compatibility issue recompressing
@@ -18,7 +24,7 @@
   compressed .zip files are tested.
 
 
-3 ADVANCECOMP VERSION 1.10 2004/04
+4 ADVANCECOMP VERSION 1.10 2004/04
 ==================================
 
 * Added support for alpha channel and the new -n option
@@ -27,7 +33,7 @@
   with some GZIP files [Christian Lestrade].
 
 
-4 ADVANCECOMP VERSION 1.9 2003/11
+5 ADVANCECOMP VERSION 1.9 2003/11
 =================================
 
 * Added support for .tgz files at advdef.
@@ -35,14 +41,14 @@
   a sequence of .png files.
 
 
-5 ADVANCECOMP VERSION 1.8 2003/10
+6 ADVANCECOMP VERSION 1.8 2003/10
 =================================
 
 * Added support for .gz files at advdef.
 * Fixed support for .png files with splitted IDATs.
 
 
-6 ADVANCECOMP VERSION 1.7 2003/08
+7 ADVANCECOMP VERSION 1.7 2003/08
 =================================
 
 * Fixed a Segmentation Fault bug on the advmng -r option on
@@ -60,7 +66,7 @@
 * Updated with automake 1.7.6.
 
 
-7 ADVANCECOMP VERSION 1.6 2003/05
+8 ADVANCECOMP VERSION 1.6 2003/05
 =================================
 
 * Added the `-x' option at the advmng utility to export .png files
@@ -70,22 +76,22 @@
 * Some fixes for the gcc 3.3 compiler.
 
 
-8 ADVANCECOMP VERSION 1.5 2003/01
+9 ADVANCECOMP VERSION 1.5 2003/01
 =================================
 
 * Splitted from AdvanceSCAN
 * Added the `advdef' compression utility.
 
 
-9 ADVANCESCAN VERSION 1.4 2002/12
-=================================
+10 ADVANCESCAN VERSION 1.4 2002/12
+==================================
 
 * Fixed a bug in the advmng utility when it was called with
   more than one file in the command line. The program
   was incorrectly adding a PLTE chunk at rgb images.
 
 
-10 ADVANCESCAN VERSION 1.3 2002/11
+11 ADVANCESCAN VERSION 1.3 2002/11
 ==================================
 
 * Added the support for the transparency tRNS chunk at the
@@ -95,7 +101,7 @@
 * Minor changes at the autoconf/automake scripts.
 
 
-11 ADVANCESCAN VERSION 1.2 2002/08
+12 ADVANCESCAN VERSION 1.2 2002/08
 ==================================
 
 * Added the advpng utility to compress the PNG files.
@@ -104,14 +110,14 @@
 * Other minor fixes.
 
 
-12 ADVANCESCAN VERSION 1.1 2002/06
+13 ADVANCESCAN VERSION 1.1 2002/06
 ==================================
 
 * Fixed an infinite loop bug testing some small damaged zips.
 * Removed some warning compiling with gcc 3.1.
 
 
-13 ADVANCESCAN VERSION 1.0 2002/05
+14 ADVANCESCAN VERSION 1.0 2002/05
 ==================================
 
 * First public release.
@@ -120,7 +126,7 @@
   tests are only done if requested.
 
 
-14 ADVANCESCAN VERSION 0.6-BETA 2002/05
+15 ADVANCESCAN VERSION 0.6-BETA 2002/05
 =======================================
 
 * Added the AdvanceZIP utility.
