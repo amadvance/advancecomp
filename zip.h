@@ -201,7 +201,7 @@ public:
 	zip_entry(const zip_entry& A);
 	~zip_entry();
 
-	void load_local(const unsigned char* buf, FILE* f);
+	void load_local(const unsigned char* buf, FILE* f, unsigned size);
 	void save_local(FILE* f);
 	void load_cent(const unsigned char* buf, unsigned& skip);
 	void save_cent(FILE* f);
@@ -261,6 +261,8 @@ class zip {
 	void skip_local(const unsigned char* buf, FILE* f);
 
 	static bool pedantic;
+
+	friend class zip_entry;
 public:
 	static void pedantic_set(bool Apedantic) { pedantic = Apedantic; }
 

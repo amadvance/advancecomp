@@ -36,6 +36,11 @@
 
 using namespace std;
 
+/**
+ * Enable pendantic checks on the zip integrity.
+ */
+bool zip::pedantic = false;
+
 bool ecd_compare_sig(const unsigned char *buffer)
 {
 	static char ecdsig[] = { 'P', 'K', 0x05, 0x06 };
@@ -273,13 +278,13 @@ bool zip_entry::is_text() const
 void zip_entry::compressed_seek(FILE* f) const
 {
 	// seek to local header
-	if (fseek(f, offset_get(), SEEK_SET)!=0) {
+	if (fseek(f, offset_get(), SEEK_SET) != 0) {
 		throw error_invalid() << "Failed seek " << parentname_get();
 	}
 
 	// read local header
 	unsigned char buf[ZIP_LO_FIXED];
-	if (fread(buf, ZIP_LO_FIXED, 1, f)!=1) {
+	if (fread(buf, ZIP_LO_FIXED, 1, f) != 1) {
 		throw error() << "Failed read " << parentname_get();
 	}
 
@@ -309,7 +314,7 @@ void zip_entry::compressed_read(unsigned char* outdata) const
 			compressed_seek(f);
 
 			if (compressed_size_get() > 0) {
-				if (fread(outdata, compressed_size_get(), 1, f)!=1) {
+				if (fread(outdata, compressed_size_get(), 1, f) != 1) {
 					throw error() << "Failed read " << parentname_get();
 				}
 			}
@@ -477,14 +482,27 @@ void zip_entry::check_local(const unsigned char* buf) const
 		throw error_invalid() << "Invalid method on local header";
 	}
 	if ((le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag) & ZIP_GEN_FLAGS_DEFLATE_ZERO) != 0) {
-		if (le_uint32_read(buf+ZIP_LO_crc32) != 0) {
-			throw error_invalid() << "Not zero crc on local header " << le_uint32_read(buf+ZIP_LO_crc32);
-		}
-		if (le_uint32_read(buf+ZIP_LO_compressed_size) != 0) {
-			throw error_invalid() << "Not zero compressed size in local header " << le_uint32_read(buf+ZIP_LO_compressed_size);
-		}
-		if (le_uint32_read(buf+ZIP_LO_uncompressed_size) != 0) {
-			throw error_invalid() << "Not zero uncompressed size in local header " << le_uint32_read(buf+ZIP_LO_uncompressed_size);
+		if (zip::pedantic) {
+			if (le_uint32_read(buf+ZIP_LO_crc32) != 0) {
+				throw error_invalid() << "Not zero crc on local header " << le_uint32_read(buf+ZIP_LO_crc32);
+			}
+			if (le_uint32_read(buf+ZIP_LO_compressed_size) != 0) {
+				throw error_invalid() << "Not zero compressed size in local header " << le_uint32_read(buf+ZIP_LO_compressed_size);
+			}
+			if (le_uint32_read(buf+ZIP_LO_uncompressed_size) != 0) {
+				throw error_invalid() << "Not zero uncompressed size in local header " << le_uint32_read(buf+ZIP_LO_uncompressed_size);
+			}
+		} else {
+			// allow the entries to have the correct value instead of 0
+			if (le_uint32_read(buf+ZIP_LO_crc32) != 0 && info.crc32 != le_uint32_read(buf+ZIP_LO_crc32)) {
+				throw error_invalid() << "Not zero crc on local header " << le_uint32_read(buf+ZIP_LO_crc32);
+			}
+			if (le_uint32_read(buf+ZIP_LO_compressed_size) != 0 && info.compressed_size != le_uint32_read(buf+ZIP_LO_compressed_size)) {
+				throw error_invalid() << "Not zero compressed size in local header " << le_uint32_read(buf+ZIP_LO_compressed_size);
+			}
+			if (le_uint32_read(buf+ZIP_LO_uncompressed_size) != 0 && info.uncompressed_size != le_uint32_read(buf+ZIP_LO_uncompressed_size)) {
+				throw error_invalid() << "Not zero uncompressed size in local header " << le_uint32_read(buf+ZIP_LO_uncompressed_size);
+			}
 		}
 	} else {
 		if (info.crc32 != le_uint32_read(buf+ZIP_LO_crc32)) {
@@ -535,20 +553,20 @@ void zip::skip_local(const unsigned char* buf, FILE* f)
 	unsigned compressed_size = le_uint32_read(buf+ZIP_LO_compressed_size);
 	
 	// skip filename and extra field
-	if (fseek(f, filename_length + local_extra_field_length, SEEK_CUR)!=0) {
+	if (fseek(f, filename_length + local_extra_field_length, SEEK_CUR) != 0) {
 		throw error_invalid() << "Failed seek";
 	}
 
 	// directory don't have data
 	if (compressed_size) {
-		if (fseek(f, compressed_size, SEEK_CUR)!=0) {
+		if (fseek(f, compressed_size, SEEK_CUR) != 0) {
 			throw error_invalid() << "Failed seek";
 		}
 	}
 
 	// data descriptor
 	if ((le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag) & ZIP_GEN_FLAGS_DEFLATE_ZERO) != 0) {
-		if (fseek(f, ZIP_DO_FIXED, SEEK_CUR)!=0) {
+		if (fseek(f, ZIP_DO_FIXED, SEEK_CUR) != 0) {
 			throw error_invalid() << "Failed seek";
 		}
 	}
@@ -559,7 +577,7 @@ void zip::skip_local(const unsigned char* buf, FILE* f)
  * \param buf Fixed size local header.
  * \param f File seeked after the fixed size local header.
  */
-void zip_entry::load_local(const unsigned char* buf, FILE* f)
+void zip_entry::load_local(const unsigned char* buf, FILE* f, unsigned size)
 {
 	check_local(buf);
 
@@ -567,17 +585,27 @@ void zip_entry::load_local(const unsigned char* buf, FILE* f)
 	// central directory version in some zips.
 	unsigned local_extra_field_length = le_uint16_read(buf+ZIP_LO_extra_field_length);
 
+	if (size < info.filename_length + local_extra_field_length) {
+		throw error_invalid() << "Overflow of filename";
+	}
+	size -= info.filename_length + local_extra_field_length;
+
 	// skip filename and extra field
-	if (fseek(f, info.filename_length + local_extra_field_length, SEEK_CUR)!=0) {
+	if (fseek(f, info.filename_length + local_extra_field_length, SEEK_CUR) != 0) {
 		throw error_invalid() << "Failed seek";
 	}
 
 	data_free(data);
 	data = data_alloc(info.compressed_size);
 
+	if (size < info.compressed_size) {
+		throw error_invalid() << "Overflow of compressed data";
+	}
+	size -= info.compressed_size;
+
 	try {
 		if (info.compressed_size > 0) {
-			if (fread(data, info.compressed_size, 1, f)!=1) {
+			if (fread(data, info.compressed_size, 1, f) != 1) {
 				throw error() << "Failed read";
 			}
 		}
@@ -591,7 +619,12 @@ void zip_entry::load_local(const unsigned char* buf, FILE* f)
 	if ((le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag) & ZIP_GEN_FLAGS_DEFLATE_ZERO) != 0) {
 		unsigned char data_desc[ZIP_DO_FIXED];
 
-		if (fread(data_desc, ZIP_DO_FIXED, 1, f)!=1) {
+		if (size < ZIP_DO_FIXED) {
+			throw error_invalid() << "Overflow of data descriptor";
+		}
+		size -= ZIP_DO_FIXED;
+
+		if (fread(data_desc, ZIP_DO_FIXED, 1, f) != 1) {
 			throw error() << "Failed read";
 		}
 
@@ -628,17 +661,17 @@ void zip_entry::save_local(FILE* f)
 	le_uint16_write(buf+ZIP_LO_filename_length, info.filename_length);
 	le_uint16_write(buf+ZIP_LO_extra_field_length, info.local_extra_field_length);
 
-	if (fwrite(buf, ZIP_LO_FIXED, 1, f)!=1) {
+	if (fwrite(buf, ZIP_LO_FIXED, 1, f) != 1) {
 		throw error() << "Failed write";
 	}
 
 	// write filename
-	if (fwrite(file_name, info.filename_length, 1, f)!=1) {
+	if (fwrite(file_name, info.filename_length, 1, f) != 1) {
 		throw error() << "Failed write";
 	}
 
 	// write the extra field
-	if (info.local_extra_field_length && fwrite(local_extra_field, info.local_extra_field_length, 1, f)!=1) {
+	if (info.local_extra_field_length && fwrite(local_extra_field, info.local_extra_field_length, 1, f) != 1) {
 		throw error() << "Failed write";
 	}
 
@@ -646,7 +679,7 @@ void zip_entry::save_local(FILE* f)
 	if (info.compressed_size) {
 		assert(data);
 
-		if (fwrite(data, info.compressed_size, 1, f)!=1) {
+		if (fwrite(data, info.compressed_size, 1, f) != 1) {
 			throw error() << "Failed write";
 		}
 	}
@@ -731,30 +764,25 @@ void zip_entry::save_cent(FILE* f)
 	le_uint32_write(buf+ZIP_CO_external_file_attrib, info.external_file_attrib);
 	le_uint32_write(buf+ZIP_CO_relative_offset_of_local_header, info.relative_offset_of_local_header);
 
-	if (fwrite(buf, ZIP_CO_FIXED, 1, f)!=1) {
+	if (fwrite(buf, ZIP_CO_FIXED, 1, f) != 1) {
 		throw error() << "Failed write";
 	}
 
 	// write filename
-	if (fwrite(file_name, info.filename_length, 1, f)!=1) {
+	if (fwrite(file_name, info.filename_length, 1, f) != 1) {
 		throw error() << "Failed write";
 	}
 
 	// write extra field
-	if (info.central_extra_field_length && fwrite(central_extra_field, info.central_extra_field_length, 1, f)!=1) {
+	if (info.central_extra_field_length && fwrite(central_extra_field, info.central_extra_field_length, 1, f) != 1) {
 		throw error() << "Failed write";
 	}
 
 	// write comment
-	if (info.file_comment_length && fwrite(file_comment, info.file_comment_length, 1, f)!=1) {
+	if (info.file_comment_length && fwrite(file_comment, info.file_comment_length, 1, f) != 1) {
 		throw error() << "Failed write";
 	}
 }
-
-/**
- * Enable pendantic checks on the zip integrity.
- */
-bool zip::pedantic = false;
 
 zip::zip(const std::string& Apath) : path(Apath)
 {
@@ -796,7 +824,7 @@ void zip::open()
 	assert(!flag.open);
 
 	struct stat s;
-	if (stat(path.c_str(), &s)!=0) {
+	if (stat(path.c_str(), &s) != 0) {
 		if (errno != ENOENT)
 			throw error() << "Failed stat";
 
@@ -941,13 +969,7 @@ void zip::load()
 		while (static_cast<unsigned long>(offset) < info.offset_to_start_of_cent_dir) {
 			unsigned char buf[ZIP_LO_FIXED];
 
-			if (fread(buf, ZIP_LO_FIXED, 1, f)!=1)
-				throw error() << "Failed read";
-
-			if (ecd_compare_sig(buf))
-				throw error_invalid() << "Invalid local header, maybe a central directory";
-
-			// search item
+			// search the next item, assume entries in random order
 			iterator next;
 			bool next_set = false;
 			for(iterator i=begin();i!=end();++i) {
@@ -959,11 +981,17 @@ void zip::load()
 				}
 			}
 
+			// if not found exit
 			if (!next_set) {
 				if (pedantic)
 					throw error_invalid() << info.offset_to_start_of_cent_dir - static_cast<unsigned long>(offset) << " unused bytes after the last local header at offset " << offset;
 				else
 					break;
+			}
+
+			// check for invalid start
+			if (next->offset_get() >= info.offset_to_start_of_cent_dir) {
+				throw error_invalid() << "Overflow in central directory";
 			}
 
 			// check for a data hole
@@ -973,12 +1001,37 @@ void zip::load()
 				else {
 					// set the correct position
 					if (fseek(f, next->offset_get(), SEEK_SET) != 0)
-						throw error_invalid() << "Failed fseek";
+						throw error() << "Failed fseek";
 					offset = next->offset_get();
 				}
 			}
 
-			next->load_local(buf, f);
+			// search the next item, assume entries in random order
+			iterator next_next;
+			bool next_next_set = false;
+			for(iterator i=begin();i!=end();++i) {
+				if (i->offset_get() > static_cast<unsigned long>(offset)) {
+					if (!next_next_set || i->offset_get() < next_next->offset_get()) {
+						next_next_set = true;
+						next_next = i;
+					}
+				}
+			}
+
+			unsigned long end_offset;
+			if (next_next_set)
+				end_offset = next_next->offset_get();
+			else
+				end_offset = info.offset_to_start_of_cent_dir;
+
+			if (end_offset < next->offset_get() + ZIP_LO_FIXED) {
+				throw error_invalid() << "Invalid local header size at offset " << offset;
+			}
+
+			if (fread(buf, ZIP_LO_FIXED, 1, f) != 1)
+				throw error() << "Failed read";
+
+			next->load_local(buf, f, end_offset - next->offset_get() - ZIP_LO_FIXED);
 
 			++count;
 
@@ -1070,11 +1123,11 @@ void zip::save()
 			le_uint32_write(buf+ZIP_EO_offset_to_start_of_cent_dir, cent_offset);
 			le_uint16_write(buf+ZIP_EO_zipfile_comment_length, info.zipfile_comment_length);
 
-			if (fwrite(buf, ZIP_EO_FIXED, 1, f)!=1)
+			if (fwrite(buf, ZIP_EO_FIXED, 1, f) != 1)
 				throw error() << "Failed write";
 
 			// write comment
-			if (info.zipfile_comment_length && fwrite(zipfile_comment, info.zipfile_comment_length, 1, f)!=1)
+			if (info.zipfile_comment_length && fwrite(zipfile_comment, info.zipfile_comment_length, 1, f) != 1)
 				throw error() << "Failed write";
 
 		} catch (...) {

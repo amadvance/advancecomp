@@ -3,20 +3,28 @@
                             =======================
 
 
-1 ADVANCECOMP VERSION 1.13 2004/11
+1 ADVANCECOMP VERSION 1.14 2004/11
+==================================
+
+* Relaxed a consistency check for the local header in zip files.
+  The crc and size entries are allowed to contain the real
+  value also if a data descriptor is present.
+
+
+2 ADVANCECOMP VERSION 1.13 2004/11
 ==================================
 
 * Added support for .svgz files at advdef [rener].
 * Fixed the 8 bit color reduction of 32 bit png files.
 
 
-2 ADVANCECOMP VERSION 1.12 2004/09
+3 ADVANCECOMP VERSION 1.12 2004/09
 ==================================
 
 * Fixed a compilation problem with gcc 3.4.
 
 
-3 ADVANCECOMP VERSION 1.11 2004/07
+4 ADVANCECOMP VERSION 1.11 2004/07
 ==================================
 
 * Fixed a FreeBSD libc compatibility issue recompressing
@@ -25,7 +33,7 @@
   compressed .zip files are tested.
 
 
-4 ADVANCECOMP VERSION 1.10 2004/04
+5 ADVANCECOMP VERSION 1.10 2004/04
 ==================================
 
 * Added support for alpha channel and the new -n option
@@ -34,7 +42,7 @@
   with some GZIP files [Christian Lestrade].
 
 
-5 ADVANCECOMP VERSION 1.9 2003/11
+6 ADVANCECOMP VERSION 1.9 2003/11
 =================================
 
 * Added support for .tgz files at advdef.
@@ -42,14 +50,14 @@
   a sequence of .png files.
 
 
-6 ADVANCECOMP VERSION 1.8 2003/10
+7 ADVANCECOMP VERSION 1.8 2003/10
 =================================
 
 * Added support for .gz files at advdef.
 * Fixed support for .png files with splitted IDATs.
 
 
-7 ADVANCECOMP VERSION 1.7 2003/08
+8 ADVANCECOMP VERSION 1.7 2003/08
 =================================
 
 * Fixed a Segmentation Fault bug on the advmng -r option on
@@ -67,7 +75,7 @@
 * Updated with automake 1.7.6.
 
 
-8 ADVANCECOMP VERSION 1.6 2003/05
+9 ADVANCECOMP VERSION 1.6 2003/05
 =================================
 
 * Added the `-x' option at the advmng utility to export .png files
@@ -77,14 +85,14 @@
 * Some fixes for the gcc 3.3 compiler.
 
 
-9 ADVANCECOMP VERSION 1.5 2003/01
-=================================
+10 ADVANCECOMP VERSION 1.5 2003/01
+==================================
 
 * Splitted from AdvanceSCAN
 * Added the `advdef' compression utility.
 
 
-10 ADVANCESCAN VERSION 1.4 2002/12
+11 ADVANCESCAN VERSION 1.4 2002/12
 ==================================
 
 * Fixed a bug in the advmng utility when it was called with
@@ -92,7 +100,7 @@
   was incorrectly adding a PLTE chunk at rgb images.
 
 
-11 ADVANCESCAN VERSION 1.3 2002/11
+12 ADVANCESCAN VERSION 1.3 2002/11
 ==================================
 
 * Added the support for the transparency tRNS chunk at the
@@ -102,7 +110,7 @@
 * Minor changes at the autoconf/automake scripts.
 
 
-12 ADVANCESCAN VERSION 1.2 2002/08
+13 ADVANCESCAN VERSION 1.2 2002/08
 ==================================
 
 * Added the advpng utility to compress the PNG files.
@@ -111,14 +119,14 @@
 * Other minor fixes.
 
 
-13 ADVANCESCAN VERSION 1.1 2002/06
+14 ADVANCESCAN VERSION 1.1 2002/06
 ==================================
 
 * Fixed an infinite loop bug testing some small damaged zips.
 * Removed some warning compiling with gcc 3.1.
 
 
-14 ADVANCESCAN VERSION 1.0 2002/05
+15 ADVANCESCAN VERSION 1.0 2002/05
 ==================================
 
 * First public release.
@@ -127,7 +135,7 @@
   tests are only done if requested.
 
 
-15 ADVANCESCAN VERSION 0.6-BETA 2002/05
+16 ADVANCESCAN VERSION 0.6-BETA 2002/05
 =======================================
 
 * Added the AdvanceZIP utility.
