@@ -31,9 +31,6 @@
 
 #include <zlib.h>
 
-// --------------------------------------------------------------------------
-// Compression
-
 unsigned oversize_deflate(unsigned size);
 unsigned oversize_zlib(unsigned size);
 
@@ -45,9 +42,6 @@ bool compress_bzip2(const unsigned char* in_data, unsigned in_size, unsigned cha
 
 bool decompress_rfc1950_zlib(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned out_size);
 bool compress_rfc1950_zlib(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned& out_size, int compression_level, int strategy, int mem_level);
-
-// -------------------------------------------------------------------------
-// Level
 
 enum shrink_t {
 	shrink_none,

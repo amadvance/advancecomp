@@ -21,15 +21,16 @@
 #include "portable.h"
 
 #include "scroll.h"
-#include "utility.h"
+#include "data.h"
 
 #if defined(__i386__)
 #define USE_MMX
 // USE_OPTC
 #endif
 
-static unsigned compare_line(unsigned width, unsigned height, unsigned char* p0, unsigned char* p1, unsigned line) {
-	unsigned i,j;
+static unsigned compare_line(unsigned width, unsigned height, unsigned char* p0, unsigned char* p1, unsigned line)
+{
+	unsigned i, j;
 	unsigned count = 0;
 
 	for(i=0;i<height;++i) {
@@ -142,7 +143,8 @@ static unsigned compare_line(unsigned width, unsigned height, unsigned char* p0,
 	return count;
 }
 
-static unsigned compare_shift(int x, int y, unsigned width, unsigned height, unsigned char* p0, unsigned char* p1, unsigned pixel, unsigned line) {
+static unsigned compare_shift(int x, int y, unsigned width, unsigned height, unsigned char* p0, unsigned char* p1, unsigned pixel, unsigned line)
+{
 	unsigned count;
 
 	int dx = width - abs(x);
@@ -169,8 +171,9 @@ static unsigned compare_shift(int x, int y, unsigned width, unsigned height, uns
 	return count;
 }
 
-static void compare(adv_scroll* scroll, int* x, int* y, unsigned width, unsigned height, unsigned char* p0, unsigned char* p1, unsigned pixel, unsigned line) {
-	int i,j;
+static void compare(adv_scroll* scroll, int* x, int* y, unsigned width, unsigned height, unsigned char* p0, unsigned char* p1, unsigned pixel, unsigned line)
+{
+	int i, j;
 	int best_x;
 	int best_y;
 	unsigned best_count;
@@ -194,7 +197,7 @@ static void compare(adv_scroll* scroll, int* x, int* y, unsigned width, unsigned
 
 	for(i=-scroll->range_dx;i<=scroll->range_dx;++i) {
 		for(j=-scroll->range_dy;j<=scroll->range_dy;++j) {
-			if ((j || i) && (abs(i)+abs(j)<=scroll->range_limit) ) {
+			if ((j || i) && (abs(i)+abs(j)<=scroll->range_limit)) {
 				unsigned count;
 
 				count = compare_shift(i, j, width, height, p0, p1, pixel, line);
@@ -224,10 +227,8 @@ static void compare(adv_scroll* scroll, int* x, int* y, unsigned width, unsigned
 	}
 }
 
-// --------------------------------------------------------------------------
-// Analyze
-
-static void insert(adv_scroll_info* info, int x, int y) {
+static void insert(adv_scroll_info* info, int x, int y)
+{
 	if (info->mac == info->max) {
 		info->max *= 2;
 		if (!info->max)
@@ -240,7 +241,8 @@ static void insert(adv_scroll_info* info, int x, int y) {
 	++info->mac;
 }
 
-void scroll_analyze(adv_scroll* scroll, unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline) {
+void scroll_analyze(adv_scroll* scroll, unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline)
+{
 	unsigned char* ptr;
 	unsigned scanline;
 	unsigned i;
@@ -266,7 +268,8 @@ void scroll_analyze(adv_scroll* scroll, unsigned pix_width, unsigned pix_height,
 	}
 }
 
-static void postprocessing(adv_scroll_info* info) {
+static void postprocessing(adv_scroll_info* info)
+{
 	int px = 0;
 	int py = 0;
 	int min_x = 0;

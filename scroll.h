@@ -53,3 +53,4 @@ adv_scroll_info* scroll_info_init(adv_scroll* scroll);
 void scroll_info_done(adv_scroll_info* info);
 
 #endif
+

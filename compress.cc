@@ -22,7 +22,8 @@
 
 #include "compress.h"
 
-bool decompress_deflate_zlib(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned out_size) {
+bool decompress_deflate_zlib(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned out_size)
+{
 
 	z_stream stream;
 	int r;
@@ -41,7 +42,7 @@ bool decompress_deflate_zlib(const unsigned char* in_data, unsigned in_size, uns
 	 * after the compressed stream in order to complete decompression and
 	 * return Z_STREAM_END.
 	 */
-	r = inflateInit2(&stream,-15);
+	r = inflateInit2(&stream, -15);
 	if (r != Z_OK) {
 		return false;
 	}
@@ -79,7 +80,8 @@ bool decompress_deflate_zlib(const unsigned char* in_data, unsigned in_size, uns
 	return true;
 }
 
-bool compress_deflate_zlib(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned& out_size, int compression_level, int strategy, int mem_level) {
+bool compress_deflate_zlib(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned& out_size, int compression_level, int strategy, int mem_level)
+{
 	z_stream stream;
 
 	stream.next_in = const_cast<unsigned char*>(in_data);
@@ -179,14 +181,16 @@ bool compress_rfc1950_zlib(const unsigned char* in_data, unsigned in_size, unsig
 }
 
 #if USE_BZIP2
-bool compress_bzip2(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned& out_size, int blocksize, int workfactor) {
-	return BZ2_bzBuffToBuffCompress(out_data,&out_size,const_cast<unsigned char*>(in_data),in_size,blocksize,0,workfactor) == BZ_OK;
+bool compress_bzip2(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned& out_size, int blocksize, int workfactor)
+{
+	return BZ2_bzBuffToBuffCompress(out_data, &out_size, const_cast<unsigned char*>(in_data), in_size, blocksize, 0, workfactor) == BZ_OK;
 }
 
-bool decompress_bzip2(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned out_size) {
+bool decompress_bzip2(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned out_size)
+{
 	unsigned size = out_size;
 
-	if (BZ2_bzBuffToBuffDecompress(out_data,&size,const_cast<unsigned char*>(in_data),in_size,0,0)!=BZ_OK)
+	if (BZ2_bzBuffToBuffDecompress(out_data, &size, const_cast<unsigned char*>(in_data), in_size, 0, 0)!=BZ_OK)
 		return false;
 
 	if (size != out_size)
@@ -196,7 +200,8 @@ bool decompress_bzip2(const unsigned char* in_data, unsigned in_size, unsigned c
 }
 #endif
 
-bool compress_zlib(shrink_t level, unsigned char* out_data, unsigned& out_size, const unsigned char* in_data, unsigned in_size) {
+bool compress_zlib(shrink_t level, unsigned char* out_data, unsigned& out_size, const unsigned char* in_data, unsigned in_size)
+{
 #if defined(USE_7Z)
 	if (level == shrink_normal || level == shrink_extra || level == shrink_extreme) {
 		unsigned sz_passes;
@@ -219,7 +224,7 @@ bool compress_zlib(shrink_t level, unsigned char* out_data, unsigned& out_size, 
 			assert(0);
 		}
 
-		if (!compress_rfc1950_7z(in_data,in_size,out_data,out_size,sz_passes,sz_fastbytes)) {
+		if (!compress_rfc1950_7z(in_data, in_size, out_data, out_size, sz_passes, sz_fastbytes)) {
 			return false;
 		}
 
@@ -247,14 +252,15 @@ bool compress_zlib(shrink_t level, unsigned char* out_data, unsigned& out_size, 
 		break;
 	}
 
-	if (!compress_rfc1950_zlib(in_data,in_size,out_data,out_size,libz_level,Z_DEFAULT_STRATEGY,MAX_MEM_LEVEL)) {
+	if (!compress_rfc1950_zlib(in_data, in_size, out_data, out_size, libz_level, Z_DEFAULT_STRATEGY, MAX_MEM_LEVEL)) {
 		return false;
 	}
 
 	return true;
 }
 
-bool compress_deflate(shrink_t level, unsigned char* out_data, unsigned& out_size, const unsigned char* in_data, unsigned in_size) {
+bool compress_deflate(shrink_t level, unsigned char* out_data, unsigned& out_size, const unsigned char* in_data, unsigned in_size)
+{
 #if defined(USE_7Z)
 	if (level == shrink_normal || level == shrink_extra || level == shrink_extreme) {
 		unsigned sz_passes;
@@ -277,7 +283,7 @@ bool compress_deflate(shrink_t level, unsigned char* out_data, unsigned& out_siz
 			assert(0);
 		}
 
-		if (!compress_deflate_7z(in_data,in_size,out_data,out_size,sz_passes,sz_fastbytes)) {
+		if (!compress_deflate_7z(in_data, in_size, out_data, out_size, sz_passes, sz_fastbytes)) {
 			return false;
 		}
 
@@ -305,18 +311,20 @@ bool compress_deflate(shrink_t level, unsigned char* out_data, unsigned& out_siz
 		break;
 	}
 
-	if (!compress_deflate_zlib(in_data,in_size,out_data,out_size,libz_level,Z_DEFAULT_STRATEGY,MAX_MEM_LEVEL)) {
+	if (!compress_deflate_zlib(in_data, in_size, out_data, out_size, libz_level, Z_DEFAULT_STRATEGY, MAX_MEM_LEVEL)) {
 		return false;
 	}
 
 	return true;
 }
 
-unsigned oversize_deflate(unsigned size) {
+unsigned oversize_deflate(unsigned size)
+{
 	return size * 11 / 10 + 12;
 }
 
-unsigned oversize_zlib(unsigned size) {
+unsigned oversize_zlib(unsigned size)
+{
 	return oversize_deflate(size) + 10;
 }
 

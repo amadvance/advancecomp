@@ -31,17 +31,12 @@ class error {
 	std::string file;
 	unsigned line;
 	std::string desc;
-	bool ignore;
 public:
-	error() : line(0), ignore(false)
+	error() : line(0)
 	{
 	}
 
-	error(bool Aignore) : line(0), ignore(Aignore)
-	{
-	}
-
-	error(const char* Afunction, const char* Afile, unsigned Aline) : function(Afunction), file(Afile), line(Aline), ignore(false)
+	error(const char* Afunction, const char* Afile, unsigned Aline) : function(Afunction), file(Afile), line(Aline)
 	{
 	}
 
@@ -65,11 +60,6 @@ public:
 		return line;
 	}
 
-	bool ignore_get() const
-	{
-		return ignore;
-	}
-
 	error& operator<<(const char* A)
 	{
 		desc += A;
@@ -85,27 +75,64 @@ public:
 	error& operator<<(const unsigned A)
 	{
 		std::ostringstream s;
-		s << A;
+		s << A << "(" << std::hex << A << "h)";
 		desc += s.str();
 		return *this;
 	}
-
 };
 
-class error_ignore : public error {
+class error_invalid : public error {
 public:
-	error_ignore() : error(true)
+	error_invalid() : error()
 	{
+	}
+
+	error_invalid& operator<<(const char* A)
+	{
+		error::operator<<(A);
+		return *this;
+	}
+
+	error_invalid& operator<<(const std::string& A)
+	{
+		error::operator<<(A);
+		return *this;
+	}
+
+	error_invalid& operator<<(const unsigned A)
+	{
+		error::operator<<(A);
+		return *this;
 	}
 };
 
-#ifndef NDEBUG
-#define error_trace() \
-	error(__PRETTY_FUNCTION__,__FILE__,__LINE__)
-#else
-#define error_trace() \
-	error()
-#endif
+class error_unsupported : public error {
+public:
+	error_unsupported() : error()
+	{
+	}
+
+	error_unsupported& operator<<(const char* A)
+	{
+		error::operator<<(A);
+		return *this;
+	}
+
+	error_unsupported& operator<<(const std::string& A)
+	{
+		error::operator<<(A);
+		return *this;
+	}
+
+	error_unsupported& operator<<(const unsigned A)
+	{
+		error::operator<<(A);
+		return *this;
+	}
+};
+
+#define error() \
+	error(__PRETTY_FUNCTION__, __FILE__, __LINE__)
 
 static inline std::ostream& operator<<(std::ostream& os, const error& e)
 {
@@ -118,3 +145,4 @@ static inline std::ostream& operator<<(std::ostream& os, const error& e)
 }
 
 #endif
+

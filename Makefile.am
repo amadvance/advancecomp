@@ -5,7 +5,8 @@ bin_PROGRAMS = advzip advpng advmng advdef
 advzip_SOURCES = \
 	rezip.cc \
 	zip.cc \
-	utility.cc \
+	file.cc \
+	data.cc \
 	siglock.cc \
 	compress.cc \
 	zipsh.cc \
@@ -34,7 +35,8 @@ advzip_SOURCES = \
 advpng_SOURCES = \
 	repng.cc \
 	pngex.cc \
-	utility.cc \
+	file.cc \
+	data.cc \
 	siglock.cc \
 	compress.cc \
 	getopt.c \
@@ -68,7 +70,8 @@ advmng_SOURCES = \
 	pngex.cc \
 	mngex.cc \
 	scroll.cc \
-	utility.cc \
+	file.cc \
+	data.cc \
 	siglock.cc \
 	compress.cc \
 	getopt.c \
@@ -100,7 +103,8 @@ advmng_SOURCES = \
 
 advdef_SOURCES = \
 	redef.cc \
-	utility.cc \
+	file.cc \
+	data.cc \
 	siglock.cc \
 	compress.cc \
 	getopt.c \
@@ -139,7 +143,7 @@ EXTRA_DIST = \
 	doc/advdef.html doc/advzip.html doc/advpng.html doc/advmng.html doc/history.html doc/readme.html doc/authors.html doc/install.html \
 	configure.dos configure.windows configure.darwin autogen.sh noautomake.sh \
 	7z/README \
-	check.lst \
+	test/test.lst \
 	test/mappy.png \
 	test/mappy.mng \
 	test/basn2c08.png \
@@ -155,7 +159,8 @@ noinst_HEADERS = \
 	mngex.h \
 	scroll.h \
 	compress.h \
-	utility.h \
+	file.h \
+	data.h \
 	zip.h \
 	except.h \
 	siglock.h \
@@ -211,7 +216,7 @@ noinst_HEADERS = \
 man_MANS = doc/advdef.1 doc/advzip.1 doc/advpng.1 doc/advmng.1
 
 clean-local:
-	rm -f new.lst check.zip mappy.mng mappy.png
+	rm -f check.lst check.zip mappy.mng mappy.png
 	rm -f basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png
 	rm -f advdef.exe advzip.exe advpng.exe advmng.exe
 	rm -f mappy*.png
@@ -251,48 +256,48 @@ HISTORY: doc/history.txt
 doc/copying.txt: COPYING
 	cat $< | todos > $@
 
-check-local: advzip check.lst
+check-local: advzip test/test.lst
 	@./advzip -a -1 check.zip $(srcdir)/COPYING
-	@./advzip -L check.zip > new.lst
+	@./advzip -L check.zip > check.lst
 	@./advzip -t -p check.zip
 	@./advzip -a -2 check.zip $(srcdir)/COPYING
-	@./advzip -L check.zip >> new.lst
+	@./advzip -L check.zip >> check.lst
 	@./advzip -t -p check.zip
 	@./advzip -a -3 check.zip $(srcdir)/COPYING
-	@./advzip -L check.zip >> new.lst
+	@./advzip -L check.zip >> check.lst
 	@./advzip -t -p check.zip
 	@./advzip -a -4 check.zip $(srcdir)/COPYING
-	@./advzip -L check.zip >> new.lst
+	@./advzip -L check.zip >> check.lst
 	@./advzip -t -p check.zip
 	@./advzip -a -1 -N check.zip $(srcdir)/COPYING
-	@./advzip -L check.zip >> new.lst
+	@./advzip -L check.zip >> check.lst
 	@./advzip -t -p check.zip
 	@./advzip -a -2 -N check.zip $(srcdir)/COPYING
-	@./advzip -L check.zip >> new.lst
+	@./advzip -L check.zip >> check.lst
 	@./advzip -t -p check.zip
 	@./advzip -a -3 -N check.zip $(srcdir)/COPYING
-	@./advzip -L check.zip >> new.lst
+	@./advzip -L check.zip >> check.lst
 	@./advzip -t -p check.zip
 	@./advzip -a -4 -N check.zip $(srcdir)/COPYING
-	@./advzip -L check.zip >> new.lst
+	@./advzip -L check.zip >> check.lst
 	@./advzip -t -p check.zip
 	@cp $(srcdir)/test/mappy.mng .
 	@./advmng -v -z -1 -f -S 8 mappy.mng
-	@./advmng -L mappy.mng >> new.lst
+	@./advmng -L mappy.mng >> check.lst
 	@./advmng -v -x -1 mappy.mng
 	@./advmng -v -a 30 -1 -S 8 mappy.mng mappy-*.png
-	@./advmng -L mappy.mng >> new.lst
+	@./advmng -L mappy.mng >> check.lst
 	@./advmng -v -a 30 -n -1 -S 8 mappy.mng mappy-*.png
-	@./advmng -L mappy.mng >> new.lst
+	@./advmng -L mappy.mng >> check.lst
 	@./advmng -v -a 30 -n -r -1 -S 8 mappy.mng mappy-*.png
-	@./advmng -L mappy.mng >> new.lst
+	@./advmng -L mappy.mng >> check.lst
 	@cp $(srcdir)/test/mappy.png .
 	@./advpng -f -z mappy.png
-	@./advpng -L mappy.png >> new.lst
+	@./advpng -L mappy.png >> check.lst
 	@cp $(srcdir)/test/basn2c08.png $(srcdir)/test/basn3p01.png $(srcdir)/test/basn3p02.png $(srcdir)/test/basn3p04.png $(srcdir)/test/basn3p08.png $(srcdir)/test/basn6a08.png .
 	@./advpng -f -z basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png
-	@./advpng -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png >> new.lst
-	@cmp new.lst $(srcdir)/check.lst
+	@./advpng -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png >> check.lst
+	@cmp check.lst $(srcdir)/test/test.lst
 	@echo Success!
 
 DISTDOS_ROOT = \

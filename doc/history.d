@@ -1,6 +1,8 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 1.12 2004/08
+
 AdvanceCOMP Version 1.11 2004/07
 	) Fixed a FreeBSD libc compatibility issue recompressing
 		.gz files [Radim Kolar].

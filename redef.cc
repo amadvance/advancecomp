@@ -21,7 +21,7 @@
 #include "portable.h"
 
 #include "pngex.h"
-#include "utility.h"
+#include "file.h"
 #include "compress.h"
 #include "siglock.h"
 
@@ -33,9 +33,6 @@
 
 using namespace std;
 
-// --------------------------------------------------------------------------
-// Static
-
 shrink_t opt_level;
 bool opt_quiet;
 bool opt_force;
@@ -45,9 +42,6 @@ enum ftype_t {
 	ftype_mng,
 	ftype_gz
 };
-
-// --------------------------------------------------------------------------
-// Support Generic
 
 #define BLOCK_SIZE 4096
 
@@ -235,7 +229,7 @@ void read_idat(adv_fz* f, unsigned char*& data, unsigned& size, unsigned& type, 
 	z.avail_in = size;
 
 	if (adv_png_read_chunk(f, &next_data, &next_size, &next_type) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	r = inflateInit(&z);
@@ -251,7 +245,7 @@ void read_idat(adv_fz* f, unsigned char*& data, unsigned& size, unsigned& type, 
 
 			if (adv_png_read_chunk(f, &next_data, &next_size, &next_type) != 0) {
 				inflateEnd(&z);
-				throw error_png();
+				throw_png_error();
 			}
 		}
 
@@ -312,9 +306,6 @@ void read_idat(adv_fz* f, unsigned char*& data, unsigned& size, unsigned& type, 
 	}
 }
 
-// --------------------------------------------------------------------------
-// Conversion PNG/MNG
-
 void convert_dat(adv_fz* f_in, adv_fz* f_out, unsigned end)
 {
 	unsigned char* data;
@@ -323,7 +314,7 @@ void convert_dat(adv_fz* f_in, adv_fz* f_out, unsigned end)
 
 	while (1) {
 		if (adv_png_read_chunk(f_in, &data, &size, &type) != 0) {
-			throw error_png();
+			throw_png_error();
 		}
 
 		if (type == ADV_PNG_CN_IDAT) {
@@ -342,7 +333,7 @@ void convert_dat(adv_fz* f_in, adv_fz* f_out, unsigned end)
 			data_free(res_data);
 
 			if (adv_png_write_chunk(f_out, ADV_PNG_CN_IDAT, cmp_data, cmp_size, 0) != 0) {
-				throw error_png();
+				throw_png_error();
 			}
 
 			data_free(cmp_data);
@@ -350,7 +341,7 @@ void convert_dat(adv_fz* f_in, adv_fz* f_out, unsigned end)
 		}
 
 		if (adv_png_write_chunk(f_out, type, data, size, 0) != 0) {
-			throw error_png();
+			throw_png_error();
 		}
 
 		free(data);
@@ -363,11 +354,11 @@ void convert_dat(adv_fz* f_in, adv_fz* f_out, unsigned end)
 void convert_png(adv_fz* f_in, adv_fz* f_out)
 {
 	if (adv_png_read_signature(f_in) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	if (adv_png_write_signature(f_out, 0) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	convert_dat(f_in, f_out, ADV_PNG_CN_IEND);
@@ -376,18 +367,15 @@ void convert_png(adv_fz* f_in, adv_fz* f_out)
 void convert_mng(adv_fz* f_in, adv_fz* f_out)
 {
 	if (adv_mng_read_signature(f_in) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	if (adv_mng_write_signature(f_out, 0) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	convert_dat(f_in, f_out, ADV_MNG_CN_MEND);
 }
-
-// --------------------------------------------------------------------------
-// Conversion GZ
 
 void convert_gz(adv_fz* f_in, adv_fz* f_out)
 {
@@ -400,11 +388,11 @@ void convert_gz(adv_fz* f_in, adv_fz* f_out)
 	}
 
 	if (header[2] != 0x8 /* deflate */) {
-		throw error(true) << "Compression method not supported";
+		throw error_unsupported() << "Compression method not supported";
 	}
 
 	if ((header[3] & 0xE0) != 0) {
-		throw error(true) << "Unsupported flag";
+		throw error_unsupported() << "Unsupported flag";
 	}
 
 	if (header[3] & (1 << 2) /* FLG.FEXTRA */) {
@@ -429,15 +417,15 @@ void convert_gz(adv_fz* f_in, adv_fz* f_out)
 
 	long size = fzsize(f_in);
 	if (size < 0) {
-		throw error(true) << "Error reading";
+		throw error() << "Error reading";
 	}
 	long pos = fztell(f_in);
 	if (pos < 0) {
-		throw error(true) << "Error reading";
+		throw error() << "Error reading";
 	}
 	size -= pos;
 	if (size < 8) {
-		throw error(true) << "Invalid file format";
+		throw error() << "Invalid file format";
 	}
 	size -= 8;
 
@@ -471,9 +459,6 @@ void convert_gz(adv_fz* f_in, adv_fz* f_out)
 		throw error() << "Invalid size";
 }
 
-// --------------------------------------------------------------------------
-// Conversion
-
 void convert_f(ftype_t ftype, adv_fz* f_in, adv_fz* f_out)
 {
 	switch (ftype) {
@@ -498,11 +483,11 @@ void convert_inplace(const string& path)
 	// temp name of the saved file
 	string path_dst = file_basepath(path) + ".tmp";
 
-	if (file_compare(file_ext(path),".png") == 0)
+	if (file_compare(file_ext(path), ".png") == 0)
 		ftype = ftype_png;
-	else if (file_compare(file_ext(path),".mng") == 0)
+	else if (file_compare(file_ext(path), ".mng") == 0)
 		ftype = ftype_mng;
-	else if (file_compare(file_ext(path),".gz") == 0 || file_compare(file_ext(path),".tgz") == 0)
+	else if (file_compare(file_ext(path), ".gz") == 0 || file_compare(file_ext(path), ".tgz") == 0)
 		ftype = ftype_gz;
 	else
 		throw error() << "File type not supported";
@@ -534,7 +519,7 @@ void convert_inplace(const string& path)
 	if (!opt_force && file_size(path) < dst_size) {
 		// delete the new file
 		remove(path_dst.c_str());
-		throw error_ignore() << "Bigger " << dst_size;
+		throw error_unsupported() << "Bigger " << dst_size;
 	} else {
 		// prevent external signal
 		sig_auto_lock sal;
@@ -552,9 +537,6 @@ void convert_inplace(const string& path)
 	}
 }
 
-// --------------------------------------------------------------------------
-// Command interface
-
 void rezip_single(const string& file, unsigned long long& total_0, unsigned long long& total_1)
 {
 	unsigned size_0;
@@ -570,9 +552,7 @@ void rezip_single(const string& file, unsigned long long& total_0, unsigned long
 
 		try {
 			convert_inplace(file);
-		} catch (error& e) {
-			if (!e.ignore_get())
-				throw;
+		} catch (error_unsupported& e) {
 			desc = e.desc_get();
 		}
 
@@ -692,46 +672,46 @@ void process(int argc, char* argv[])
 #endif
 	!= EOF) {
 		switch (c) {
-			case 'z' :
-				if (cmd != cmd_unset)
-					throw error() << "Too many commands";
-				cmd = cmd_recompress;
-				break;
-			case '0' :
-				opt_level = shrink_none;
-				opt_force = true;
-				break;
-			case '1' :
-				opt_level = shrink_fast;
-				break;
-			case '2' :
-				opt_level = shrink_normal;
-				break;
-			case '3' :
-				opt_level = shrink_extra;
-				break;
-			case '4' :
-				opt_level = shrink_extreme;
-				break;
-			case 'f' :
-				opt_force = true;
-				break;
-			case 'q' :
-				opt_quiet = true;
-				break;
-			case 'h' :
-				usage();
-				return;
-			case 'V' :
-				version();
-				return;
-			default: {
-				// not optimal code for g++ 2.95.3
-				string opt;
-				opt = (char)optopt;
-				throw error() << "Unknown option `" << opt << "'";
+		case 'z' :
+			if (cmd != cmd_unset)
+				throw error() << "Too many commands";
+			cmd = cmd_recompress;
+			break;
+		case '0' :
+			opt_level = shrink_none;
+			opt_force = true;
+			break;
+		case '1' :
+			opt_level = shrink_fast;
+			break;
+		case '2' :
+			opt_level = shrink_normal;
+			break;
+		case '3' :
+			opt_level = shrink_extra;
+			break;
+		case '4' :
+			opt_level = shrink_extreme;
+			break;
+		case 'f' :
+			opt_force = true;
+			break;
+		case 'q' :
+			opt_quiet = true;
+			break;
+		case 'h' :
+			usage();
+			return;
+		case 'V' :
+			version();
+			return;
+		default: {
+			// not optimal code for g++ 2.95.3
+			string opt;
+			opt = (char)optopt;
+			throw error() << "Unknown option `" << opt << "'";
 			}
-		} 
+		}
 	}
 
 	switch (cmd) {
@@ -746,7 +726,7 @@ void process(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
 	try {
-		process(argc,argv);
+		process(argc, argv);
 	} catch (error& e) {
 		cerr << e << endl;
 		exit(EXIT_FAILURE);

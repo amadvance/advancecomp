@@ -30,7 +30,8 @@
 
 using namespace std;
 
-void png_compress(shrink_t level, data_ptr& out_ptr, unsigned& out_size, const unsigned char* img_ptr, unsigned img_scanline, unsigned img_pixel, unsigned x, unsigned y, unsigned dx, unsigned dy) {
+void png_compress(shrink_t level, data_ptr& out_ptr, unsigned& out_size, const unsigned char* img_ptr, unsigned img_scanline, unsigned img_pixel, unsigned x, unsigned y, unsigned dx, unsigned dy)
+{
 	data_ptr fil_ptr;
 	unsigned fil_size;
 	unsigned fil_scanline;
@@ -65,7 +66,8 @@ void png_compress(shrink_t level, data_ptr& out_ptr, unsigned& out_size, const u
 	out_size = z_size;
 }
 
-void png_compress_delta(shrink_t level, data_ptr& out_ptr, unsigned& out_size, const unsigned char* img_ptr, unsigned img_scanline, unsigned img_pixel, const unsigned char* prev_ptr, unsigned prev_scanline,unsigned x, unsigned y, unsigned dx, unsigned dy) {
+void png_compress_delta(shrink_t level, data_ptr& out_ptr, unsigned& out_size, const unsigned char* img_ptr, unsigned img_scanline, unsigned img_pixel, const unsigned char* prev_ptr, unsigned prev_scanline, unsigned x, unsigned y, unsigned dx, unsigned dy)
+{
 	data_ptr fil_ptr;
 	unsigned fil_size;
 	unsigned fil_scanline;
@@ -103,7 +105,8 @@ void png_compress_delta(shrink_t level, data_ptr& out_ptr, unsigned& out_size, c
 	out_size = z_size;
 }
 
-void png_compress_palette_delta(data_ptr& out_ptr, unsigned& out_size, const unsigned char* pal_ptr, unsigned pal_size, const unsigned char* prev_ptr) {
+void png_compress_palette_delta(data_ptr& out_ptr, unsigned& out_size, const unsigned char* pal_ptr, unsigned pal_size, const unsigned char* prev_ptr)
+{
 	unsigned i;
 	unsigned char* dst_ptr;
 	unsigned dst_size;
@@ -148,7 +151,8 @@ void png_compress_palette_delta(data_ptr& out_ptr, unsigned& out_size, const uns
 	}
 }
 
-void png_print_chunk(unsigned type, unsigned char* data, unsigned size) {
+void png_print_chunk(unsigned type, unsigned char* data, unsigned size)
+{
 	char tag[5];
 	unsigned i;
 
@@ -306,13 +310,14 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size) {
 	cout << endl;
 }
 
-void png_write(adv_fz* f, unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline, unsigned char* pal_ptr, unsigned pal_size, unsigned char* rns_ptr, unsigned rns_size, shrink_t level) {
+void png_write(adv_fz* f, unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline, unsigned char* pal_ptr, unsigned pal_size, unsigned char* rns_ptr, unsigned rns_size, shrink_t level)
+{
 	unsigned char ihdr[13];
 	data_ptr z_ptr;
 	unsigned z_size;
 
 	if (adv_png_write_signature(f, 0) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	be_uint32_write(ihdr + 0, pix_width);
@@ -332,43 +337,43 @@ void png_write(adv_fz* f, unsigned pix_width, unsigned pix_height, unsigned pix_
 	ihdr[12] = 0; /* interlace */
 
 	if (adv_png_write_chunk(f, ADV_PNG_CN_IHDR, ihdr, sizeof(ihdr), 0) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	if (pal_size) {
 		if (adv_png_write_chunk(f, ADV_PNG_CN_PLTE, pal_ptr, pal_size, 0) != 0) {
-			throw error_png();
+			throw_png_error();
 		}
 	}
 
 	if (rns_size) {
 		if (adv_png_write_chunk(f, ADV_PNG_CN_tRNS, rns_ptr, rns_size, 0) != 0) {
-			throw error_png();
+			throw_png_error();
 		}
 	}
 
 	png_compress(level, z_ptr, z_size, pix_ptr, pix_scanline, pix_pixel, 0, 0, pix_width, pix_height);
 
 	if (adv_png_write_chunk(f, ADV_PNG_CN_IDAT, z_ptr, z_size, 0) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	if (adv_png_write_chunk(f, ADV_PNG_CN_IEND, 0, 0, 0) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 }
 
 void png_convert_4(
 	unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline,
 	unsigned char* pal_ptr, unsigned pal_size,
-	unsigned char** dst_ptr, unsigned* dst_pixel, unsigned* dst_scanline
-) {
+	unsigned char** dst_ptr, unsigned* dst_pixel, unsigned* dst_scanline)
+{
 	*dst_pixel = 4;
 	*dst_scanline = 4 * pix_width;
-	*dst_ptr = (unsigned char*)malloc( *dst_scanline * pix_height );
+	*dst_ptr = (unsigned char*)malloc(*dst_scanline * pix_height);
 
 	if (pix_pixel == 3) {
-		unsigned i,j;
+		unsigned i, j;
 		for(i=0;i<pix_height;++i) {
 			const unsigned char* p0 = pix_ptr + i * pix_scanline;
 			unsigned char* p1 = *dst_ptr + i * *dst_scanline;
@@ -382,7 +387,7 @@ void png_convert_4(
 			}
 		}
 	} else if (pix_pixel == 1) {
-		unsigned i,j;
+		unsigned i, j;
 		for(i=0;i<pix_height;++i) {
 			const unsigned char* p0 = pix_ptr + i * pix_scanline;
 			unsigned char* p1 = *dst_ptr + i * *dst_scanline;
@@ -404,7 +409,7 @@ void png_convert_4(
 			memcpy(p1, p0, *dst_scanline);
 		}
 	} else {
-		throw error() << "Unsupported format";
+		throw error_unsupported() << "Unsupported format";
 	}
 }
 

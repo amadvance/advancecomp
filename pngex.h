@@ -23,17 +23,19 @@
 
 #include "except.h"
 #include "compress.h"
-#include "utility.h"
+#include "file.h"
+#include "data.h"
 
 #include "lib/png.h"
 #include "lib/error.h"
 
-class error_png : public error {
-public:
-	error_png() : error(error_unsupported_get() != 0) {
-		operator<<(error_get());
-	}
-};
+inline void throw_png_error()
+{
+	if (error_unsupported_get())
+		throw error_unsupported() << error_get();
+	else
+		throw error() << error_get();
+}
 
 void png_print_chunk(unsigned type, unsigned char* data, unsigned size);
 

@@ -23,7 +23,7 @@
 #include "pngex.h"
 #include "mngex.h"
 #include "except.h"
-#include "utility.h"
+#include "file.h"
 #include "compress.h"
 #include "siglock.h"
 #include "scroll.h"
@@ -37,9 +37,6 @@
 #include <iomanip>
 
 using namespace std;
-
-// --------------------------------------------------------------------------
-// Static
 
 int opt_dx;
 int opt_dy;
@@ -60,10 +57,8 @@ void clear_line()
 	cout << "                                                              \r";
 }
 
-// --------------------------------------------------------------------------
-// Scroll
-
-adv_scroll_info* analyze_f_mng(adv_fz* f) {
+adv_scroll_info* analyze_f_mng(adv_fz* f)
+{
 	adv_mng* mng;
 	unsigned counter;
 	adv_scroll* scroll;
@@ -95,7 +90,7 @@ adv_scroll_info* analyze_f_mng(adv_fz* f) {
 
 			r = adv_mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr_ext, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr_ext, &pal_size, &tick, f);
 			if (r < 0) {
-				throw error_png();
+				throw_png_error();
 			}
 			if (r > 0)
 				break;
@@ -108,7 +103,7 @@ adv_scroll_info* analyze_f_mng(adv_fz* f) {
 			++counter;
 			if (opt_verbose) {
 				int x, y;
-				scroll_last_get(scroll,&x, &y);
+				scroll_last_get(scroll, &x, &y);
 				if (dx < abs(x))
 					dx = abs(x);
 				if (dy < abs(y))
@@ -139,7 +134,8 @@ adv_scroll_info* analyze_f_mng(adv_fz* f) {
 	return info;
 }
 
-adv_scroll_info* analyze_mng(const string& path) {
+adv_scroll_info* analyze_mng(const string& path)
+{
 	adv_fz* f;
 	adv_scroll_info* info;
 
@@ -160,7 +156,8 @@ adv_scroll_info* analyze_mng(const string& path) {
 	return info;
 }
 
-adv_scroll_info* analyze_png(int argc, char* argv[]) {
+adv_scroll_info* analyze_png(int argc, char* argv[])
+{
 	unsigned counter;
 	adv_scroll* scroll;
 	int dx = 0;
@@ -198,7 +195,7 @@ adv_scroll_info* analyze_png(int argc, char* argv[]) {
 					&pal_ptr_ext, &pal_size,
 					f_in
 				) != 0) {
-					throw error_png();
+					throw_png_error();
 				}
 
 				data_ptr dat_ptr(dat_ptr_ext);
@@ -209,7 +206,7 @@ adv_scroll_info* analyze_png(int argc, char* argv[]) {
 				++counter;
 				if (opt_verbose) {
 					int x, y;
-					scroll_last_get(scroll,&x, &y);
+					scroll_last_get(scroll, &x, &y);
 					if (dx < abs(x))
 						dx = abs(x);
 					if (dy < abs(y))
@@ -244,13 +241,11 @@ adv_scroll_info* analyze_png(int argc, char* argv[]) {
 	return info;
 }
 
-// --------------------------------------------------------------------------
-// Reduce
-
-bool is_reducible_image(unsigned img_width, unsigned img_height, unsigned img_pixel, unsigned char* img_ptr, unsigned img_scanline) {
+bool is_reducible_image(unsigned img_width, unsigned img_height, unsigned img_pixel, unsigned char* img_ptr, unsigned img_scanline)
+{
 	unsigned char col_ptr[256*3];
 	unsigned col_count;
-	unsigned i,j,k;
+	unsigned i, j, k;
 
 	// if an alpha channel is present th eimage cannot be palettized
 	if (img_pixel != 3 && !opt_noalpha)
@@ -279,7 +274,8 @@ bool is_reducible_image(unsigned img_width, unsigned img_height, unsigned img_pi
 	return true;
 }
 
-bool is_reducible_mng(const string& path) {
+bool is_reducible_mng(const string& path)
+{
 	bool reducible;
 	adv_fz* f;
 
@@ -318,7 +314,7 @@ bool is_reducible_mng(const string& path) {
 
 				r = adv_mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr_ext, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr_ext, &pal_size, &tick, f);
 				if (r < 0) {
-					throw error_png();
+					throw_png_error();
 				}
 				if (r > 0)
 					break;
@@ -352,7 +348,8 @@ bool is_reducible_mng(const string& path) {
 	return reducible;
 }
 
-bool is_reducible_png(int argc, char* argv[]) {
+bool is_reducible_png(int argc, char* argv[])
+{
 	bool reducible;
 
 	reducible = true;
@@ -384,7 +381,7 @@ bool is_reducible_png(int argc, char* argv[]) {
 				&pal_ptr_ext, &pal_size,
 				f_in
 			) != 0) {
-				throw error_png();
+				throw_png_error();
 			}
 
 			data_ptr dat_ptr(dat_ptr_ext);
@@ -403,10 +400,8 @@ bool is_reducible_png(int argc, char* argv[]) {
 	return reducible;
 }
 
-// --------------------------------------------------------------------------
-// Conversion
-
-void convert_header(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned frame_width, unsigned frame_height, unsigned frame_frequency, adv_scroll_info* info, bool alpha) {
+void convert_header(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned frame_width, unsigned frame_height, unsigned frame_frequency, adv_scroll_info* info, bool alpha)
+{
 	if (info) {
 		mng_write_header(mng, f, fc, frame_width, frame_height, frame_frequency, info->x, info->y, info->width, info->height, alpha);
 	} else {
@@ -414,7 +409,8 @@ void convert_header(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned frame_
 	}
 }
 
-void convert_image(adv_mng_write* mng, adv_fz* f_out, unsigned* fc, unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline, unsigned char* pal_ptr, unsigned pal_size, adv_scroll_coord* scc) {
+void convert_image(adv_mng_write* mng, adv_fz* f_out, unsigned* fc, unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline, unsigned char* pal_ptr, unsigned pal_size, adv_scroll_coord* scc)
+{
 	if (opt_noalpha && pix_pixel == 4) {
 		/* convert to 3 bytes per pixel */
 		unsigned dst_pixel = 3;
@@ -423,7 +419,7 @@ void convert_image(adv_mng_write* mng, adv_fz* f_out, unsigned* fc, unsigned pix
 
 		dst_ptr = data_alloc(dst_scanline * pix_height);
 
-		unsigned i,j;
+		unsigned i, j;
 		for(i=0;i<pix_height;++i) {
 			const unsigned char* p0 = pix_ptr + i * pix_scanline;
 			unsigned char* p1 = dst_ptr + i * dst_scanline;
@@ -446,7 +442,8 @@ void convert_image(adv_mng_write* mng, adv_fz* f_out, unsigned* fc, unsigned pix
 	}
 }
 
-void convert_f_mng(adv_fz* f_in, adv_fz* f_out, unsigned* filec, unsigned* framec, adv_scroll_info* info, bool reduce, bool expand) {
+void convert_f_mng(adv_fz* f_in, adv_fz* f_out, unsigned* filec, unsigned* framec, adv_scroll_info* info, bool reduce, bool expand)
+{
 	unsigned counter;
 	adv_mng* mng;
 	adv_mng_write* mng_write;
@@ -481,7 +478,7 @@ void convert_f_mng(adv_fz* f_in, adv_fz* f_out, unsigned* filec, unsigned* frame
 
 			r = adv_mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr_ext, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr_ext, &pal_size, &tick, f_in);
 			if (r < 0) {
-				throw error_png();
+				throw_png_error();
 			}
 			if (r > 0)
 				break;
@@ -543,7 +540,8 @@ void convert_f_mng(adv_fz* f_in, adv_fz* f_out, unsigned* filec, unsigned* frame
 	*framec = counter;
 }
 
-void convert_mng(const string& path_src, const string& path_dst) {
+void convert_mng(const string& path_src, const string& path_dst)
+{
 	adv_scroll_info* info;
 	bool reduce;
 	bool expand;
@@ -607,7 +605,8 @@ void convert_mng(const string& path_src, const string& path_dst) {
 		scroll_info_done(info);
 }
 
-void convert_mng_inplace(const string& path) {
+void convert_mng_inplace(const string& path)
+{
 	// temp name of the saved file
 	string path_dst = file_basepath(path) + ".tmp";
 
@@ -622,7 +621,7 @@ void convert_mng_inplace(const string& path) {
 	if (!opt_force && file_size(path) < dst_size) {
 		// delete the new file
 		remove(path_dst.c_str());
-		throw error_ignore() << "Bigger " << dst_size;
+		throw error_unsupported() << "Bigger " << dst_size;
 	} else {
 		// prevent external signal
 		sig_auto_lock sal;
@@ -640,10 +639,8 @@ void convert_mng_inplace(const string& path) {
 	}
 }
 
-// --------------------------------------------------------------------------
-// List
-
-void mng_print(const string& path) {
+void mng_print(const string& path)
+{
 	unsigned type;
 	unsigned size;
 	adv_fz* f_in;
@@ -655,14 +652,14 @@ void mng_print(const string& path) {
 
 	try {
 		if (adv_mng_read_signature(f_in) != 0) {
-			throw error_png();
+			throw_png_error();
 		}
 
 		do {
 			unsigned char* data_ext;
 
 			if (adv_png_read_chunk(f_in, &data_ext, &size, &type) != 0) {
-				throw error_png();
+				throw_png_error();
 			}
 
 			data_ptr data(data_ext);
@@ -686,10 +683,8 @@ void mng_print(const string& path) {
 	fzclose(f_in);
 }
 
-// --------------------------------------------------------------------------
-// Extract
-
-void extract(const string& path_src) {
+void extract(const string& path_src)
+{
 	adv_fz* f_in;
 	adv_mng* mng;
 	adv_fz* f_out;
@@ -730,7 +725,7 @@ void extract(const string& path_src) {
 
 		r = adv_mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr_ext, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr_ext, &pal_size, &tick, f_in);
 		if (r < 0) {
-			throw error_png();
+			throw_png_error();
 		}
 		if (r > 0)
 			break;
@@ -793,10 +788,8 @@ void extract(const string& path_src) {
 	fzclose(f_in);
 }
 
-// --------------------------------------------------------------------------
-// Add
-
-void add_all(int argc, char* argv[], unsigned frequency) {
+void add_all(int argc, char* argv[], unsigned frequency)
+{
 	unsigned counter;
 	unsigned filec;
 	adv_fz* f_out;
@@ -877,7 +870,7 @@ void add_all(int argc, char* argv[], unsigned frequency) {
 					&pal_ptr_ext, &pal_size,
 					f_in
 				) != 0) {
-					throw error_png();
+					throw_png_error();
 				}
 
 				data_ptr dat_ptr(dat_ptr_ext);
@@ -940,10 +933,8 @@ void add_all(int argc, char* argv[], unsigned frequency) {
 	}
 }
 
-// --------------------------------------------------------------------------
-// Command interface
-
-void remng_single(const string& file, unsigned long long& total_0, unsigned long long& total_1) {
+void remng_single(const string& file, unsigned long long& total_0, unsigned long long& total_1)
+{
 	unsigned size_0;
 	unsigned size_1;
 	string desc;
@@ -957,9 +948,7 @@ void remng_single(const string& file, unsigned long long& total_0, unsigned long
 
 		try {
 			convert_mng_inplace(file);
-		} catch (error& e) {
-			if (!e.ignore_get())
-				throw;
+		} catch (error_unsupported& e) {
 			desc = e.desc_get();
 		}
 
@@ -987,7 +976,8 @@ void remng_single(const string& file, unsigned long long& total_0, unsigned long
 	total_1 += size_1;
 }
 
-void remng_all(int argc, char* argv[]) {
+void remng_all(int argc, char* argv[])
+{
 	unsigned long long total_0 = 0;
 	unsigned long long total_1 = 0;
 
@@ -1006,7 +996,8 @@ void remng_all(int argc, char* argv[]) {
 	}
 }
 
-void list_all(int argc, char* argv[]) {
+void list_all(int argc, char* argv[])
+{
 	for(int i=0;i<argc;++i) {
 		if (argc > 1 && !opt_crc)
 			cout << "File: " << argv[i] << endl;
@@ -1014,7 +1005,8 @@ void list_all(int argc, char* argv[]) {
 	}
 }
 
-void extract_all(int argc, char* argv[]) {
+void extract_all(int argc, char* argv[])
+{
 	for(int i=0;i<argc;++i) {
 		extract(argv[i]);
 	}
@@ -1052,11 +1044,13 @@ struct option long_options[] = {
 
 #define OPTIONS "zlLxa:01234s:S:rencCfqvhV"
 
-void version() {
+void version()
+{
 	cout << PACKAGE " v" VERSION " by Andrea Mazzoleni" << endl;
 }
 
-void usage() {
+void usage()
+{
 	version();
 
 	cout << "Usage: advmng [options] [FILES...]" << endl;
@@ -1087,7 +1081,8 @@ void usage() {
 	cout << "  " SWITCH_GETOPT_LONG("-V, --version         ", "-B    ") "  Version of the program" << endl;
 }
 
-void process(int argc, char* argv[]) {
+void process(int argc, char* argv[])
+{
 	unsigned add_frequency;
 	enum cmd_t {
 		cmd_unset, cmd_recompress, cmd_list, cmd_extract, cmd_add
@@ -1124,121 +1119,121 @@ void process(int argc, char* argv[]) {
 #endif
 	!= EOF) {
 		switch (c) {
-			case 'z' :
-				if (cmd != cmd_unset)
-					throw error() << "Too many commands";
-				cmd = cmd_recompress;
-				break;
-			case 'l' :
-				if (cmd != cmd_unset)
-					throw error() << "Too many commands";
-				cmd = cmd_list;
-				break;
-			case 'L' :
-				if (cmd != cmd_unset)
-					throw error() << "Too many commands";
-				cmd = cmd_list;
-				opt_crc = true;
-				break;
-			case 'x' :
-				if (cmd != cmd_unset)
-					throw error() << "Too many commands";
-				cmd = cmd_extract;
-				break;
-			case 'a' : {
-				int n;
-				if (cmd != cmd_unset)
-					throw error() << "Too many commands";
-				cmd = cmd_add;
-				n = sscanf(optarg,"%d",&add_frequency);
-				if (n != 1)
-					throw error() << "Invalid option -a";
-				if (add_frequency < 1 || add_frequency > 250)
-					throw error() << "Invalid frequency";
-				} break;
-			case '0' :
-				opt_level = shrink_none;
-				opt_force = true;
-				break;
-			case '1' :
-				opt_level = shrink_fast;
-				break;
-			case '2' :
-				opt_level = shrink_normal;
-				break;
-			case '3' :
-				opt_level = shrink_extra;
-				break;
-			case '4' :
-				opt_level = shrink_extreme;
-				break;
-			case 's' : {
-				int n;
-				opt_dx = 0;
-				opt_dy = 0;
-				n = sscanf(optarg,"%dx%d",&opt_dx,&opt_dy);
-				if (n != 2)
-					throw error() << "Invalid option -s";
-				if (opt_dx < 0 || opt_dy < 0
-					|| (opt_dx == 0 && opt_dy == 0)
-					|| opt_dx > 128 || opt_dy > 128)
-					throw error() << "Invalid argument for option -s";
-				opt_scroll = true;
-				opt_limit = opt_dx + opt_dy;
-				} break;
-			case 'S' : {
-				int n;
-				opt_limit = 0;
-				n = sscanf(optarg,"%d",&opt_limit);
-				if (n != 1)
-					throw error() << "Invalid option -S";
-				if (opt_limit < 1 || opt_limit > 128)
-					throw error() << "Invalid argument for option -S";
-				opt_scroll = true;
-				opt_dx = opt_limit;
-				opt_dy = opt_limit;
-				} break;
-			case 'r' :
-				opt_reduce = true;
-				opt_expand = false;
-				break;
-			case 'e' :
-				opt_reduce = false;
-				opt_expand = true;
-				break;
-			case 'n' :
-				opt_noalpha = true;
-				break;
-			case 'c' :
-				opt_type = mng_lc;
-				opt_force = true;
-				break;
-			case 'C' :
-				opt_type = mng_vlc;
-				opt_force = true;
-				break;
-			case 'f' :
-				opt_force = true;
-				break;
-			case 'q' :
-				opt_verbose = false;
-				opt_quiet = true;
-				break;
-			case 'v' :
-				opt_verbose = true;
-				opt_quiet = false;
-				break;
-			case 'h' :
-				usage();
-				return;
-			case 'V' :
-				version();
-				return;
-			default: {
-				// not optimal code for g++ 2.95.3
-				string opt;
-				opt = (char)optopt;
-				throw error() << "Unknown option `" << opt << "'";
+		case 'z' :
+			if (cmd != cmd_unset)
+				throw error() << "Too many commands";
+			cmd = cmd_recompress;
+			break;
+		case 'l' :
+			if (cmd != cmd_unset)
+				throw error() << "Too many commands";
+			cmd = cmd_list;
+			break;
+		case 'L' :
+			if (cmd != cmd_unset)
+				throw error() << "Too many commands";
+			cmd = cmd_list;
+			opt_crc = true;
+			break;
+		case 'x' :
+			if (cmd != cmd_unset)
+				throw error() << "Too many commands";
+			cmd = cmd_extract;
+			break;
+		case 'a' : {
+			int n;
+			if (cmd != cmd_unset)
+				throw error() << "Too many commands";
+			cmd = cmd_add;
+			n = sscanf(optarg, "%d", &add_frequency);
+			if (n != 1)
+				throw error() << "Invalid option -a";
+			if (add_frequency < 1 || add_frequency > 250)
+				throw error() << "Invalid frequency";
+			} break;
+		case '0' :
+			opt_level = shrink_none;
+			opt_force = true;
+			break;
+		case '1' :
+			opt_level = shrink_fast;
+			break;
+		case '2' :
+			opt_level = shrink_normal;
+			break;
+		case '3' :
+			opt_level = shrink_extra;
+			break;
+		case '4' :
+			opt_level = shrink_extreme;
+			break;
+		case 's' : {
+			int n;
+			opt_dx = 0;
+			opt_dy = 0;
+			n = sscanf(optarg, "%dx%d", &opt_dx, &opt_dy);
+			if (n != 2)
+				throw error() << "Invalid option -s";
+			if (opt_dx < 0 || opt_dy < 0
+				|| (opt_dx == 0 && opt_dy == 0)
+				|| opt_dx > 128 || opt_dy > 128)
+				throw error() << "Invalid argument for option -s";
+			opt_scroll = true;
+			opt_limit = opt_dx + opt_dy;
+			} break;
+		case 'S' : {
+			int n;
+			opt_limit = 0;
+			n = sscanf(optarg, "%d", &opt_limit);
+			if (n != 1)
+				throw error() << "Invalid option -S";
+			if (opt_limit < 1 || opt_limit > 128)
+				throw error() << "Invalid argument for option -S";
+			opt_scroll = true;
+			opt_dx = opt_limit;
+			opt_dy = opt_limit;
+			} break;
+		case 'r' :
+			opt_reduce = true;
+			opt_expand = false;
+			break;
+		case 'e' :
+			opt_reduce = false;
+			opt_expand = true;
+			break;
+		case 'n' :
+			opt_noalpha = true;
+			break;
+		case 'c' :
+			opt_type = mng_lc;
+			opt_force = true;
+			break;
+		case 'C' :
+			opt_type = mng_vlc;
+			opt_force = true;
+			break;
+		case 'f' :
+			opt_force = true;
+			break;
+		case 'q' :
+			opt_verbose = false;
+			opt_quiet = true;
+			break;
+		case 'v' :
+			opt_verbose = true;
+			opt_quiet = false;
+			break;
+		case 'h' :
+			usage();
+			return;
+		case 'V' :
+			version();
+			return;
+		default: {
+			// not optimal code for g++ 2.95.3
+			string opt;
+			opt = (char)optopt;
+			throw error() << "Unknown option `" << opt << "'";
 			}
 		} 
 	}
@@ -1261,10 +1256,10 @@ void process(int argc, char* argv[]) {
 	}
 }
 
-int main(int argc, char* argv[]) {
-
+int main(int argc, char* argv[])
+{
 	try {
-		process(argc,argv);
+		process(argc, argv);
 	} catch (error& e) {
 		cerr << e << endl;
 		exit(EXIT_FAILURE);

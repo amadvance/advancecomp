@@ -36,7 +36,7 @@ static bool mng_write_reduce(adv_mng_write* mng, data_ptr& out_ptr, unsigned& ou
 	unsigned col_mapped[256];
 	unsigned col_count;
 	adv_bool ovr_used[256];
-	unsigned i,j,k;
+	unsigned i, j, k;
 	unsigned char* new_ptr;
 	unsigned new_scanline;
 
@@ -121,7 +121,7 @@ static void mng_write_expand(adv_mng_write* mng, data_ptr& out_ptr, unsigned& ou
 {
 	unsigned char* new_ptr;
 	unsigned new_scanline;
-	unsigned i,j;
+	unsigned i, j;
 
 	/* create the new bitmap */
 	new_scanline = mng->width * 3;
@@ -150,7 +150,7 @@ void mng_write_header(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned widt
 	unsigned char mhdr[28];
 
 	if (adv_mng_write_signature(f, fc) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	switch (mng->type) {
@@ -181,14 +181,14 @@ void mng_write_header(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned widt
 
 	be_uint32_write(mhdr + 0, width); /* width */
 	be_uint32_write(mhdr + 4, height); /* height */
-	be_uint32_write(mhdr + 8, frequency ); /* ticks per second */
-	be_uint32_write(mhdr + 12, 0 ); /* nominal layer count */
-	be_uint32_write(mhdr + 16, 0 ); /* nominal frame count */
-	be_uint32_write(mhdr + 20, 0 ); /* nominal play time */
+	be_uint32_write(mhdr + 8, frequency); /* ticks per second */
+	be_uint32_write(mhdr + 12, 0); /* nominal layer count */
+	be_uint32_write(mhdr + 16, 0); /* nominal frame count */
+	be_uint32_write(mhdr + 20, 0); /* nominal play time */
 	be_uint32_write(mhdr + 24, simplicity); /* simplicity profile */
 
 	if (adv_png_write_chunk(f, ADV_MNG_CN_MHDR, mhdr, sizeof(mhdr), fc) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	mng->first = 1;
@@ -224,7 +224,8 @@ static bool row_equal(adv_mng_write* mng, unsigned y, unsigned char* img_ptr, un
 	return memcmp(p0, p1, mng->width * mng->pixel) == 0;
 }
 
-static bool col_equal(adv_mng_write* mng, unsigned x, unsigned char* img_ptr, unsigned img_scanline) {
+static bool col_equal(adv_mng_write* mng, unsigned x, unsigned char* img_ptr, unsigned img_scanline)
+{
 	unsigned char* p0;
 	unsigned char* p1;
 	unsigned i;
@@ -324,7 +325,7 @@ static void mng_write_first(adv_mng_write* mng, adv_fz* f, unsigned* fc)
 		} else
 			defi_size = 4;
 		if (adv_png_write_chunk(f, ADV_MNG_CN_DEFI, defi, defi_size, fc) != 0) {
-			throw error_png();
+			throw_png_error();
 		}
 	}
 
@@ -342,23 +343,23 @@ static void mng_write_first(adv_mng_write* mng, adv_fz* f, unsigned* fc)
 	ihdr[12] = 0; /* interlace */
 
 	if (adv_png_write_chunk(f, ADV_PNG_CN_IHDR, ihdr, sizeof(ihdr), fc) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	if (mng->pal_size) {
 		if (adv_png_write_chunk(f, ADV_PNG_CN_PLTE, mng->pal_ptr, mng->pal_size, fc) != 0) {
-			throw error_png();
+			throw_png_error();
 		}
 	}
 
 	png_compress(mng->level, z_ptr, z_size, mng->scroll_ptr, mng->line, mng->pixel, 0, 0, mng->width + mng->scroll_width, mng->height + mng->scroll_height);
 
 	if (adv_png_write_chunk(f, ADV_PNG_CN_IDAT, z_ptr, z_size, fc) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	if (adv_png_write_chunk(f, ADV_PNG_CN_IEND, 0, 0, fc) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 }
 
@@ -375,14 +376,14 @@ static void mng_write_move(adv_mng_write* mng, adv_fz* f, unsigned* fc, int shif
 		be_uint32_write(move + 9, - shift_y);
 
 		if (adv_png_write_chunk(f, ADV_MNG_CN_MOVE, move, sizeof(move), fc)!=0) {
-			throw error_png();
+			throw_png_error();
 		}
 	}
 }
 
 static void mng_write_delta_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned char* img_ptr, unsigned img_scanline, unsigned char* pal_ptr, unsigned pal_size)
 {
-	unsigned x,y,dx,dy;
+	unsigned x, y, dx, dy;
 	data_ptr pal_d_ptr;
 	unsigned pal_d_size;
 	data_ptr pal_r_ptr;
@@ -444,17 +445,17 @@ static void mng_write_delta_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, u
 	be_uint32_write(dhdr + 16, y + mng->current_y);
 
 	if (adv_png_write_chunk(f, ADV_MNG_CN_DHDR, dhdr, dhdr_size, fc) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	if (pal_d_size) {
 		if (pal_d_size < pal_r_size) {
 			if (adv_png_write_chunk(f, ADV_MNG_CN_PPLT, pal_d_ptr, pal_d_size, fc) != 0) {
-				throw error_png();
+				throw_png_error();
 			}
 		} else {
 			if (adv_png_write_chunk(f, ADV_PNG_CN_PLTE, pal_r_ptr, pal_r_size, fc) != 0) {
-				throw error_png();
+				throw_png_error();
 			}
 		}
 	}
@@ -462,17 +463,17 @@ static void mng_write_delta_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, u
 	if (z_d_size) {
 		if (z_d_size < z_r_size) {
 			if (adv_png_write_chunk(f, ADV_PNG_CN_IDAT, z_d_ptr, z_d_size, fc) != 0) {
-				throw error_png();
+				throw_png_error();
 			}
 		} else {
 			if (adv_png_write_chunk(f, ADV_PNG_CN_IDAT, z_r_ptr, z_r_size, fc) != 0) {
-				throw error_png();
+				throw_png_error();
 			}
 		}
 	}
 
 	if (adv_png_write_chunk(f, ADV_PNG_CN_IEND, 0, 0, fc) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	mng_write_store(mng, img_ptr, img_scanline, pal_ptr, pal_size);
@@ -510,21 +511,21 @@ static void mng_write_base_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, un
 	ihdr_size = 13;
 
 	if (adv_png_write_chunk(f, ADV_PNG_CN_IHDR, ihdr, ihdr_size, fc) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	if (pal_r_size) {
 		if (adv_png_write_chunk(f, ADV_PNG_CN_PLTE, pal_r_ptr, pal_r_size, fc) != 0) {
-			throw error_png();
+			throw_png_error();
 		}
 	}
 
 	if (adv_png_write_chunk(f, ADV_PNG_CN_IDAT, z_r_ptr, z_r_size, fc) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	if (adv_png_write_chunk(f, ADV_PNG_CN_IEND, 0, 0, fc) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	mng_write_store(mng, img_ptr, img_scanline, pal_ptr, pal_size);
@@ -564,7 +565,7 @@ static void mng_write_image_setup(adv_mng_write* mng, adv_fz* f, unsigned width,
 		}
 
 		mng->line = mng->pixel * (mng->width + mng->scroll_width);
-		mng->scroll_ptr = data_alloc( (mng->height + mng->scroll_height) * mng->line);
+		mng->scroll_ptr = data_alloc((mng->height + mng->scroll_height) * mng->line);
 		mng->current_ptr = mng->scroll_ptr + mng->scroll_x * mng->pixel + mng->scroll_y * mng->line;
 		mng->current_x = mng->scroll_x;
 		mng->current_y = mng->scroll_y;
@@ -626,7 +627,7 @@ void mng_write_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned width
 			unsigned new_scanline;
 
 			if (!mng_write_reduce(mng, new_ptr, new_scanline, ovr_ptr, img_ptr, img_scanline)) {
-				throw error_ignore() << "Color reduction failed";
+				throw error_unsupported() << "Color reduction failed";
 			} else {
 				mng_write_image_raw(mng, f, fc, width, height, 1, new_ptr, new_scanline, ovr_ptr, 256*3, shift_x, shift_y);
 
@@ -642,11 +643,12 @@ void mng_write_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned width
 
 		mng_write_image_raw(mng, f, fc, width, height, pixel, img_ptr, img_scanline, 0, 0, shift_x, shift_y);
 	} else {
-		throw error() << "Unsupported bit depth";
+		throw error_unsupported() << "Unsupported bit depth";
 	} 
 }
 
-void mng_write_frame(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned tick) {
+void mng_write_frame(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned tick)
+{
 	unsigned char fram[10];
 	unsigned fram_size;
 
@@ -667,7 +669,7 @@ void mng_write_frame(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned tick)
 	mng->tick = tick;
 
 	if (adv_png_write_chunk(f, ADV_MNG_CN_FRAM, fram, fram_size, fc) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 }
 
@@ -675,7 +677,7 @@ void mng_write_frame(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned tick)
 void mng_write_footer(adv_mng_write* mng, adv_fz* f, unsigned* fc)
 {
 	if (adv_png_write_chunk(f, ADV_MNG_CN_MEND, 0, 0, fc) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 }
 

@@ -20,141 +20,21 @@
 
 #include "portable.h"
 
-#include "utility.h"
+#include "file.h"
 
-#include <iostream>
-#include <iomanip>
-#include <sstream>
-#include <new>
+#include <zlib.h>
 
 using namespace std;
 
-// ------------------------------------------------------------------------
-// String
-
-string strip_space(const string& s)
+crc_t crc_compute(const char* data, unsigned len)
 {
-	string r = s;
-	while (r.length() && isspace(r[0]))
-		r.erase(0,1);
-	while (r.length() && isspace(r[r.length()-1]))
-		r.erase(r.length()-1,1);
-	return r;
+	return crc32(0, (unsigned char*)data, len);
 }
 
-string token_get(const string& s, unsigned& ptr, const char* sep)
+crc_t crc_compute(crc_t pred, const char* data, unsigned len)
 {
-	unsigned start = ptr;
-	while (ptr < s.length() && strchr(sep,s[ptr])==0)
-		++ptr;
-	return string(s,start,ptr-start);
+	return crc32(pred, (unsigned char*)data, len);
 }
-
-void token_skip(const string& s, unsigned& ptr, const char* sep)
-{
-	while (ptr < s.length() && strchr(sep,s[ptr])!=0)
-		++ptr;
-}
-
-std::string token_get(const std::string& s, unsigned& ptr, char sep)
-{
-	char sep_string[2];
-	sep_string[0] = sep;
-	sep_string[1] = 0;
-	return token_get(s,ptr,sep_string);
-}
-
-void token_skip(const std::string& s, unsigned& ptr, char sep)
-{
-	char sep_string[2];
-	sep_string[0] = sep;
-	sep_string[1] = 0;
-	token_skip(s,ptr,sep_string);
-}
-
-/**
- * Match one string with a shell pattern expression.
- * \param pattern Pattern with with the globbing * and ? chars.
- * \param str String to compare,
- * \return
- *  - ==0 match
- *  - !=0 don't match
- */
-int striwildcmp(const char* pattern, const char* str)
-{
-	while (*str && *pattern) {
-		if (*pattern == '*') {
-			++pattern;
-			while (*str) {
-				if (striwildcmp(pattern, str)==0) return 0;
-				++str;
-			}
-		} else if (*pattern == '?') {
-			++str;
-			++pattern;
-		} else {
-			if (toupper(*str) != toupper(*pattern))
-				return 1;
-			++str;
-			++pattern;
-		}
-	}
-	while (*pattern == '*')
-		++pattern;
-	if (!*str && !*pattern)
-		return 0;
-	return 1;
-}
-
-/**
- * Convert a string to a unsigned.
- * \param s String to convert.
- * \param e First not numerical char detected.
- * \return 0 if string contains a non digit char.
- */
-unsigned strdec(const char* s, const char** e)
-{
-	unsigned v = 0;
-	while (*s) {
-		if (!isdigit(*s)) {
-			*e = s;
-			return 0;
-		}
-		v *= 10;
-		v += *s - '0';
-		++s;
-	}
-	*e = s;
-	return v;
-}
-
-/**
- * Convert a hex string to a unsigned.
- * \param s String to convert.
- * \param e First not numerical char detected.
- * \return 0 if string contains a non hex digit char.
- */
-unsigned strhex(const char* s, const char** e)
-{
-	unsigned v = 0;
-	while (*s) {
-		if (!isxdigit(*s)) {
-			*e = s;
-			return 0;
-		}
-		v *= 16;
-		if (*s>='0' && *s<='9')
-			v += *s - '0';
-		else
-			v += toupper(*s) - 'A' + 10;
-		++s;
-	}
-	*e = s;
-	return v;
-}
-
-// ------------------------------------------------------------------------
-// Path
 
 filepath::filepath()
 {
@@ -170,51 +50,50 @@ filepath::filepath(const string& Afile)
 {
 }
 
-filepath::~filepath() {
+filepath::~filepath()
+{
 }
 
-void filepath::file_set(const string& Afile) {
+void filepath::file_set(const string& Afile)
+{
 	file = Afile;
 }
 
-zippath::zippath()
+infopath::infopath()
 {
 	readonly = true;
 	good = false;
 	size = 0;
 }
 
-zippath::zippath(const zippath& A)
+infopath::infopath(const infopath& A)
 	: filepath(A), good(A.good), size(A.size), readonly(A.readonly)
 {
 }
 
-zippath::zippath(const string& Afile, bool Agood, unsigned Asize, bool Areadonly)
+infopath::infopath(const string& Afile, bool Agood, unsigned Asize, bool Areadonly)
 	: filepath(Afile), good(Agood), size(Asize), readonly(Areadonly)
 {
 }
 
-zippath::~zippath()
+infopath::~infopath()
 {
 }
 
-void zippath::good_set(bool Agood)
+void infopath::good_set(bool Agood)
 {
 	good = Agood;
 }
 
-void zippath::size_set(unsigned Asize)
+void infopath::size_set(unsigned Asize)
 {
 	size = Asize;
 }
 
-void zippath::readonly_set(bool Areadonly)
+void infopath::readonly_set(bool Areadonly)
 {
 	readonly = Areadonly;
 }
-
-// ------------------------------------------------------------------------
-// File
 
 /**
  * Check if a file exists.
@@ -222,7 +101,7 @@ void zippath::readonly_set(bool Areadonly)
 bool file_exists(const string& path) throw (error)
 {
 	struct stat s;
-	if (stat(path.c_str(),&s) != 0) {
+	if (stat(path.c_str(), &s) != 0) {
 		if (errno!=ENOENT)
 			throw error() << "Failed stat file " << path;
 
@@ -237,11 +116,11 @@ bool file_exists(const string& path) throw (error)
  */
 void file_write(const string& path, const char* data, unsigned size) throw (error)
 {
-	FILE* f = fopen( path.c_str(), "wb" );
+	FILE* f = fopen(path.c_str(), "wb");
 	if (!f)
 		throw error() << "Failed open for write file " << path;
 
-	if (fwrite(data,size,1,f)!=1) {
+	if (fwrite(data, size, 1, f)!=1) {
 		fclose(f);
 
 		remove(path.c_str());
@@ -265,17 +144,17 @@ void file_read(const string& path, char* data, unsigned size) throw (error)
  */
 void file_read(const string& path, char* data, unsigned offset, unsigned size) throw (error)
 {
-	FILE* f = fopen( path.c_str(), "rb" );
+	FILE* f = fopen(path.c_str(), "rb");
 	if (!f)
 		throw error() << "Failed open for read file " << path;
 
-	if (fseek(f,offset,SEEK_SET)!=0) {
+	if (fseek(f, offset, SEEK_SET)!=0) {
 		fclose(f);
 
 		throw error() << "Failed seek file " << path;
 	}
 
-	if (fread(data,size,1,f)!=1) {
+	if (fread(data, size, 1, f)!=1) {
 		fclose(f);
 
 		throw error() << "Failed read file " << path;
@@ -306,7 +185,7 @@ void file_utime(const string& path, time_t tod) throw (error)
 	u.actime = tod;
 	u.modtime = tod;
 
-	if (utime(path.c_str(),&u) != 0)
+	if (utime(path.c_str(), &u) != 0)
 		throw error() << "Failed utime file " << path;
 }
 
@@ -332,7 +211,7 @@ crc_t file_crc(const string& path) throw (error)
 	char* data = (char*)operator new(size);
 
 	try {
-		file_read(path,data,size);
+		file_read(path, data, size);
 	} catch (...) {
 		operator delete(data);
 		throw;
@@ -372,11 +251,11 @@ void file_copy(const string& path1, const string& path2) throw (error)
  */
 void file_move(const string& path1, const string& path2) throw (error)
 {
-	if (rename(path1.c_str(),path2.c_str())!=0
+	if (rename(path1.c_str(), path2.c_str())!=0
 		&& errno==EXDEV) {
 
 		try {
-			file_copy(path1,path2);
+			file_copy(path1, path2);
 		} catch (...) {
 			try {
 				file_remove(path2);
@@ -421,7 +300,7 @@ string file_randomize(const string& path, int n) throw ()
 	if (pos == string::npos) 
 		os << path << ".";
 	else
-		os << string(path,0,pos+1);
+		os << string(path, 0, pos+1);
 	
 	os << n << ends;
 	
@@ -437,7 +316,7 @@ string file_dir(const string& path) throw ()
 	if (pos == string::npos) {
 		return "";
 	} else {
-		return string(path,0,pos+1);
+		return string(path, 0, pos+1);
 	}
 }
 
@@ -450,7 +329,7 @@ string file_name(const string& path) throw ()
 	if (pos == string::npos) {
 		return path;
 	} else {
-		return string(path,pos+1);
+		return string(path, pos+1);
 	}
 }
 
@@ -463,7 +342,7 @@ string file_basepath(const string& path) throw ()
 	if (dot == string::npos)
 		return path;
 	else
-		return string(path,0,dot);
+		return string(path, 0, dot);
 }
 
 /**
@@ -476,7 +355,7 @@ string file_basename(const string& path) throw ()
 	if (dot == string::npos)
 		return name;
 	else
-		return string(name,0,dot);
+		return string(name, 0, dot);
 }
 
 /**
@@ -489,15 +368,15 @@ string file_ext(const string& path) throw ()
 	if (dot == string::npos)
 		return "";
 	else
-		return string(name,dot);
+		return string(name, dot);
 } 
  
 /**
  * Compare two path.
  */
-int file_compare(const string& path1,const string& path2) throw ()
+int file_compare(const string& path1, const string& path2) throw ()
 {
-	return strcasecmp(path1.c_str(),path2.c_str());
+	return strcasecmp(path1.c_str(), path2.c_str());
 }
 
 /**
@@ -509,9 +388,9 @@ string file_adjust(const string& path) throw ()
 	for(unsigned i=0;i<path.length();++i) {
 		if (path[i]=='\\' || path[i]=='/') {
 			if (i+1<path.length())
-				r.insert( r.length(), 1, '/');
+				r.insert(r.length(), 1, '/');
 		} else {
-			r.insert( r.length(), 1, path[i]);
+			r.insert(r.length(), 1, path[i]);
 		}
 		
 	}
@@ -527,13 +406,13 @@ void file_mktree(const std::string& path) throw (error)
 	string name = file_name(path);
 
 	if (dir.length() && dir[dir.length() - 1] == '/')
-		dir.erase(dir.length() - 1,1);
+		dir.erase(dir.length() - 1, 1);
 
 	if (dir.length()) {
 		file_mktree(dir);
 
 		struct stat s;
-		if (stat(dir.c_str(),&s) != 0) {
+		if (stat(dir.c_str(), &s) != 0) {
 			if (errno!=ENOENT)
 				throw error() << "Failed stat dir " << dir;
 #if HAVE_FUNC_MKDIR_ONEARG
@@ -549,42 +428,4 @@ void file_mktree(const std::string& path) throw (error)
 	}
 }
 
-// ------------------------------------------------------------------------
-// Data
-
-/**
- * Duplicate a memory buffer.
- */
-unsigned char* data_dup(const unsigned char* Adata, unsigned Asize)
-{
-	if (Adata) {
-		unsigned char* data = (unsigned char*)malloc(Asize);
-		if (!data)
-			throw std::bad_alloc();
-		if (Asize)
-			memcpy(data, Adata, Asize);
-		return data;
-	} else {
-		return 0;
-	}
-}
-
-/**
- * Allocate a memory buffer.
- */
-unsigned char* data_alloc(unsigned size)
-{
-	unsigned char* data = (unsigned char*)malloc(size);
-	if (!data)
-		throw std::bad_alloc();
-	return data;
-}
-
-/**
- * Free a memory buffer.
- */
-void data_free(unsigned char* data)
-{
-	free(data);
-}
 

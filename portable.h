@@ -95,9 +95,9 @@ extern int optind, opterr, optopt;
 #endif
 
 #if HAVE_GETOPT_LONG
-#define SWITCH_GETOPT_LONG(a,b) a
+#define SWITCH_GETOPT_LONG(a, b) a
 #else
-#define SWITCH_GETOPT_LONG(a,b) b
+#define SWITCH_GETOPT_LONG(a, b) b
 #endif
 
 #if HAVE_UTIME_H
@@ -108,8 +108,10 @@ extern int optind, opterr, optopt;
 #endif
 
 #if defined(__MSDOS__) || defined(__WIN32__)
+#define HAVE_LONG_FNAME 0
 #define DIR_SEP ';'
 #else
+#define HAVE_LONG_FNAME 1
 #define DIR_SEP ':'
 #endif
 

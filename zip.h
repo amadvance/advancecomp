@@ -95,7 +95,7 @@
 #define ZIP_EO_size_of_cent_dir 0x0C
 #define ZIP_EO_offset_to_start_of_cent_dir 0x10
 #define ZIP_EO_zipfile_comment_length 0x14
-#define ZIP_EO_FIXED 0x16 /* size of fixed data structure */
+#define ZIP_EO_FIXED 0x16 // size of fixed data structure
 #define ZIP_EO_zipfile_comment 0x16
 
 // Offsets in central directory entry structure
@@ -118,14 +118,14 @@
 #define ZIP_CO_internal_file_attrib 0x24
 #define ZIP_CO_external_file_attrib 0x26
 #define ZIP_CO_relative_offset_of_local_header 0x2A
-#define ZIP_CO_FIXED 0x2E /* size of fixed data structure */
+#define ZIP_CO_FIXED 0x2E // size of fixed data structure
 #define ZIP_CO_filename 0x2E
 
 // Offsets in data descriptor structure
 #define ZIP_DO_crc32 0x00
 #define ZIP_DO_compressed_size 0x04
 #define ZIP_DO_uncompressed_size 0x08
-#define ZIP_DO_FIXED 0x0C /* size of fixed data structure */
+#define ZIP_DO_FIXED 0x0C // size of fixed data structure
 
 // Offsets in local file header structure
 #define ZIP_LO_local_file_header_signature 0x00
@@ -140,17 +140,12 @@
 #define ZIP_LO_uncompressed_size 0x16
 #define ZIP_LO_filename_length 0x1A
 #define ZIP_LO_extra_field_length 0x1C
-#define ZIP_LO_FIXED 0x1E /* size of fixed data structure */
+#define ZIP_LO_FIXED 0x1E // size of fixed data structure
 #define ZIP_LO_filename 0x1E
 
-// Convert time_t to zip format
 void time2zip(time_t tod, unsigned& date, unsigned& time);
 
-// Convert zip time to to time_t
 time_t zip2time(unsigned date, unsigned time);
-
-// --------------------------------------------------------------------------
-// zip_entry
 
 class zip;
 
@@ -196,7 +191,6 @@ private:
 	void check_local(const unsigned char* buf) const;
 	void check_descriptor(const unsigned char* buf) const;
 
-	// abstract
 	zip_entry();
 	zip_entry& operator=(const zip_entry&);
 	bool operator==(const zip_entry&) const;
@@ -244,9 +238,6 @@ public:
 
 typedef std::list<zip_entry> zip_entry_list;
 
-// --------------------------------------------------------------------------
-// zip
-
 class zip {
 	struct {
 		bool open; // zip is opened
@@ -263,7 +254,6 @@ class zip {
 	zip_entry_list map;
 	std::string path;
 
-	// abstract
 	zip& operator=(const zip&);
 	bool operator==(const zip&) const;
 	bool operator!=(const zip&) const;
@@ -278,21 +268,18 @@ public:
 	zip(const zip& A);
 	~zip();
 
-	// iterator
 	typedef zip_entry_list::const_iterator const_iterator;
 	typedef zip_entry_list::iterator iterator;
 
-	// container
-	const_iterator begin() const { assert( flag.open ); return map.begin(); }
-	const_iterator end() const { assert( flag.open ); return map.end(); }
-	iterator begin() { assert( flag.open ); return map.begin(); }
-	iterator end() { assert( flag.open ); return map.end(); }
+	const_iterator begin() const { assert(flag.open); return map.begin(); }
+	const_iterator end() const { assert(flag.open); return map.end(); }
+	iterator begin() { assert(flag.open); return map.begin(); }
+	iterator end() { assert(flag.open); return map.end(); }
 
-	unsigned size() const { assert( flag.open ); return map.size(); }
+	unsigned size() const { assert(flag.open); return map.size(); }
 	unsigned size_not_zero() const;
 	bool empty() const { return size_not_zero() == 0; }
 
-	// disk
 	std::string file_get() const { return path; }
 
 	void open();
@@ -304,8 +291,8 @@ public:
 	void unload();
 
 	bool is_open() const { return flag.open; }
-	bool is_load() const { assert( flag.open ); return flag.read; }
-	bool is_modify() const { assert( flag.open && flag.read ); return flag.modify; }
+	bool is_load() const { assert(flag.open); return flag.read; }
+	bool is_modify() const { assert(flag.open && flag.read); return flag.modify; }
 
 	void erase(iterator i);
 	void rename(iterator i, const std::string& Aname);
@@ -321,3 +308,4 @@ public:
 };
 
 #endif
+

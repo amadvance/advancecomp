@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 2002 Andrea Mazzoleni
+ * Copyright (C) 2002, 2004 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,17 +18,47 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef __SIGLOCK_H
-#define __SIGLOCK_H
+#include "portable.h"
 
-void sig_lock();
-void sig_unlock();
+#include "data.h"
 
-class sig_auto_lock {
-public:
-	sig_auto_lock() { sig_lock(); }
-	~sig_auto_lock() { sig_unlock(); }
-};
+#include <new>
 
-#endif
+using namespace std;
+
+/**
+ * Duplicate a memory buffer.
+ */
+unsigned char* data_dup(const unsigned char* Adata, unsigned Asize)
+{
+	if (Adata) {
+		unsigned char* data = (unsigned char*)malloc(Asize);
+		if (!data)
+			throw std::bad_alloc();
+		if (Asize)
+			memcpy(data, Adata, Asize);
+		return data;
+	} else {
+		return 0;
+	}
+}
+
+/**
+ * Allocate a memory buffer.
+ */
+unsigned char* data_alloc(unsigned size)
+{
+	unsigned char* data = (unsigned char*)malloc(size);
+	if (!data)
+		throw std::bad_alloc();
+	return data;
+}
+
+/**
+ * Free a memory buffer.
+ */
+void data_free(unsigned char* data)
+{
+	free(data);
+}
 

@@ -35,12 +35,14 @@ static void (*sig_term)(int);
 
 static int sig_ignore_sig;
 
-void sig_ignore(int sig) {
+void sig_ignore(int sig)
+{
 	if (sig_ignore_sig == 0)
 		sig_ignore_sig = sig;
 }
 
-void sig_lock() {
+void sig_lock()
+{
 	sig_ignore_sig = 0;
 #if HAVE_SIGHUP
 	sig_hup = signal(SIGHUP, sig_ignore);
@@ -52,7 +54,8 @@ void sig_lock() {
 	sig_term = signal(SIGTERM, sig_ignore);
 }
 
-void sig_unlock() {
+void sig_unlock()
+{
 #if HAVE_SIGHUP
 	signal(SIGHUP, sig_hup);
 #endif
@@ -65,3 +68,4 @@ void sig_unlock() {
 	if (sig_ignore_sig)
 		raise(sig_ignore_sig);
 }
+

@@ -21,7 +21,7 @@
 #include "portable.h"
 
 #include "pngex.h"
-#include "utility.h"
+#include "file.h"
 #include "compress.h"
 #include "siglock.h"
 
@@ -32,22 +32,16 @@
 
 using namespace std;
 
-// --------------------------------------------------------------------------
-// Static
-
 shrink_t opt_level;
 bool opt_quiet;
 bool opt_force;
 bool opt_crc;
 
-// --------------------------------------------------------------------------
-// Conversion
-
 bool reduce_image(unsigned char** out_ptr, unsigned* out_scanline, unsigned char* ovr_ptr, unsigned* ovr_count, unsigned width, unsigned height, unsigned char* img_ptr, unsigned img_scanline)
 {
 	unsigned char col_ptr[256*3];
 	unsigned col_count;
-	unsigned i,j,k;
+	unsigned i, j, k;
 	unsigned char* new_ptr;
 	unsigned new_scanline;
 
@@ -136,7 +130,7 @@ void convert_f(adv_fz* f_in, adv_fz* f_out)
 		&rns_ptr, &rns_size,
 		f_in
 	) != 0) {
-		throw error_png();
+		throw_png_error();
 	}
 
 	try {
@@ -167,19 +161,19 @@ void convert_inplace(const string& path)
 	// temp name of the saved file
 	string path_dst = file_basepath(path) + ".tmp";
 
-	f_in = fzopen(path.c_str(),"rb");
+	f_in = fzopen(path.c_str(), "rb");
 	if (!f_in) {
 		throw error() << "Failed open for reading " << path;
 	}
 
-	f_out = fzopen(path_dst.c_str(),"wb");
+	f_out = fzopen(path_dst.c_str(), "wb");
 	if (!f_out) {
 		fzclose(f_in);
 		throw error() << "Failed open for writing " << path_dst;
 	}
 
 	try {
-		convert_f(f_in,f_out);
+		convert_f(f_in, f_out);
 	} catch (...) {
 		fzclose(f_in);
 		fzclose(f_out);
@@ -194,7 +188,7 @@ void convert_inplace(const string& path)
 	if (!opt_force && file_size(path) < dst_size) {
 		// delete the new file
 		remove(path_dst.c_str());
-		throw error_ignore() << "Bigger " << dst_size;
+		throw error_unsupported() << "Bigger " << dst_size;
 	} else {
 		// prevent external signal
 		sig_auto_lock sal;
@@ -212,30 +206,27 @@ void convert_inplace(const string& path)
 	}
 }
 
-// --------------------------------------------------------------------------
-// List
-
 void png_print(const string& path)
 {
 	unsigned type;
 	unsigned size;
 	adv_fz* f_in;
 
-	f_in = fzopen(path.c_str(),"rb");
+	f_in = fzopen(path.c_str(), "rb");
 	if (!f_in) {
 		throw error() << "Failed open for reading " << path;
 	}
 
 	try {
 		if (adv_png_read_signature(f_in) != 0) {
-			throw error_png();
+			throw_png_error();
 		}
 
 		do {
 			unsigned char* data;
 
 			if (adv_png_read_chunk(f_in, &data, &size, &type) != 0) {
-				throw error_png();
+				throw_png_error();
 			}
 
 			if (opt_crc) {
@@ -258,9 +249,6 @@ void png_print(const string& path)
 	fzclose(f_in);
 }
 
-// --------------------------------------------------------------------------
-// Command interface
-
 void rezip_single(const string& file, unsigned long long& total_0, unsigned long long& total_1)
 {
 	unsigned size_0;
@@ -276,14 +264,11 @@ void rezip_single(const string& file, unsigned long long& total_0, unsigned long
 
 		try {
 			convert_inplace(file);
-		} catch (error& e) {
-			if (!e.ignore_get())
-				throw;
+		} catch (error_unsupported& e) {
 			desc = e.desc_get();
 		}
 
 		size_1 = file_size(file);
-
 	} catch (error& e) {
 		throw e << " on " << file;
 	}
@@ -410,55 +395,55 @@ void process(int argc, char* argv[])
 #endif
 	!= EOF) {
 		switch (c) {
-			case 'z' :
-				if (cmd != cmd_unset)
-					throw error() << "Too many commands";
-				cmd = cmd_recompress;
-				break;
-			case 'l' :
-				if (cmd != cmd_unset)
-					throw error() << "Too many commands";
-				cmd = cmd_list;
-				break;
-			case 'L' :
-				if (cmd != cmd_unset)
-					throw error() << "Too many commands";
-				cmd = cmd_list;
-				opt_crc = true;
-				break;
-			case '0' :
-				opt_level = shrink_none;
-				opt_force = true;
-				break;
-			case '1' :
-				opt_level = shrink_fast;
-				break;
-			case '2' :
-				opt_level = shrink_normal;
-				break;
-			case '3' :
-				opt_level = shrink_extra;
-				break;
-			case '4' :
-				opt_level = shrink_extreme;
-				break;
-			case 'f' :
-				opt_force = true;
-				break;
-			case 'q' :
-				opt_quiet = true;
-				break;
-			case 'h' :
-				usage();
-				return;
-			case 'V' :
-				version();
-				return;
-			default: {
-				// not optimal code for g++ 2.95.3
-				string opt;
-				opt = (char)optopt;
-				throw error() << "Unknown option `" << opt << "'";
+		case 'z' :
+			if (cmd != cmd_unset)
+				throw error() << "Too many commands";
+			cmd = cmd_recompress;
+			break;
+		case 'l' :
+			if (cmd != cmd_unset)
+				throw error() << "Too many commands";
+			cmd = cmd_list;
+			break;
+		case 'L' :
+			if (cmd != cmd_unset)
+				throw error() << "Too many commands";
+			cmd = cmd_list;
+			opt_crc = true;
+			break;
+		case '0' :
+			opt_level = shrink_none;
+			opt_force = true;
+			break;
+		case '1' :
+			opt_level = shrink_fast;
+			break;
+		case '2' :
+			opt_level = shrink_normal;
+			break;
+		case '3' :
+			opt_level = shrink_extra;
+			break;
+		case '4' :
+			opt_level = shrink_extreme;
+			break;
+		case 'f' :
+			opt_force = true;
+			break;
+		case 'q' :
+			opt_quiet = true;
+			break;
+		case 'h' :
+			usage();
+			return;
+		case 'V' :
+			version();
+			return;
+		default: {
+			// not optimal code for g++ 2.95.3
+			string opt;
+			opt = (char)optopt;
+			throw error() << "Unknown option `" << opt << "'";
 			}
 		} 
 	}
@@ -478,7 +463,7 @@ void process(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
 	try {
-		process(argc,argv);
+		process(argc, argv);
 	} catch (error& e) {
 		cerr << e << endl;
 		exit(EXIT_FAILURE);

@@ -21,7 +21,7 @@
 #include "portable.h"
 
 #include "zip.h"
-#include "utility.h"
+#include "file.h"
 
 #include <iostream>
 #include <iomanip>
@@ -29,10 +29,8 @@
 
 using namespace std;
 
-// --------------------------------------------------------------------------
-// Command interface
-
-void rezip_single(const string& file, unsigned long long& total_0, unsigned long long& total_1, bool quiet, bool standard, shrink_t level) {
+void rezip_single(const string& file, unsigned long long& total_0, unsigned long long& total_1, bool quiet, bool standard, shrink_t level)
+{
 	zip z(file);
 
 	unsigned size_0;
@@ -74,7 +72,8 @@ void rezip_single(const string& file, unsigned long long& total_0, unsigned long
 	total_1 += size_1;
 }
 
-void rezip_all(int argc, char* argv[], bool quiet, bool standard, shrink_t level) {
+void rezip_all(int argc, char* argv[], bool quiet, bool standard, shrink_t level)
+{
 	unsigned long long total_0 = 0;
 	unsigned long long total_1 = 0;
 
@@ -93,7 +92,8 @@ void rezip_all(int argc, char* argv[], bool quiet, bool standard, shrink_t level
 	}
 }
 
-void list_single(const string& file, bool crc) {
+void list_single(const string& file, bool crc)
+{
 	if (!file_exists(file)) {
 		throw error() << "File " << file << " doesn't exist";
 	}
@@ -250,14 +250,16 @@ Archive:  /mnt/bag/home/am/data/src/advscan/prova.zip
 	}
 }
 
-void list_all(int argc, char* argv[], bool crc) {
+void list_all(int argc, char* argv[], bool crc)
+{
 	string file(argv[0]);
 	for(int i=0;i<argc;++i) {
 		list_single(argv[i], crc);
 	}
 }
 
-void test_single(const string& file, bool quiet) {
+void test_single(const string& file, bool quiet)
+{
 	zip z(file);
 
 	if (!file_exists(file)) {
@@ -277,12 +279,14 @@ void test_single(const string& file, bool quiet) {
 	}
 }
 
-void test_all(int argc, char* argv[], bool quiet) {
+void test_all(int argc, char* argv[], bool quiet)
+{
 	for(int i=0;i<argc;++i)
 		test_single(argv[i], quiet);
 }
 
-void extract_all(int argc, char* argv[], bool quiet) {
+void extract_all(int argc, char* argv[], bool quiet)
+{
 	if (argc > 1)
 		throw error() << "Too many archives specified";
 	if (argc < 1)
@@ -309,12 +313,12 @@ void extract_all(int argc, char* argv[], bool quiet) {
 
 				file_mktree(file);
 
-				FILE* f = fopen(file.c_str(),"wb");
+				FILE* f = fopen(file.c_str(), "wb");
 				if (!f)
 					throw error() << "Failed open for writing file " << file;
 
 				try {
-					if (fwrite(data,i->uncompressed_size_get(),1,f)!=1)
+					if (fwrite(data, i->uncompressed_size_get(), 1, f)!=1)
 						throw error() << "Failed write file " << file;
 				} catch (...) {
 					fclose(f);
@@ -336,7 +340,8 @@ void extract_all(int argc, char* argv[], bool quiet) {
 	z.close();
 }
 
-void add_single(zip& z, const string& local, const string& common, bool quiet, bool standard, shrink_t level) {
+void add_single(zip& z, const string& local, const string& common, bool quiet, bool standard, shrink_t level)
+{
 	struct stat st;
 	string file = local + common;
 	string name = file_name(file);
@@ -345,7 +350,7 @@ void add_single(zip& z, const string& local, const string& common, bool quiet, b
 	if (name == "." || name == "..")
 		return;
 
-	if (stat(file.c_str(),&st)!=0)
+	if (stat(file.c_str(), &st)!=0)
 		throw error() << "Failed stat file " << file;
 
 	if (S_ISDIR(st.st_mode)) {
@@ -369,11 +374,11 @@ void add_single(zip& z, const string& local, const string& common, bool quiet, b
 			if (!quiet)
 				cout << file << endl;
 
-			FILE* f = fopen(file.c_str(),"rb");
+			FILE* f = fopen(file.c_str(), "rb");
 			if (!f)
 				throw error() << "Failed open for reading file " << file;
 
-			if (fread(data,st.st_size,1,f)!=1)
+			if (fread(data, st.st_size, 1, f)!=1)
 				throw error() << "Failed read file " << file;
 
 			fclose(f);
@@ -391,7 +396,8 @@ void add_single(zip& z, const string& local, const string& common, bool quiet, b
 	}
 }
 
-void add_all(int argc, char* argv[], bool quiet, bool standard, shrink_t level) {
+void add_all(int argc, char* argv[], bool quiet, bool standard, shrink_t level)
+{
 	if (argc < 1)
 		throw error() << "No archive specified";
 	if (argc < 2)
@@ -441,11 +447,13 @@ struct option long_options[] = {
 
 #define OPTIONS "axztlLNp01234qhV"
 
-void version() {
+void version()
+{
 	cout << PACKAGE " v" VERSION " by Andrea Mazzoleni" << endl;
 }
 
-void usage() {
+void usage()
+{
 	version();
 
 	cout << "Usage: advzip [options] ARCHIVES... [FILES...]" << endl;
@@ -468,7 +476,8 @@ void usage() {
 	cout << "  " SWITCH_GETOPT_LONG("-V, --version       ", "-V") "  Version of the program" << endl;
 }
 
-void process(int argc, char* argv[]) {
+void process(int argc, char* argv[])
+{
 	enum cmd_t {
 		cmd_unset, cmd_add, cmd_extract, cmd_recompress, cmd_test, cmd_list
 	} cmd = cmd_unset;
@@ -495,79 +504,78 @@ void process(int argc, char* argv[]) {
 #endif
 	!= EOF) {
 		switch (c) {
-			case 'a' :
-				if (cmd != cmd_unset)
-					throw error() << "Too many commands";
-				cmd = cmd_add;
-				break;
-			case 'x' :
-				if (cmd != cmd_unset)
-					throw error() << "Too many commands";
-				cmd = cmd_extract;
-				break;
-			case 'z' :
-				if (cmd != cmd_unset)
-					throw error() << "Too many commands";
-				cmd = cmd_recompress;
-				break;
-			case 't' :
-				if (cmd != cmd_unset)
-					throw error() << "Too many commands";
-				cmd = cmd_test;
-				break;
-			case 'l' :
-				if (cmd != cmd_unset)
-					throw error() << "Too many commands";
+		case 'a' :
+			if (cmd != cmd_unset)
+				throw error() << "Too many commands";
+			cmd = cmd_add;
+			break;
+		case 'x' :
+			if (cmd != cmd_unset)
+				throw error() << "Too many commands";
+			cmd = cmd_extract;
+			break;
+		case 'z' :
+			if (cmd != cmd_unset)
+				throw error() << "Too many commands";
+			cmd = cmd_recompress;
+			break;
+		case 't' :
+			if (cmd != cmd_unset)
+				throw error() << "Too many commands";
+			cmd = cmd_test;
+			break;
+		case 'l' :
+			if (cmd != cmd_unset)
+				throw error() << "Too many commands";
+			cmd = cmd_list;
+			break;
+		case 'L' :
+			crc = true;
+			if (cmd != cmd_unset)
+				throw error() << "Too many commands";
 				cmd = cmd_list;
-				break;
-			case 'L' :
-				crc = true;
-				if (cmd != cmd_unset)
-					throw error() << "Too many commands";
-				cmd = cmd_list;
-				break;
-			case 'N' :
-				notzip = true;
-				break;
-			case 'p' :
-				pedantic = true;
-				break;
-			case '0' :
-				level = shrink_none;
-				break;
-			case '1' :
-				level = shrink_fast;
-				break;
-			case '2' :
-				level = shrink_normal;
-				break;
-			case '3' :
-				level = shrink_extra;
-				break;
-			case '4' :
-				level = shrink_extreme;
-				break;
-			case 'q' :
-				quiet = true;
-				break;
-			case 'h' :
-				usage();
-				return;
-			case 'V' :
-				version();
-				return;
-			default: {
-				// not optimal code for g++ 2.95.3
-				string opt;
-				opt = (char)optopt;
-				throw error() << "Unknown option `" << opt << "'";
+			break;
+		case 'N' :
+			notzip = true;
+			break;
+		case 'p' :
+			pedantic = true;
+			break;
+		case '0' :
+			level = shrink_none;
+			break;
+		case '1' :
+			level = shrink_fast;
+			break;
+		case '2' :
+			level = shrink_normal;
+			break;
+		case '3' :
+			level = shrink_extra;
+			break;
+		case '4' :
+			level = shrink_extreme;
+			break;
+		case 'q' :
+			quiet = true;
+			break;
+		case 'h' :
+			usage();
+			return;
+		case 'V' :
+			version();
+			return;
+		default: {
+			// not optimal code for g++ 2.95.3
+			string opt;
+			opt = (char)optopt;
+			throw error() << "Unknown option `" << opt << "'";
 			}
 		} 
 	}
 
 	if (pedantic)
 		zip::pedantic_set(pedantic);
-
 
 	switch (cmd) {
 	case cmd_recompress :
@@ -590,10 +598,10 @@ void process(int argc, char* argv[]) {
 	}
 }
 
-int main(int argc, char* argv[]) {
-
+int main(int argc, char* argv[])
+{
 	try {
-		process(argc,argv);
+		process(argc, argv);
 	} catch (error& e) {
 		cerr << e << endl;
 		exit(EXIT_FAILURE);
