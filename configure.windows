@@ -1,6 +1,6 @@
 ./configure \
-	CFLAGS="-O2 -Wall -Wno-sign-compare -march=i586 -mcpu=i686 -fomit-frame-pointer" \
-	CXXFLAGS="-O2 -Wall -Wno-sign-compare -Wno-reorder -march=i586 -mcpu=i686 -fomit-frame-pointer" \
+	CFLAGS="-O2 -Wall -Wno-sign-compare -march=i586 -mcpu=i686 -fomit-frame-pointer -fno-strength-reduce" \
+	CXXFLAGS="-O2 -Wall -Wno-sign-compare -Wno-reorder -march=i586 -mcpu=i686 -fomit-frame-pointer -fno-strength-reduce" \
 	LDFLAGS="-s" \
 	--host=i386-mingw32msvc --build=`./config.guess` $@
 
