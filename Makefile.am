@@ -9,7 +9,8 @@ advzip_SOURCES = \
 	siglock.cc \
 	compress.cc \
 	zipsh.cc \
-	portable.c \
+	getopt.c \
+	snprintf.c \
 	7z/7zdeflate.cc \
 	7z/7zlzma.cc \
 	7z/AriBitCoder.cc \
@@ -36,7 +37,8 @@ advpng_SOURCES = \
 	utility.cc \
 	siglock.cc \
 	compress.cc \
-	portable.c \
+	getopt.c \
+	snprintf.c \
 	lib/fz.c \
 	lib/png.c \
 	lib/error.c \
@@ -66,7 +68,8 @@ advmng_SOURCES = \
 	utility.cc \
 	siglock.cc \
 	compress.cc \
-	portable.c \
+	getopt.c \
+	snprintf.c \
 	lib/fz.c \
 	lib/png.c \
 	lib/mng.c \
@@ -96,7 +99,8 @@ advdef_SOURCES = \
 	utility.cc \
 	siglock.cc \
 	compress.cc \
-	portable.c \
+	getopt.c \
+	snprintf.c \
 	pngex.cc \
 	lib/fz.c \
 	lib/error.c \
@@ -191,9 +195,10 @@ noinst_HEADERS = \
 man_MANS = doc/advdef.1 doc/advzip.1 doc/advpng.1 doc/advmng.1
 
 clean-local:
-	rm -f *~
 	rm -f new.lst check.zip
 	rm -f advdef.exe advzip.exe advpng.exe advmng.exe
+
+maintainer-clean-local:
 	rm -f README AUTHORS HISTORY INSTALL doc/copying.txt
 	rm -f doc/*.hh
 
@@ -297,3 +302,4 @@ DISTWEB = \
 	doc/advdef.hh doc/advzip.hh doc/advpng.hh doc/advmng.hh doc/history.hh
 
 web: $(DISTWEB)
+

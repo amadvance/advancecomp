@@ -50,9 +50,8 @@
 
 // Not standard methods
 #define ZIP_METHOD_ENHDEFLATE	0x09
-#define ZIP_METHOD_DCLIMPLODE	0x0A
-#define ZIP_METHOD_BZIP2	0x0B
-#define ZIP_METHOD_LZMA		0x0C
+#define ZIP_METHOD_BZIP2	0x0C
+#define ZIP_METHOD_LZMA		0x0F
 
 // Generic flags
 // If bit 0 is set, indicates that the file is encrypted.

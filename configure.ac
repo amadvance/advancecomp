@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT([AdvanceCOMP],[1.6])
+AC_INIT([AdvanceCOMP],[1.7])
 AC_CONFIG_SRCDIR([rezip.cc])
 AM_INIT_AUTOMAKE([foreign no-dependencies])
 AC_CONFIG_HEADERS([config.h])
@@ -19,19 +19,15 @@ AC_CHECK_PROGS(COL, col)
 AC_CHECK_LIB([z], [adler32])
 
 # Checks for header files.
-AC_CHECK_HEADERS([getopt.h])
-AC_CHECK_HEADERS([utime.h])
-AC_CHECK_HEADERS([sys/utime.h])
-AC_CHECK_HEADERS([stdarg.h])
-AC_CHECK_HEADERS([varargs.h])
+AC_HEADER_STDC
+AC_CHECK_HEADERS([unistd.h utime.h sys/utime.h stdarg.h varargs.h getopt.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_C_INLINE
 
 # Checks for library functions.
-AC_CHECK_FUNCS([getopt])
-AC_CHECK_FUNCS([getopt_long])
-AC_CHECK_FUNCS([snprintf])
-AC_CHECK_FUNCS([vsnprintf])
+AC_CHECK_FUNCS([getopt getopt_long snprintf vsnprintf])
 
 AC_DEFINE(USE_7Z,1,[Use the 7z library])
 AC_DEFINE(USE_LZMA,1,[Use the lzma compression])

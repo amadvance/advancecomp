@@ -1,6 +1,10 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 1.7 2003/07
+	) Changed the internal ID for the bzip2 and LZMA compression.
+		The bzip2 ID is now compatible with the PKWARE specification.
+
 AdvanceCOMP Version 1.6 2003/05
 	) Added the `-x' option at the advmng utility to export .png files
 		from a .mng clip. Useful to compress it in an MPEG file.
