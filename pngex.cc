@@ -448,6 +448,8 @@ void png_convert_4(
 				p1 += 4;
 			}
 		}
+	} else if (pix_pixel == 4) {
+		/* nothing to do */
 	} else {
 		throw error() << "Unsupported format";
 	}

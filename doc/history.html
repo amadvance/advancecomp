@@ -5,12 +5,37 @@
 <body>
 <h2><center>History For AdvanceCOMP</center></h2>
 <h2>1 
-AdvanceCOMP Version 1.7 2003/07
+AdvanceCOMP Version 1.7 2003/08
 </h2>
 <ul>
 <li>
+Fixed a Segmentation Fault bug on the advmng -r option on
+the latest gcc.
+</li>
+<li>
+Better and faster (MMX) move recognition in the advmng scroll
+compression.
+</li>
+<li>
+The frame reduction of the advmng utility is now done only if possible.
+The compression process never fails.
+</li>
+<li>
+Added a new -S (--scroll-square) option at advmng.
+</li>
+<li>
+Added a new -v (--verbose) option at advmng to show the
+compression status.
+</li>
+<li>
 Changed the internal ID for the bzip2 and LZMA compression.
 The bzip2 ID is now compatible with the PKWARE specification.
+</li>
+<li>
+Added support for RGB images with alpha channel at the advpng utility.
+</li>
+<li>
+Updated with automake 1.7.6.
 </li>
 </ul>
 <h2>2 

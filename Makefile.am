@@ -42,6 +42,7 @@ advpng_SOURCES = \
 	lib/fz.c \
 	lib/png.c \
 	lib/error.c \
+	lib/snstring.c \
 	7z/7zdeflate.cc \
 	7z/7zlzma.cc \
 	7z/AriBitCoder.cc \
@@ -74,6 +75,7 @@ advmng_SOURCES = \
 	lib/png.c \
 	lib/mng.c \
 	lib/error.c \
+	lib/snstring.c \
 	7z/7zdeflate.cc \
 	7z/7zlzma.cc \
 	7z/AriBitCoder.cc \
@@ -104,6 +106,7 @@ advdef_SOURCES = \
 	pngex.cc \
 	lib/fz.c \
 	lib/error.c \
+	lib/snstring.c \
 	lib/png.c \
 	lib/mng.c \
 	7z/7zdeflate.cc \
@@ -150,6 +153,7 @@ noinst_HEADERS = \
 	lib/fz.h \
 	lib/endianrw.h \
 	lib/error.h \
+	lib/snstring.h \
 	lib/extra.h \
 	7z/7z.h \
 	7z/AriBitCoder.h \

@@ -43,24 +43,31 @@ using namespace std;
 
 int opt_dx;
 int opt_dy;
+int opt_limit;
 bool opt_reduce;
 bool opt_expand;
 shrink_t opt_level;
 bool opt_quiet;
+bool opt_verbose;
 bool opt_scroll;
 bool opt_lc;
 bool opt_vlc;
 bool opt_force;
 
-/*************************************************************************************/
-/* Compare */
+void clear_line()
+{
+	cout << "                                                              \r";
+}
 
-unsigned compare_single1(unsigned width, unsigned height, unsigned char* p0, unsigned char* p1, unsigned line) {
+// --------------------------------------------------------------------------
+// Compare
+
+unsigned compare_line(unsigned width, unsigned height, unsigned char* p0, unsigned char* p1, unsigned line) {
 	unsigned i,j;
 	unsigned count = 0;
 
 	for(i=0;i<height;++i) {
-#if 0
+#if !defined(__i386__)
 		for(j=0;j<width;++j) {
 			if (p0[0] == p1[0])
 				++count;
@@ -68,20 +75,77 @@ unsigned compare_single1(unsigned width, unsigned height, unsigned char* p0, uns
 			++p1;
 		}
 #else
-		assert( sizeof(unsigned) == 4 );
+#if 1
+	/* MMX ASM optimized version */
+		j = width;
+		while (j>=8) {
+			unsigned char sum[8] = { 0, 0 ,0 ,0 ,0 ,0 ,0 ,0 };
+			unsigned char mask[8] = { 1, 1, 1, 1, 1, 1, 1, 1 };
+
+			unsigned run = j / 8;
+
+			if (run > 255)
+				run = 255; /* prevent overflow in the sum byte registers */
+
+			j = j - run * 8;
+
+			__asm__ __volatile__(
+				"movq 0(%3), %%mm2\n"
+				"movq 0(%4), %%mm3\n"
+
+				"0:\n"
+
+				"movq 0(%0), %%mm0\n"
+				"movq 0(%1), %%mm1\n"
+
+				"pcmpeqb %%mm0, %%mm1\n"
+				"pand %%mm3, %%mm1\n"
+				"paddb %%mm1, %%mm2\n"
+
+				"addl $8, %0\n"
+				"addl $8, %1\n"
+
+				"decl %2\n"
+				"jnz 0b\n"
+
+				"movq %%mm2, 0(%3)\n"
+
+				: "+r" (p0), "+r" (p1), "+r" (run), "+r" (&sum), "+r" (&mask)
+				:
+				: "cc"
+			);
+
+			count += sum[0];
+			count += sum[1];
+			count += sum[2];
+			count += sum[3];
+			count += sum[4];
+			count += sum[5];
+			count += sum[6];
+			count += sum[7];
+		}
+		while (j > 0) {
+			if (p0[0] == p1[0])
+				++count;
+			++p0;
+			++p1;
+			--j;
+		}
+#else
+		/* C optimized version */
 		j = width;
 		while (j >= 4) {
 			unsigned v0 = *(unsigned*)p0;
 			unsigned v1 = *(unsigned*)p1;
 			v0 ^= v1;
 			if (v0) {
-				if (v0 & 0xFF)
+				if ((v0 & 0x000000FF) == 0)
 					++count;
-				if (v0 & 0xFF00)
+				if ((v0 & 0x0000FF00) == 0)
 					++count;
-				if (v0 & 0xFF0000)
+				if ((v0 & 0x00FF0000) == 0)
 					++count;
-				if (v0 & 0xFF000000)
+				if ((v0 & 0xFF000000) == 0)
 					++count;
 			} else {
 				count += 4;
@@ -98,26 +162,9 @@ unsigned compare_single1(unsigned width, unsigned height, unsigned char* p0, uns
 			--j;
 		}
 #endif
+#endif
 		p0 += line - width;
 		p1 += line - width;
-	}
-
-	return count;
-}
-
-unsigned compare_single3(unsigned width, unsigned height, unsigned char* p0, unsigned char* p1, unsigned line) {
-	unsigned i,j;
-	unsigned count = 0;
-
-	for(i=0;i<height;++i) {
-		for(j=0;j<width;++j) {
-			if (p0[0] == p1[0] && p0[1] == p1[1] && p0[2] == p1[2])
-				++count;
-			p0 += 3;
-			p1 += 3;
-		}
-		p0 += line - width * 3;
-		p1 += line - width * 3;
 	}
 
 	return count;
@@ -139,9 +186,11 @@ unsigned compare_shift(int x, int y, unsigned width, unsigned height, unsigned c
 		p0 += y * line;
 
 	if (pixel == 1)
-		count = compare_single1(dx, dy, p0, p1, line);
+		count = compare_line(dx, dy, p0, p1, line);
 	else
-		count = compare_single3(dx, dy, p0, p1, line);
+		// the exact number of equal pixels isn't really required, the
+		// number of equal channels work also
+		count = compare_line(dx*3, dy, p0, p1, line);
 
 	return count;
 }
@@ -171,7 +220,7 @@ void compare(int* x, int* y, unsigned width, unsigned height, unsigned char* p0,
 
 	for(i=-opt_dx;i<=opt_dx;++i) {
 	for(j=-opt_dy;j<=opt_dy;++j) {
-	if (j || i) {
+	if ((j || i) && (abs(i)+abs(j)<=opt_limit) ) {
 		unsigned count;
 
 		count = compare_shift(i, j, width, height, p0, p1, pixel, line);
@@ -205,8 +254,8 @@ void compare(int* x, int* y, unsigned width, unsigned height, unsigned char* p0,
 	}
 }
 
-/*************************************************************************************/
-/* Analyze */
+// --------------------------------------------------------------------------
+// Analyze
 
 struct scroll_coord {
 	int x;
@@ -316,55 +365,61 @@ void analyze_f(adv_fz* f, struct scroll* sc) {
 
 	counter = 0;
 
-	while (1) {
-		unsigned pix_width;
-		unsigned pix_height;
-		unsigned char* pix_ptr;
-		unsigned pix_pixel;
-		unsigned pix_scanline;
-		unsigned char* dat_ptr;
-		unsigned dat_size;
-		unsigned char* pal_ptr;
-		unsigned pal_size;
-		unsigned tick;
-		int r;
+	try {
+		while (1) {
+			unsigned pix_width;
+			unsigned pix_height;
+			unsigned char* pix_ptr;
+			unsigned pix_pixel;
+			unsigned pix_scanline;
+			unsigned char* dat_ptr;
+			unsigned dat_size;
+			unsigned char* pal_ptr;
+			unsigned pal_size;
+			unsigned tick;
+			int r;
 
-		r = mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr, &pal_size, &tick, f);
-		if (r < 0) {
-			throw error_png();
-		}
-		if (r > 0)
-			break;
+			r = mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr, &pal_size, &tick, f);
+			if (r < 0) {
+				throw error_png();
+			}
+			if (r > 0)
+				break;
 
-		try {
-			analyze_image(f, sc, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline);
-		} catch (...) {
+			try {
+				analyze_image(f, sc, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline);
+			} catch (...) {
+				free(dat_ptr);
+				free(pal_ptr);
+				throw;
+			}
+
 			free(dat_ptr);
 			free(pal_ptr);
-			throw;
-		}
 
-		free(dat_ptr);
-		free(pal_ptr);
-
-		++counter;
-		if (!opt_quiet) {
-			int x = sc->map[sc->mac-1].x;
-			int y = sc->map[sc->mac-1].y;
-			if (dx < abs(x))
-				dx = abs(x);
-			if (dy < abs(y))
-				dy = abs(y);
-			cout << "Analyzing frame " << counter << ", delta " << x << "x" << y << " [" << dx << "x" << dy << "]    \r";
-			cout.flush();
+			++counter;
+			if (opt_verbose) {
+				int x = sc->map[sc->mac-1].x;
+				int y = sc->map[sc->mac-1].y;
+				if (dx < abs(x))
+					dx = abs(x);
+				if (dy < abs(y))
+					dy = abs(y);
+				cout << "Scroll frame " << counter << ", range " << dx << "x" << dy << "   \r";
+				cout.flush();
+			}
 		}
+	} catch (...) {
+		mng_done(mng);
+		if (opt_verbose) {
+			cout << endl;
+		}
+		throw;
 	}
 
 	mng_done(mng);
-
-	if (!opt_quiet) {
-		// clear
-		cout << "                                                    \r";
+	if (opt_verbose) {
+		clear_line();
 	}
 
 	data_free(ANALYZE.pre_ptr);
@@ -391,8 +446,126 @@ void analyze_file(const string& path, struct scroll* sc) {
 	fzclose(f);
 }
 
-/*************************************************************************************/
-/* Write */
+// --------------------------------------------------------------------------
+// Reduce
+
+bool is_reducible_image(unsigned img_width, unsigned img_height, unsigned img_pixel, unsigned char* img_ptr, unsigned img_scanline) {
+	unsigned char col_ptr[256*3];
+	unsigned col_count;
+	unsigned i,j,k;
+
+	if (img_pixel != 3)
+		return false;
+
+	col_count = 0;
+	for(i=0;i<img_height;++i) {
+		unsigned char* p0 = img_ptr + i * img_scanline;
+		for(j=0;j<img_width;++j) {
+			for(k=0;k<col_count;++k) {
+				if (col_ptr[k*3] == p0[0] && col_ptr[k*3+1] == p0[1] && col_ptr[k*3+2] == p0[2])
+					break;
+			}
+			if (k == col_count) {
+				if (col_count == 256)
+					return false; /* too many colors */
+				col_ptr[col_count*3] = p0[0];
+				col_ptr[col_count*3+1] = p0[1];
+				col_ptr[col_count*3+2] = p0[2];
+				++col_count;
+			}
+			p0 += 3;
+		}
+	}
+
+	return true;
+}
+
+bool is_reducible_f(adv_fz* f) {
+	adv_mng* mng;
+	bool reducible = true;
+
+	mng = mng_init(f);
+	if (!mng) {
+		throw error() << "Error in MNG stream";
+	}
+
+	if (opt_verbose) {
+		cout << "Checking if the image is reducible\r";
+		cout.flush();
+	}
+
+	try {
+		while (reducible) {
+			unsigned pix_width;
+			unsigned pix_height;
+			unsigned char* pix_ptr;
+			unsigned pix_pixel;
+			unsigned pix_scanline;
+			unsigned char* dat_ptr;
+			unsigned dat_size;
+			unsigned char* pal_ptr;
+			unsigned pal_size;
+			unsigned tick;
+			int r;
+
+			r = mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr, &pal_size, &tick, f);
+			if (r < 0) {
+				throw error_png();
+			}
+			if (r > 0)
+				break;
+
+			try {
+				if (!is_reducible_image(pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline))
+					reducible = false;
+			} catch (...) {
+				free(dat_ptr);
+				free(pal_ptr);
+				throw;
+			}
+
+			free(dat_ptr);
+			free(pal_ptr);
+		}
+	} catch (...) {
+		mng_done(mng);
+		if (opt_verbose) {
+			cout << endl;
+		}
+		throw;
+	}
+
+	mng_done(mng);
+	if (opt_verbose) {
+		clear_line();
+	}
+
+	return reducible;
+}
+
+bool is_reducible_file(const string& path) {
+	bool reducible;
+	adv_fz* f;
+
+	f = fzopen(path.c_str(), "rb");
+	if (!f) {
+		throw error() << "Failed open for reading " << path;
+	}
+
+	try {
+		reducible = is_reducible_f(f);
+	} catch (...) {
+		fzclose(f);
+		throw;
+	}
+
+	fzclose(f);
+
+	return reducible;
+}
+
+// --------------------------------------------------------------------------
+// Write
 
 struct write {
 	int first; /* first image flag */
@@ -420,7 +593,7 @@ struct write {
 	unsigned tick; /* last tick used */
 } WRITE;
 
-bool reduce_image(data_ptr out_ptr, unsigned& out_scanline, unsigned char* ovr_ptr, unsigned* ovr_used, unsigned char* img_ptr, unsigned img_scanline) {
+bool write_reduce(data_ptr& out_ptr, unsigned& out_scanline, unsigned char* ovr_ptr, unsigned* ovr_used, unsigned char* img_ptr, unsigned img_scanline) {
 	unsigned char col_ptr[256*3];
 	unsigned col_mapped[256];
 	unsigned col_count;
@@ -503,7 +676,7 @@ bool reduce_image(data_ptr out_ptr, unsigned& out_scanline, unsigned char* ovr_p
 	return true;
 }
 
-void write_expand(data_ptr out_ptr, unsigned& out_scanline, const unsigned char* img_ptr, unsigned img_scanline, unsigned char* pal_ptr) {
+void write_expand(data_ptr& out_ptr, unsigned& out_scanline, const unsigned char* img_ptr, unsigned img_scanline, unsigned char* pal_ptr) {
 	unsigned char* new_ptr;
 	unsigned new_scanline;
 	unsigned i,j;
@@ -921,12 +1094,12 @@ void write_image_raw(adv_fz* f, unsigned* fc, unsigned width, unsigned height, u
 	}
 }
 
-void write_image(adv_fz* f, unsigned* fc, unsigned width, unsigned height, unsigned pixel, unsigned char* img_ptr, unsigned img_scanline, unsigned char* pal_ptr, unsigned pal_size, int shift_x, int shift_y) {
+void write_image(adv_fz* f, unsigned* fc, unsigned width, unsigned height, unsigned pixel, unsigned char* img_ptr, unsigned img_scanline, unsigned char* pal_ptr, unsigned pal_size, int shift_x, int shift_y, bool reduce, bool expand) {
 	if (pixel == 1) {
 		data_ptr new_ptr;
 		unsigned new_scanline;
 
-		if (!opt_expand) {
+		if (!expand) {
 			write_image_raw(f, fc, width, height, pixel, img_ptr, img_scanline, pal_ptr, pal_size, shift_x, shift_y);
 		} else {
 			write_expand(new_ptr, new_scanline, img_ptr, img_scanline, pal_ptr);
@@ -938,7 +1111,7 @@ void write_image(adv_fz* f, unsigned* fc, unsigned width, unsigned height, unsig
 		data_ptr new_ptr;
 		unsigned new_scanline;
 
-		if (!opt_reduce) {
+		if (!reduce) {
 			write_image_raw(f, fc, width, height, pixel, img_ptr, img_scanline, 0, 0, shift_x, shift_y);
 		} else {
 			if (WRITE.first || WRITE.pixel == 3) {
@@ -946,13 +1119,8 @@ void write_image(adv_fz* f, unsigned* fc, unsigned width, unsigned height, unsig
 				memset(WRITE.pal_ptr, 0, sizeof(WRITE.pal_ptr));
 			}
 
-			if (reduce_image(new_ptr, new_scanline, ovr_ptr, ovr_used, img_ptr, img_scanline) != 0) {
-				/* reduction failed */
-				if (WRITE.first) {
-					write_image_raw(f, fc, width, height, pixel, img_ptr, img_scanline, 0, 0, shift_x, shift_y);
-				} else {
-					throw error_ignore() << "Color reduction failed";
-				}
+			if (!write_reduce(new_ptr, new_scanline, ovr_ptr, ovr_used, img_ptr, img_scanline)) {
+				throw error_ignore() << "Color reduction failed";
 			} else {
 				write_image_raw(f, fc, width, height, 1, new_ptr, new_scanline, ovr_ptr, 256*3, shift_x, shift_y);
 
@@ -970,8 +1138,8 @@ void write_footer(adv_fz* f, unsigned* fc) {
 	}
 }
 
-/*************************************************************************************/
-/* Conversion */
+// --------------------------------------------------------------------------
+// Conversion
 
 void convert_frame(adv_fz* f, unsigned* fc, unsigned tick) {
 	unsigned char fram[10];
@@ -1006,15 +1174,15 @@ void convert_header(adv_fz* f, unsigned* fc, unsigned frame_width, unsigned fram
 	}
 }
 
-void convert_image(adv_fz* f_out, unsigned* fc, adv_fz* f_in, unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline, unsigned char* pal_ptr, unsigned pal_size, struct scroll_coord* scc) {
+void convert_image(adv_fz* f_out, unsigned* fc, adv_fz* f_in, unsigned pix_width, unsigned pix_height, unsigned pix_pixel, unsigned char* pix_ptr, unsigned pix_scanline, unsigned char* pal_ptr, unsigned pal_size, struct scroll_coord* scc, bool reduce, bool expand) {
 	if (scc) {
-		write_image(f_out, fc, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, scc->x, scc->y);
+		write_image(f_out, fc, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, scc->x, scc->y, reduce, expand);
 	} else {
-		write_image(f_out, fc, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, 0, 0);
+		write_image(f_out, fc, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, 0, 0, reduce, expand);
 	}
 }
 
-void convert_f(adv_fz* f_in, adv_fz* f_out, unsigned* filec, unsigned* framec, struct scroll* sc) {
+void convert_f(adv_fz* f_in, adv_fz* f_out, unsigned* filec, unsigned* framec, struct scroll* sc, bool reduce, bool expand) {
 	unsigned counter;
 	adv_mng* mng;
 	bool first = true;
@@ -1027,79 +1195,88 @@ void convert_f(adv_fz* f_in, adv_fz* f_out, unsigned* filec, unsigned* framec, s
 	*filec = 0;
 	counter = 0;
 
-	while (1) {
-		unsigned pix_width;
-		unsigned pix_height;
-		unsigned char* pix_ptr;
-		unsigned pix_pixel;
-		unsigned pix_scanline;
-		unsigned char* dat_ptr;
-		unsigned dat_size;
-		unsigned char* pal_ptr;
-		unsigned pal_size;
-		unsigned tick;
-		int r;
+	try {
+		while (1) {
+			unsigned pix_width;
+			unsigned pix_height;
+			unsigned char* pix_ptr;
+			unsigned pix_pixel;
+			unsigned pix_scanline;
+			unsigned char* dat_ptr;
+			unsigned dat_size;
+			unsigned char* pal_ptr;
+			unsigned pal_size;
+			unsigned tick;
+			int r;
 
-		r = mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr, &pal_size, &tick, f_in);
-		if (r < 0) {
-			throw error_png();
-		}
-		if (r > 0)
-			break;
+			r = mng_read(mng, &pix_width, &pix_height, &pix_pixel, &dat_ptr, &dat_size, &pix_ptr, &pix_scanline, &pal_ptr, &pal_size, &tick, f_in);
+			if (r < 0) {
+				throw error_png();
+			}
+			if (r > 0)
+				break;
 
-		try {
-			if (first) {
-				unsigned frequency = mng_frequency_get(mng);
-				if (opt_vlc && tick!=1) {
-					// adjust the frequency
-					frequency = (frequency + tick / 2) / tick;
-					if (frequency == 0)
-						frequency = 1;
+			try {
+				if (first) {
+					unsigned frequency = mng_frequency_get(mng);
+					if (opt_vlc && tick!=1) {
+						// adjust the frequency
+						frequency = (frequency + tick / 2) / tick;
+						if (frequency == 0)
+							frequency = 1;
+					}
+					convert_header(f_out, filec, mng_width_get(mng), mng_height_get(mng), frequency, sc);
+					first = false;
 				}
-				convert_header(f_out, filec, mng_width_get(mng), mng_height_get(mng), frequency, sc);
-				first = false;
+
+				if (!opt_vlc)
+					convert_frame(f_out, filec, tick);
+
+				if (sc) {
+					if (counter >= sc->mac) {
+						throw error() << "Internal error";
+					}
+					convert_image(f_out, filec, f_in, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, &sc->map[counter], reduce, expand);
+				} else {
+					convert_image(f_out, filec, f_in, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, 0, reduce, expand);
+				}
+			} catch (...) {
+				free(dat_ptr);
+				free(pal_ptr);
+				throw;
 			}
 
-			if (!opt_vlc)
-				convert_frame(f_out, filec, tick);
-
-			if (sc) {
-				if (counter >= sc->mac) {
-					throw error() << "Internal error";
-				}
-				convert_image(f_out, filec, f_in, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, &sc->map[counter]);
-			} else {
-				convert_image(f_out, filec, f_in, pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, 0);
-			}
-		} catch (...) {
 			free(dat_ptr);
 			free(pal_ptr);
-			throw;
-		}
 
-		free(dat_ptr);
-		free(pal_ptr);
-
-		++counter;
-		if (!opt_quiet) {
-			cout << "Compressing frame " << counter << ", size " << *filec / counter << " [" << *filec << "]    \r";
-			cout.flush();
+			++counter;
+			if (opt_verbose) {
+				cout << "Compressing ";
+				if (reduce) cout << "and reducing ";
+				if (expand) cout << "and expanding ";
+				cout << "frame " << counter << ", size " << *filec << "    \r";
+				cout.flush();
+			}
 		}
+	} catch (...) {
+		mng_done(mng);
+		if (opt_verbose) {
+			cout << endl;
+		}
+		throw;
 	}
 
 	write_footer(f_out, filec);
 
 	mng_done(mng);
-
-	if (!opt_quiet) {
-		// clear
-		cout << "                                                    \r";
+	if (opt_verbose) {
+		clear_line();
 	}
 
 	*framec = counter;
 }
 
-void convert_file(const string& path_src, const string& path_dst, struct scroll* sc) {
+void convert_file(const string& path_src, const string& path_dst, struct scroll* sc, bool reduce, bool expand) {
 	adv_fz* f_in;
 	adv_fz* f_out;
 	
@@ -1118,7 +1295,7 @@ void convert_file(const string& path_src, const string& path_dst, struct scroll*
 	}
 
 	try {
-		convert_f(f_in, f_out, &filec, &framec, sc);
+		convert_f(f_in, f_out, &filec, &framec, sc, reduce, expand);
 	} catch (...) {
 		fzclose(f_in);
 		fzclose(f_out);
@@ -1132,6 +1309,8 @@ void convert_file(const string& path_src, const string& path_dst, struct scroll*
 
 void convert_file(const string& path_src, const string& path_dst) {
 	struct scroll sc;
+	bool reduce = false;
+	bool expand = false;
 
 	if (opt_scroll && opt_vlc) {
 		throw error() << "The --scroll and --vlc options are incompatible";
@@ -1143,9 +1322,20 @@ void convert_file(const string& path_src, const string& path_dst) {
 
 	if (opt_scroll) {
 		analyze_file(path_src, &sc);
-		convert_file(path_src, path_dst, &sc);
+	}
+
+	if (opt_reduce) {
+		reduce = is_reducible_file(path_src);
+	}
+
+	if (opt_expand) {
+		expand = true;
+	}
+
+	if (opt_scroll) {
+		convert_file(path_src, path_dst, &sc, reduce, expand);
 	} else {
-		convert_file(path_src, path_dst, 0);
+		convert_file(path_src, path_dst, 0, reduce, expand);
 	}
 }
 
@@ -1295,8 +1485,8 @@ void extract(const string& path_src) {
 		++counter;
 
 #if 1
-		// convert to 4 byte format.
-		// mencoder has problems with 3 byte PNG format.
+		// convert to 4 byte RGBA format.
+		// mencoder 0.90 has problems with 3 byte RGB format.
 		png_convert_4(pix_width, pix_height, pix_pixel, pix_ptr, pix_scanline, pal_ptr, pal_size, &dst_ptr, &dst_pixel, &dst_scanline);
 
 		png_write(f_out, pix_width, pix_height, dst_pixel, dst_ptr, dst_scanline, 0, 0, 0, 0, opt_level);
@@ -1315,7 +1505,7 @@ void extract(const string& path_src) {
 	if (first_tick)
 		cout << mng_frequency_get(mng) / (double)first_tick << endl;
 
-	if (!opt_quiet) {
+	if (!opt_verbose) {
 		cout << endl;
 		cout << "Example mencoder call:" << endl;
 		cout << "mencoder " << base << "-\\*.png -mf on:w=" << mng_width_get(mng) << ":h=" << mng_height_get(mng) << ":fps=" << mng_frequency_get(mng) / first_tick << ":type=png -ovc lavc -lavcopts vcodec=mpeg4:vbitrate=1000:vhq -o " << base << ".avi" << endl;
@@ -1418,6 +1608,7 @@ struct option long_options[] = {
 	{"shrink-extra", 0, 0, '3'},
 	{"shrink-insane", 0, 0, '4'},
 
+	{"scroll-square", 1, 0, 'S'},
 	{"scroll", 1, 0, 's'},
 	{"reduce", 0, 0, 'r'},
 	{"expand", 0, 0, 'e'},
@@ -1426,13 +1617,14 @@ struct option long_options[] = {
 	{"force", 0, 0, 'f'},
 
 	{"quiet", 0, 0, 'q'},
+	{"verbose", 0, 0, 'v'},
 	{"help", 0, 0, 'h'},
 	{"version", 0, 0, 'V'},
 	{0, 0, 0, 0}
 };
 #endif
 
-#define OPTIONS "zlx01234s:recCfqhV"
+#define OPTIONS "zlx01234s:S:recCfqvhV"
 
 void version() {
 	cout << PACKAGE " v" VERSION " by Andrea Mazzoleni" << endl;
@@ -1444,25 +1636,27 @@ void usage() {
 	cout << "Usage: advmng [options] [FILES...]" << endl;
 	cout << endl;
 	cout << "Modes:" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-l, --list          ", "-l    ") "  List the content of the files" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-z, --recompress    ", "-z    ") "  Recompress the specified files" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-x, --extract       ", "-x    ") "  Extract all the .PNG frames" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-l, --list           ", "-l    ") "  List the content of the files" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-z, --recompress     ", "-z    ") "  Recompress the specified files" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-x, --extract        ", "-x    ") "  Extract all the .PNG frames" << endl;
 	cout << "Options:" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-0, --shrink-store  ", "-0    ") "  Don't compress" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-1, --shrink-fast   ", "-1    ") "  Compress fast" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-2, --shrink-normal ", "-2    ") "  Compress normal" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-3, --shrink-extra  ", "-3    ") "  Compress extra" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-4, --shrink-insane ", "-4    ") "  Compress extreme" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-s, --scroll NxM    ", "-s NxM") "  Enable the scroll optimization with a pattern" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("                    ", "      ") "  search. from -Nx-M to NxM. Example: -s 4x6" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-r, --reduce        ", "-r    ") "  Convert the output at palettized 8 bit" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-e, --expand        ", "-e    ") "  Convert the output at 24 bit" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-c, --lc            ", "-c    ") "  Use of the MNG LC (Low Complexity) format" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-C, --vlc           ", "-C    ") "  Use of the MNG VLC (Very Low Complexity) format" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-f, --force         ", "-f    ") "  Force the new file also if it's bigger" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-q, --quiet         ", "-q    ") "  Don't print on the console" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-h, --help          ", "-h    ") "  Help of the program" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-v, --version       ", "-v    ") "  Version of the program" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-0, --shrink-store   ", "-0    ") "  Don't compress" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-1, --shrink-fast    ", "-1    ") "  Compress fast" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-2, --shrink-normal  ", "-2    ") "  Compress normal" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-3, --shrink-extra   ", "-3    ") "  Compress extra" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-4, --shrink-insane  ", "-4    ") "  Compress extreme" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-s, --scroll NxM     ", "-s NxM") "  Enable the scroll optimization with a NxM pattern" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-S, --scroll-square N", "-S N  ") "  Enable the square scroll optimization with a NxN pattern" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("                     ", "      ") "  search. from -Nx-M to NxM. Example: -s 4x6" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-r, --reduce         ", "-r    ") "  Convert the output at palettized 8 bit" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-e, --expand         ", "-e    ") "  Convert the output at 24 bit" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-c, --lc             ", "-c    ") "  Use of the MNG LC (Low Complexity) format" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-C, --vlc            ", "-C    ") "  Use of the MNG VLC (Very Low Complexity) format" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-f, --force          ", "-f    ") "  Force the new file also if it's bigger" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-q, --quiet          ", "-q    ") "  Don't print on the console" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-v, --verbose        ", "-v    ") "  Print on the console more information" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-h, --help           ", "-h    ") "  Help of the program" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-V, --version        ", "-B    ") "  Version of the program" << endl;
 }
 
 void process(int argc, char* argv[]) {
@@ -1471,11 +1665,13 @@ void process(int argc, char* argv[]) {
 	} cmd = cmd_unset;
 
 	opt_quiet = false;
+	opt_verbose = false;
 	opt_level = shrink_normal;
 	opt_reduce = false;
 	opt_expand = false;
 	opt_dx = 0;
 	opt_dy = 0;
+	opt_limit = 0;
 	opt_scroll = false;
 	opt_lc = false;
 	opt_vlc = false;
@@ -1536,12 +1732,24 @@ void process(int argc, char* argv[]) {
 				n = sscanf(optarg,"%dx%d",&opt_dx,&opt_dy);
 				if (n != 2)
 					throw error() << "Invalid option -s";
-				if (opt_dx < 0 || opt_dy < 0)
-					throw error() << "Invalid argument for option -s";
-					error();
-				if (opt_dx == 0 && opt_dy == 0)
+				if (opt_dx < 0 || opt_dy < 0
+					|| (opt_dx == 0 && opt_dy == 0)
+					|| opt_dx > 128 || opt_dy > 128)
 					throw error() << "Invalid argument for option -s";
 				opt_scroll = true;
+				opt_limit = opt_dx + opt_dy;
+				} break;
+			case 'S' : {
+				int n;
+				opt_limit = 0;
+				n = sscanf(optarg,"%d",&opt_limit);
+				if (n != 1)
+					throw error() << "Invalid option -S";
+				if (opt_limit < 1 || opt_limit > 128)
+					throw error() << "Invalid argument for option -S";
+				opt_scroll = true;
+				opt_dx = opt_limit;
+				opt_dy = opt_limit;
 				} break;
 			case 'r' :
 				opt_reduce = true;
@@ -1563,7 +1771,12 @@ void process(int argc, char* argv[]) {
 				opt_force = true;
 				break;
 			case 'q' :
+				opt_verbose = false;
 				opt_quiet = true;
+				break;
+			case 'v' :
+				opt_verbose = true;
+				opt_quiet = false;
 				break;
 			case 'h' :
 				usage();

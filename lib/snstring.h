@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1999-2002 Andrea Mazzoleni
+ * Copyright (C) 1999-2003 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -11,7 +11,7 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU General Public License for more details. 
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
@@ -29,34 +29,28 @@
  */
 
 /** \file
- * Error.
+ * Safe string functions.
  */
 
-#ifndef __ERROR_H
-#define __ERROR_H
+#ifndef __SNSTRING_H
+#define __SNSTRING_H
 
-#include "extra.h"
+#include <sys/types.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/** \addtogroup Error */
-/*@{*/
-
-const char* error_get(void);
-adv_bool error_unsupported_get(void);
-
-void error_cat_set(const char* prefix, adv_bool mode);
-void error_reset(void);
-void error_set(const char* error, ...) __attribute__((format(printf, 1, 2)));
-void error_unsupported_set(const char* error, ...) __attribute__((format(printf, 1, 2)));
-void error_nolog_set(const char* error, ...) __attribute__((format(printf, 1, 2)));
-
-/*@}*/
+void sncpy(char* dst, size_t len, const char* src);
+void sncpyn(char* dst, size_t len, const char* src, size_t src_len);
+void sncat(char* dst, size_t len, const char* src);
+void sncatf(char* str, size_t count, const char *fmt, ...) __attribute__((format(printf, 3, 4)));
+const char* stoken(char* c, int* p, char* s, const char* sep, const char* ignore);
+void sskip(int* p, const char* s, const char* sep);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
+

@@ -5,8 +5,9 @@ Synopsis
 	:advmng [-l, --list] [-z, --recompress] [-x, --extract]
 	:[-0, --shrink-store] [-1, --shrink-fast] [-2, --shrink-normal]
 	:[-3, --shrink-extra] [-4, --shrink-insane]
-	:[-s, --scroll HxV] [-e, --expand] [-r, --reduce]
-	:[-c, --lc] [-C, --vlc] [-f, --force] [-q, --quiet]
+	:[-s, --scroll HxV] [-S, --scroll-auto]
+	:[-e, --expand] [-r, --reduce]
+	:[-c, --lc] [-C, --vlc] [-f, --force] [-q, --quiet] [-v, --verbose]
 	:[-h, --help] [-V, --version] FILES...
 
 Description
@@ -19,6 +20,7 @@ Description
 
 	To compress the files this utility uses the following
 	strategies:
+
 	* Remove all ancillary chunks.
 	* Use the MNG Delta feature to compress video clips with
 		only small changes between frames.
@@ -72,19 +74,23 @@ Options
 		pixel every frame. If you recorded with an interleave
 		factor of 2 the vertical scrolling speed is
 		1*2 = 2. In this case the minimum pattern is "-s 0x2".
-		Generally you can use "-s 4x4" and use bigger
+		Generally you can use "-s 8x8" and use bigger
 		values only for games scrolling faster. If the
 		game scrolls only horizontally or vertically you can
 		speed up a lot the compression with monodirectional
-		patterns like "-s 8x0" or "-s 0x8".
+		patterns like "-s 16x0" or "-s 0x16".
+
+	-S, --scroll-square N
+		This option is like the option "-s NxN" but excludes
+		big movement on both directions reducing the computation
+		time. Specifically the check done is X+Y<=N.
 
 	-r, --reduce
-		Force always the color reduction to 8 bit. The
-		compression will fail if exists a frame with more than
-		256 colors.
+		Force the color reduction to 8 bit. The reduction is
+		really done only if any frame have less than 256 colors.
 
 	-e, --expand
-		Force always the color expansion to 24 bit.
+		Force the color expansion to 24 bit.
 
 	-c, --lc
 		Force the use of the MNG LC (Low Complexity)
@@ -102,8 +108,21 @@ Options
 	-f, --force
 		Force the use of the new file also if it's bigger.
 
+	-q, --quiet
+		Don't print the filenames.
+
+	-v, --verbose
+		Print more information on the compression process.
+
+Examples
+	A good tradeoff of compression and time is the command :
+
+		advmng -z -r -S 12 *.mng
+
+	And leave for a few hours.
+
 Copyright
-	This file is Copyright (C) 2002 Andrea Mazzoleni, Filipe Estima
+	This file is Copyright (C) 2003 Andrea Mazzoleni, Filipe Estima
 
 See Also
 	advzip(1), advpng(1), advdef(1)

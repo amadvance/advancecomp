@@ -155,6 +155,7 @@ advpng_SOURCES = \
 	lib/fz.c \
 	lib/png.c \
 	lib/error.c \
+	lib/snstring.c \
 	7z/7zdeflate.cc \
 	7z/7zlzma.cc \
 	7z/AriBitCoder.cc \
@@ -188,6 +189,7 @@ advmng_SOURCES = \
 	lib/png.c \
 	lib/mng.c \
 	lib/error.c \
+	lib/snstring.c \
 	7z/7zdeflate.cc \
 	7z/7zlzma.cc \
 	7z/AriBitCoder.cc \
@@ -219,6 +221,7 @@ advdef_SOURCES = \
 	pngex.cc \
 	lib/fz.c \
 	lib/error.c \
+	lib/snstring.c \
 	lib/png.c \
 	lib/mng.c \
 	7z/7zdeflate.cc \
@@ -267,6 +270,7 @@ noinst_HEADERS = \
 	lib/fz.h \
 	lib/endianrw.h \
 	lib/error.h \
+	lib/snstring.h \
 	lib/extra.h \
 	7z/7z.h \
 	7z/AriBitCoder.h \
@@ -338,14 +342,15 @@ PROGRAMS = $(bin_PROGRAMS)
 
 am_advdef_OBJECTS = redef.$(OBJEXT) utility.$(OBJEXT) siglock.$(OBJEXT) \
 	compress.$(OBJEXT) getopt.$(OBJEXT) snprintf.$(OBJEXT) \
-	pngex.$(OBJEXT) fz.$(OBJEXT) error.$(OBJEXT) png.$(OBJEXT) \
-	mng.$(OBJEXT) 7zdeflate.$(OBJEXT) 7zlzma.$(OBJEXT) \
-	AriBitCoder.$(OBJEXT) CRC.$(OBJEXT) DeflateDecoder.$(OBJEXT) \
-	DeflateEncoder.$(OBJEXT) HuffmanEncoder.$(OBJEXT) \
-	IInOutStreams.$(OBJEXT) InByte.$(OBJEXT) LSBFDecoder.$(OBJEXT) \
-	LSBFEncoder.$(OBJEXT) LZMA.$(OBJEXT) LZMADecoder.$(OBJEXT) \
-	LZMAEncoder.$(OBJEXT) LenCoder.$(OBJEXT) LiteralCoder.$(OBJEXT) \
-	OutByte.$(OBJEXT) WindowIn.$(OBJEXT) WindowOut.$(OBJEXT)
+	pngex.$(OBJEXT) fz.$(OBJEXT) error.$(OBJEXT) snstring.$(OBJEXT) \
+	png.$(OBJEXT) mng.$(OBJEXT) 7zdeflate.$(OBJEXT) \
+	7zlzma.$(OBJEXT) AriBitCoder.$(OBJEXT) CRC.$(OBJEXT) \
+	DeflateDecoder.$(OBJEXT) DeflateEncoder.$(OBJEXT) \
+	HuffmanEncoder.$(OBJEXT) IInOutStreams.$(OBJEXT) \
+	InByte.$(OBJEXT) LSBFDecoder.$(OBJEXT) LSBFEncoder.$(OBJEXT) \
+	LZMA.$(OBJEXT) LZMADecoder.$(OBJEXT) LZMAEncoder.$(OBJEXT) \
+	LenCoder.$(OBJEXT) LiteralCoder.$(OBJEXT) OutByte.$(OBJEXT) \
+	WindowIn.$(OBJEXT) WindowOut.$(OBJEXT)
 advdef_OBJECTS = $(am_advdef_OBJECTS)
 advdef_LDADD = $(LDADD)
 advdef_DEPENDENCIES =
@@ -353,13 +358,14 @@ advdef_LDFLAGS =
 am_advmng_OBJECTS = remng.$(OBJEXT) pngex.$(OBJEXT) utility.$(OBJEXT) \
 	siglock.$(OBJEXT) compress.$(OBJEXT) getopt.$(OBJEXT) \
 	snprintf.$(OBJEXT) fz.$(OBJEXT) png.$(OBJEXT) mng.$(OBJEXT) \
-	error.$(OBJEXT) 7zdeflate.$(OBJEXT) 7zlzma.$(OBJEXT) \
-	AriBitCoder.$(OBJEXT) CRC.$(OBJEXT) DeflateDecoder.$(OBJEXT) \
-	DeflateEncoder.$(OBJEXT) HuffmanEncoder.$(OBJEXT) \
-	IInOutStreams.$(OBJEXT) InByte.$(OBJEXT) LSBFDecoder.$(OBJEXT) \
-	LSBFEncoder.$(OBJEXT) LZMA.$(OBJEXT) LZMADecoder.$(OBJEXT) \
-	LZMAEncoder.$(OBJEXT) LenCoder.$(OBJEXT) LiteralCoder.$(OBJEXT) \
-	OutByte.$(OBJEXT) WindowIn.$(OBJEXT) WindowOut.$(OBJEXT)
+	error.$(OBJEXT) snstring.$(OBJEXT) 7zdeflate.$(OBJEXT) \
+	7zlzma.$(OBJEXT) AriBitCoder.$(OBJEXT) CRC.$(OBJEXT) \
+	DeflateDecoder.$(OBJEXT) DeflateEncoder.$(OBJEXT) \
+	HuffmanEncoder.$(OBJEXT) IInOutStreams.$(OBJEXT) \
+	InByte.$(OBJEXT) LSBFDecoder.$(OBJEXT) LSBFEncoder.$(OBJEXT) \
+	LZMA.$(OBJEXT) LZMADecoder.$(OBJEXT) LZMAEncoder.$(OBJEXT) \
+	LenCoder.$(OBJEXT) LiteralCoder.$(OBJEXT) OutByte.$(OBJEXT) \
+	WindowIn.$(OBJEXT) WindowOut.$(OBJEXT)
 advmng_OBJECTS = $(am_advmng_OBJECTS)
 advmng_LDADD = $(LDADD)
 advmng_DEPENDENCIES =
@@ -367,13 +373,13 @@ advmng_LDFLAGS =
 am_advpng_OBJECTS = repng.$(OBJEXT) pngex.$(OBJEXT) utility.$(OBJEXT) \
 	siglock.$(OBJEXT) compress.$(OBJEXT) getopt.$(OBJEXT) \
 	snprintf.$(OBJEXT) fz.$(OBJEXT) png.$(OBJEXT) error.$(OBJEXT) \
-	7zdeflate.$(OBJEXT) 7zlzma.$(OBJEXT) AriBitCoder.$(OBJEXT) \
-	CRC.$(OBJEXT) DeflateDecoder.$(OBJEXT) DeflateEncoder.$(OBJEXT) \
-	HuffmanEncoder.$(OBJEXT) IInOutStreams.$(OBJEXT) \
-	InByte.$(OBJEXT) LSBFDecoder.$(OBJEXT) LSBFEncoder.$(OBJEXT) \
-	LZMA.$(OBJEXT) LZMADecoder.$(OBJEXT) LZMAEncoder.$(OBJEXT) \
-	LenCoder.$(OBJEXT) LiteralCoder.$(OBJEXT) OutByte.$(OBJEXT) \
-	WindowIn.$(OBJEXT) WindowOut.$(OBJEXT)
+	snstring.$(OBJEXT) 7zdeflate.$(OBJEXT) 7zlzma.$(OBJEXT) \
+	AriBitCoder.$(OBJEXT) CRC.$(OBJEXT) DeflateDecoder.$(OBJEXT) \
+	DeflateEncoder.$(OBJEXT) HuffmanEncoder.$(OBJEXT) \
+	IInOutStreams.$(OBJEXT) InByte.$(OBJEXT) LSBFDecoder.$(OBJEXT) \
+	LSBFEncoder.$(OBJEXT) LZMA.$(OBJEXT) LZMADecoder.$(OBJEXT) \
+	LZMAEncoder.$(OBJEXT) LenCoder.$(OBJEXT) LiteralCoder.$(OBJEXT) \
+	OutByte.$(OBJEXT) WindowIn.$(OBJEXT) WindowOut.$(OBJEXT)
 advpng_OBJECTS = $(am_advpng_OBJECTS)
 advpng_LDADD = $(LDADD)
 advpng_DEPENDENCIES =
@@ -516,6 +522,12 @@ error.o: lib/error.c
 
 error.obj: lib/error.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o error.obj `if test -f 'lib/error.c'; then $(CYGPATH_W) 'lib/error.c'; else $(CYGPATH_W) '$(srcdir)/lib/error.c'; fi`
+
+snstring.o: lib/snstring.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o snstring.o `test -f 'lib/snstring.c' || echo '$(srcdir)/'`lib/snstring.c
+
+snstring.obj: lib/snstring.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o snstring.obj `if test -f 'lib/snstring.c'; then $(CYGPATH_W) 'lib/snstring.c'; else $(CYGPATH_W) '$(srcdir)/lib/snstring.c'; fi`
 
 png.o: lib/png.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o png.o `test -f 'lib/png.c' || echo '$(srcdir)/'`lib/png.c

@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1999-2002 Andrea Mazzoleni
+ * Copyright (C) 1999-2003 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -600,6 +600,7 @@ adv_error png_read_ihdr(
 	unsigned depth;
 	int r;
 	z_stream z;
+	adv_bool has_palette;
 
 	*dat_ptr = 0;
 	*pix_ptr = 0;
@@ -618,18 +619,27 @@ adv_error png_read_ihdr(
 	if (data[9] == 3 && depth == 8) {
 		pixel = 1;
 		width_align = width;
+		has_palette = 1;
 	} else if (data[9] == 3 && depth == 4) {
 		pixel = 1;
 		width_align = (width + 1) & ~1;
+		has_palette = 1;
 	} else if (data[9] == 3 && depth == 2) {
 		pixel = 1;
 		width_align = (width + 3) & ~3;
+		has_palette = 1;
 	} else if (data[9] == 3 && depth == 1) {
 		pixel = 1;
 		width_align = (width + 7) & ~7;
+		has_palette = 1;
 	} else if (data[9] == 2 && depth == 8) {
 		pixel = 3;
 		width_align = width;
+		has_palette = 0;
+	} else if (data[9] == 6 && depth == 8) {
+		pixel = 4;
+		width_align = width;
+		has_palette = 0;
 	} else {
 		error_unsupported_set("Unsupported bit depth/color type, %d/%d", (unsigned)data[8], (unsigned)data[9]);
 		goto err;
@@ -660,7 +670,7 @@ adv_error png_read_ihdr(
 	}
 
 	if (type == PNG_CN_PLTE) {
-		if (pixel != 1) {
+		if (!has_palette) {
 			error_set("Unexpected PLTE chunk");
 			goto err_ptr;
 		}
@@ -676,7 +686,7 @@ adv_error png_read_ihdr(
 		if (png_read_chunk(f, &ptr, &ptr_size, &type) != 0)
 			goto err;
 	} else {
-		if (pixel != 3) {
+		if (has_palette) {
 			error_set("Missing PLTE chunk");
 			goto err_ptr;
 		}
@@ -743,9 +753,14 @@ adv_error png_read_ihdr(
 
 		if (pixel == 1)
 			png_unfilter_8(width * pixel, height, *dat_ptr, width_align * pixel + 1);
-		else
+		else if (pixel == 3)
 			png_unfilter_24(width * pixel, height, *dat_ptr, width_align * pixel + 1);
-
+		else if (pixel == 4)
+			png_unfilter_32(width * pixel, height, *dat_ptr, width_align * pixel + 1);
+		else {
+			error_set("Unsupported format");
+			goto err_ptr;
+		}
 	} else if (depth == 4) {
 		if (res_size != height * (width_align / 2 + 1)) {
 			error_set("Invalid decompressed size");

@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 1999-2002 Andrea Mazzoleni
+ * Copyright (C) 1999-2003 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@
 #endif
 
 #include "error.h"
+#include "snstring.h"
 #include "portable.h"
 
 #include <ctype.h>
@@ -61,9 +62,32 @@
 static char error_desc_buffer[ERROR_DESC_MAX];
 
 /**
- * Flag set if an unsupported PNG feature is found.
+ * Flag set if an unsupported feature is found.
  */
 static adv_bool error_unsupported_flag;
+
+/**
+ * Flag for cat mode.
+ */
+static adv_bool error_cat_flag;
+
+/**
+ * Prefix for cat mode.
+ */
+static char error_cat_prefix_buffer[ERROR_DESC_MAX];
+
+/**
+ * Set the error cat mode.
+ * If enabled the error text is appended at the end of the previous error.
+ */
+void error_cat_set(const char* prefix, adv_bool mode)
+{
+	if (prefix)
+		sncpy(error_cat_prefix_buffer, sizeof(error_cat_prefix_buffer), prefix);
+	else
+		error_cat_prefix_buffer[0] = 0;
+	error_cat_flag = mode;
+}
 
 /**
  * Get the current error description.
@@ -93,16 +117,35 @@ void error_reset(void)
 void error_set(const char* text, ...)
 {
 	va_list arg;
+	char* p;
+	unsigned size;
 
 	error_unsupported_flag = 0;
 
+	if (error_cat_flag) {
+		if (error_cat_prefix_buffer[0]) {
+			sncat(error_desc_buffer, sizeof(error_desc_buffer), error_cat_prefix_buffer);
+			sncat(error_desc_buffer, sizeof(error_desc_buffer), ": ");
+		}
+		p = error_desc_buffer + strlen(error_desc_buffer);
+		size = sizeof(error_desc_buffer) - strlen(error_desc_buffer);
+	} else {
+		p = error_desc_buffer;
+		size = sizeof(error_desc_buffer);
+	}
+
 	va_start(arg, text);
-	vsnprintf(error_desc_buffer, sizeof(error_desc_buffer), text, arg);
+	vsnprintf(p, size, text, arg);
 
 #ifndef USE_ERROR_SILENT
-	log_std(("advance: set_error_description \""));
+	log_std(("advance:msg:"));
+	if (error_cat_flag && error_cat_prefix_buffer[0]) {
+		log_std(("%s:", error_cat_prefix_buffer));
+	}
+	log_std((" "));
 	log_va(text, arg);
-	log_std(("\"\n"));
+	if (!text[0] || text[strlen(text)-1] != '\n')
+		log_std(("\n"));
 #endif
 
 	va_end(arg);
@@ -151,29 +194,27 @@ adv_bool error_unsupported_get(void)
 void error_nolog_set(const char* text, ...)
 {
 	va_list arg;
+	char* p;
+	unsigned size;
 
 	error_unsupported_flag = 0;
 
+	if (error_cat_flag) {
+		if (error_cat_prefix_buffer[0]) {
+			sncat(error_desc_buffer, sizeof(error_desc_buffer), error_cat_prefix_buffer);
+			sncat(error_desc_buffer, sizeof(error_desc_buffer), ": ");
+		}
+		p = error_desc_buffer + strlen(error_desc_buffer);
+		size = sizeof(error_desc_buffer) - strlen(error_desc_buffer);
+	} else {
+		p = error_desc_buffer;
+		size = sizeof(error_desc_buffer);
+	}
+
 	va_start(arg, text);
-	vsnprintf(error_desc_buffer, sizeof(error_desc_buffer), text, arg);
+	vsnprintf(p, size, text, arg);
 	va_end(arg);
 }
 
-/**
- * Add some text at the description of the last error.
- * \note The description IS NOT logged.
- */
-void error_nolog_cat(const char* text, ...)
-{
-	va_list arg;
-	char buffer[ERROR_DESC_MAX];
-
-	va_start(arg, text);
-	vsnprintf(buffer, sizeof(buffer), text, arg);
-
-	sncat(error_desc_buffer, sizeof(error_desc_buffer), buffer);
-
-	va_end(arg);
-}
 #endif
 

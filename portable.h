@@ -89,8 +89,8 @@ extern int optind, opterr, optopt;
 #define HAVE_SIGQUIT
 #endif
 
-/* ------------------------------------------------------------------------ */
-/* snprintf */
+// ------------------------------------------------------------------------
+// safestring
 
 #if !HAVE_SNPRINTF
 #include <sys/types.h>
