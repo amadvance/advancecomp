@@ -1,6 +1,6 @@
-                           =========================
-                           The AdvanceMNG compressor
-                           =========================
+                      ===================================
+                      AdvanceCOMP MNG Compression Utility
+                      ===================================
 
 
 1 SYNOPSIS

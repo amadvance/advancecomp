@@ -1,5 +1,5 @@
-Name
-	advdef - The AdvanceDEFLATE recompression utility
+Name{number}
+	advdef - AdvanceCOMP Deflate Compression Utility
 
 Synopsis
 	:advdef [-z, --recompress] [-0, --shrink-store]

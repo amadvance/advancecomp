@@ -1,6 +1,6 @@
-                    ========================================
-                    The AdvanceDEFLATE recompression utility
-                    ========================================
+                    =======================================
+                    AdvanceCOMP Deflate Compression Utility
+                    =======================================
 
 
 1 SYNOPSIS

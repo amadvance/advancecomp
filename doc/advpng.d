@@ -1,5 +1,5 @@
-Name
-	advpng - The AdvancePNG compressor
+Name{number}
+	advpng - AdvanceCOMP PNG Compression Utility
 
 Synopsis
 	:advpng [-l, --list] [-z, --recompress] [-0, --shrink-0]

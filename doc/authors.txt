@@ -1,24 +1,23 @@
-                            =======================
-                            The AdvanceCOMP Authors
-                            =======================
+                              ===================
+                              AdvanceCOMP Authors
+                              ===================
 
 
-1 AUTHORS
-=========
+AUTHORS
+=======
 
-* Andrea Mazzoleni
+The author of AdvanceCOMP and releated utilities is
+Andrea Mazzoleni.
+
+You can contact me sending an email at:
+
+    amadvance@users.sourceforge.net
 
 
-2 ACKNOWLEDGMENTS
-=================
+ACKNOWLEDGMENTS
+===============
+
+A lot of other people helped submitting patches, bug reports
+and generic comments. A special mention to:
 
 * Filipe Estima
-
-
-3 LIBRARIES
-===========
-
-zlib - Copyright Jean-loup Gailly and Mark Adler
-7z - Copyright Igor Pavlov
-bzip2 - Copyright Julian Seward
-getopt - Copyright DJ Delorie

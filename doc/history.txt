@@ -3,29 +3,29 @@
                             =======================
 
 
-1 ADVANCECOMP VERSION 1.14 2004/11
-==================================
+ADVANCECOMP VERSION 1.14 2005/01
+================================
 
 * Relaxed a consistency check for the local header in zip files.
   The crc and size entries are allowed to contain the real
   value also if a data descriptor is present.
 
 
-2 ADVANCECOMP VERSION 1.13 2004/11
-==================================
+ADVANCECOMP VERSION 1.13 2004/11
+================================
 
 * Added support for .svgz files at advdef [rener].
 * Fixed the 8 bit color reduction of 32 bit png files.
 
 
-3 ADVANCECOMP VERSION 1.12 2004/09
-==================================
+ADVANCECOMP VERSION 1.12 2004/09
+================================
 
 * Fixed a compilation problem with gcc 3.4.
 
 
-4 ADVANCECOMP VERSION 1.11 2004/07
-==================================
+ADVANCECOMP VERSION 1.11 2004/07
+================================
 
 * Fixed a FreeBSD libc compatibility issue recompressing
   .gz files [Radim Kolar].
@@ -33,8 +33,8 @@
   compressed .zip files are tested.
 
 
-5 ADVANCECOMP VERSION 1.10 2004/04
-==================================
+ADVANCECOMP VERSION 1.10 2004/04
+================================
 
 * Added support for alpha channel and the new -n option
   at advmng.
@@ -42,23 +42,23 @@
   with some GZIP files [Christian Lestrade].
 
 
-6 ADVANCECOMP VERSION 1.9 2003/11
-=================================
+ADVANCECOMP VERSION 1.9 2003/11
+===============================
 
 * Added support for .tgz files at advdef.
 * Added the -a option at advmng to create .mng files from
   a sequence of .png files.
 
 
-7 ADVANCECOMP VERSION 1.8 2003/10
-=================================
+ADVANCECOMP VERSION 1.8 2003/10
+===============================
 
 * Added support for .gz files at advdef.
 * Fixed support for .png files with splitted IDATs.
 
 
-8 ADVANCECOMP VERSION 1.7 2003/08
-=================================
+ADVANCECOMP VERSION 1.7 2003/08
+===============================
 
 * Fixed a Segmentation Fault bug on the advmng -r option on
   the latest gcc.
@@ -75,8 +75,8 @@
 * Updated with automake 1.7.6.
 
 
-9 ADVANCECOMP VERSION 1.6 2003/05
-=================================
+ADVANCECOMP VERSION 1.6 2003/05
+===============================
 
 * Added the `-x' option at the advmng utility to export .png files
   from a .mng clip. Useful to compress it in an MPEG file.
@@ -85,23 +85,23 @@
 * Some fixes for the gcc 3.3 compiler.
 
 
-10 ADVANCECOMP VERSION 1.5 2003/01
-==================================
+ADVANCECOMP VERSION 1.5 2003/01
+===============================
 
 * Splitted from AdvanceSCAN
 * Added the `advdef' compression utility.
 
 
-11 ADVANCESCAN VERSION 1.4 2002/12
-==================================
+ADVANCESCAN VERSION 1.4 2002/12
+===============================
 
 * Fixed a bug in the advmng utility when it was called with
   more than one file in the command line. The program
   was incorrectly adding a PLTE chunk at rgb images.
 
 
-12 ADVANCESCAN VERSION 1.3 2002/11
-==================================
+ADVANCESCAN VERSION 1.3 2002/11
+===============================
 
 * Added the support for the transparency tRNS chunk at the
   advpng utility.
@@ -110,8 +110,8 @@
 * Minor changes at the autoconf/automake scripts.
 
 
-13 ADVANCESCAN VERSION 1.2 2002/08
-==================================
+ADVANCESCAN VERSION 1.2 2002/08
+===============================
 
 * Added the advpng utility to compress the PNG files.
 * Added the advmng utility to compress the MNG files.
@@ -119,15 +119,15 @@
 * Other minor fixes.
 
 
-14 ADVANCESCAN VERSION 1.1 2002/06
-==================================
+ADVANCESCAN VERSION 1.1 2002/06
+===============================
 
 * Fixed an infinite loop bug testing some small damaged zips.
 * Removed some warning compiling with gcc 3.1.
 
 
-15 ADVANCESCAN VERSION 1.0 2002/05
-==================================
+ADVANCESCAN VERSION 1.0 2002/05
+===============================
 
 * First public release.
 * Fixed the compression percentage computation on big files.
@@ -135,7 +135,7 @@
   tests are only done if requested.
 
 
-16 ADVANCESCAN VERSION 0.6-BETA 2002/05
-=======================================
+ADVANCESCAN VERSION 0.6-BETA 2002/05
+====================================
 
 * Added the AdvanceZIP utility.

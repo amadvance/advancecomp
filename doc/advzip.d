@@ -1,5 +1,5 @@
-Name
-	advzip - The AdvanceZIP compressor
+Name{number}
+	advzip - AdvanceCOMP ZIP Compression Utility
 
 Synopsis
 	:advzip [-a, --add] [-x, --extract] [-l, --list]

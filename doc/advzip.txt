@@ -1,6 +1,6 @@
-                           =========================
-                           The AdvanceZIP compressor
-                           =========================
+                      ===================================
+                      AdvanceCOMP ZIP Compression Utility
+                      ===================================
 
 
 1 SYNOPSIS

@@ -1,6 +1,6 @@
-                           =========================
-                           The AdvancePNG compressor
-                           =========================
+                      ===================================
+                      AdvanceCOMP PNG Compression Utility
+                      ===================================
 
 
 1 SYNOPSIS

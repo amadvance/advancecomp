@@ -1,5 +1,5 @@
-Name
-	advmng - The AdvanceMNG compressor
+Name{number}
+	advmng - AdvanceCOMP MNG Compression Utility
 
 Synopsis
 	:advmng [-l, --list] [-z, --recompress]

@@ -1,6 +1,6 @@
-                          ===========================
-                          The AdvanceCOMP compression
-                          ===========================
+                       =================================
+                       AdvanceCOMP Compression Utilities
+                       =================================
 
 AdvanceCOMP contains recompression utilities for your .zip archives,
 .png images, .mng video clips and .gz files.
