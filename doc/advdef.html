@@ -1,0 +1,93 @@
+<html>
+<head>
+<title>The AdvanceDEFLATE recompression utility</title>
+</head>
+<body>
+<h2><center>The AdvanceDEFLATE recompression utility</center></h2>
+<h2>1 
+Synopsis
+</h2>
+<font face="Courier">
+advdef [-z, --recompress] [-0, --shrink-store]<br>
+[-1, --shrink-fast] [-2, --shrink-normal] [-3, --shrink-extra]<br>
+[-4, --shrink-insane] [-f, --force] [-q, --quiet]<br>
+[-h, --help] [-V, --version] FILES...<br>
+</font>
+<h2>2 
+Description
+</h2>
+The main purpose of this utility is to recompress the
+data present in the png and mng files.
+<p>
+The internal structure of the files isn't changed.
+Only the compressed data is modified.
+<h2>3 
+Options
+</h2>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+<tr valign="top" align="left"><td><strong>
+-z, --recompress FILES...
+</em></td></tr><tr><td>
+Recompress the specified files. If the -1, -2, -3
+options are specified it's used the smallest file
+choice from the previous compressed data and the
+new compression. If the -0 option is specified the
+file is always rewritten without any compression.
+</td></tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+<tr valign="top" align="left"><td><strong>
+-0, --shrink-store
+</em></td></tr><tr><td>
+Disable the compression. The file is
+only stored and not compressed. The file is always
+rewritten also if it's bigger.
+</td></tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+<tr valign="top" align="left"><td><strong>
+-1, --shrink-fast
+</em></td></tr><tr><td>
+Set the compression level to "fast".
+</td></tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+<tr valign="top" align="left"><td><strong>
+-2, --shrink-normal
+</em></td></tr><tr><td>
+Set the compression level to "normal". This is the
+default level of compression.
+</td></tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+<tr valign="top" align="left"><td><strong>
+-3, --shrink-extra
+</em></td></tr><tr><td>
+Set the compression level to "extra".
+</td></tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+<tr valign="top" align="left"><td><strong>
+-4, --shrink-insane
+</em></td></tr><tr><td>
+Set the compression level to "insane". It's VERY
+SLOW.
+</td></tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+<tr valign="top" align="left"><td><strong>
+-f, --force
+</em></td></tr><tr><td>
+Force the use of the new file also if it's bigger.
+</td></tr>
+</table>
+<h2>4 
+Copyright
+</h2>
+This file is Copyright (C) 2002 Andrea Mazzoleni
+<h2>5 
+See Also
+</h2>
+advpng(1), advmng(1), advzip(1)
+</body>
+</html>

@@ -1,0 +1,60 @@
+.TH "The AdvanceDEFLATE recompression utility" 1
+.SH NAME
+advdef \(hy The AdvanceDEFLATE recompression utility
+.SH SYNOPSIS 
+advdef [\(hyz, \(hy\(hyrecompress] [\(hy0, \(hy\(hyshrink\(hystore]
+.PD 0
+.PP
+.PD
+[\(hy1, \(hy\(hyshrink\(hyfast] [\(hy2, \(hy\(hyshrink\(hynormal] [\(hy3, \(hy\(hyshrink\(hyextra]
+.PD 0
+.PP
+.PD
+[\(hy4, \(hy\(hyshrink\(hyinsane] [\(hyf, \(hy\(hyforce] [\(hyq, \(hy\(hyquiet]
+.PD 0
+.PP
+.PD
+[\(hyh, \(hy\(hyhelp] [\(hyV, \(hy\(hyversion] FILES...
+.PD 0
+.PP
+.PD
+.SH DESCRIPTION 
+The main purpose of this utility is to recompress the
+data present in the png and mng files.
+.PP
+The internal structure of the files isn\(cqt changed.
+Only the compressed data is modified.
+.SH OPTIONS 
+.TP
+.B \(hyz, \(hy\(hyrecompress FILES...
+Recompress the specified files. If the \(hy1, \(hy2, \(hy3
+options are specified it\(cqs used the smallest file
+choice from the previous compressed data and the
+new compression. If the \(hy0 option is specified the
+file is always rewritten without any compression.
+.TP
+.B \(hy0, \(hy\(hyshrink\(hystore
+Disable the compression. The file is
+only stored and not compressed. The file is always
+rewritten also if it\(cqs bigger.
+.TP
+.B \(hy1, \(hy\(hyshrink\(hyfast
+Set the compression level to \(a"fast\(a".
+.TP
+.B \(hy2, \(hy\(hyshrink\(hynormal
+Set the compression level to \(a"normal\(a". This is the
+default level of compression.
+.TP
+.B \(hy3, \(hy\(hyshrink\(hyextra
+Set the compression level to \(a"extra\(a".
+.TP
+.B \(hy4, \(hy\(hyshrink\(hyinsane
+Set the compression level to \(a"insane\(a". It\(cqs VERY
+SLOW.
+.TP
+.B \(hyf, \(hy\(hyforce
+Force the use of the new file also if it\(cqs bigger.
+.SH COPYRIGHT 
+This file is Copyright (C) 2002 Andrea Mazzoleni
+.SH SEE ALSO 
+advpng(1), advmng(1), advzip(1)
