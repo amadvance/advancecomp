@@ -1294,10 +1294,11 @@ struct option long_options[] = {
 	{"recompress", 0, 0, 'z'},
 	{"list", 0, 0, 'l'},
 
-	{"shrink-0", 0, 0, '0'},
-	{"shrink-1", 0, 0, '1'},
-	{"shrink-2", 0, 0, '2'},
-	{"shrink-3", 0, 0, '3'},
+	{"shrink-store", 0, 0, '0'},
+	{"shrink-fast", 0, 0, '1'},
+	{"shrink-normal", 0, 0, '2'},
+	{"shrink-extra", 0, 0, '3'},
+	{"shrink-insane", 0, 0, '4'},
 
 	{"scroll", 1, 0, 's'},
 	{"reduce", 0, 0, 'r'},
@@ -1313,7 +1314,7 @@ struct option long_options[] = {
 };
 #endif
 
-#define OPTIONS "zl0123s:recCfqhV"
+#define OPTIONS "zl01234s:recCfqhV"
 
 void version() {
 	cout << PACKAGE " v" VERSION " by Andrea Mazzoleni" << endl;

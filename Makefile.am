@@ -237,6 +237,9 @@ check-local: advzip check.lst
 	@./advzip -a -3 check.zip $(srcdir)/COPYING
 	@./advzip -l check.zip >> new.lst
 	@./advzip -t -p check.zip
+	@./advzip -a -4 check.zip $(srcdir)/COPYING
+	@./advzip -l check.zip >> new.lst
+	@./advzip -t -p check.zip
 	@./advzip -a -1 -N check.zip $(srcdir)/COPYING
 	@./advzip -l check.zip >> new.lst
 	@./advzip -t -p check.zip
@@ -244,6 +247,9 @@ check-local: advzip check.lst
 	@./advzip -l check.zip >> new.lst
 	@./advzip -t -p check.zip
 	@./advzip -a -3 -N check.zip $(srcdir)/COPYING
+	@./advzip -l check.zip >> new.lst
+	@./advzip -t -p check.zip
+	@./advzip -a -4 -N check.zip $(srcdir)/COPYING
 	@./advzip -l check.zip >> new.lst
 	@./advzip -t -p check.zip
 	@cmp new.lst $(srcdir)/check.lst
@@ -260,6 +266,10 @@ DISTDOS_DOC = \
 	doc/readme.html doc/authors.html doc/history.html 
 
 distdos: $(DISTDOS_ROOT) $(DISTDOS_DOC)
+	i586-pc-msdosdjgpp-strip advdef.exe
+	i586-pc-msdosdjgpp-strip advzip.exe
+	i586-pc-msdosdjgpp-strip advpng.exe
+	i586-pc-msdosdjgpp-strip advmng.exe
 	rm -f $(PACKAGE)-$(VERSION)-dos-pentium.zip
 	mkdir tmp
 	cp $(DISTDOS_ROOT) tmp
@@ -269,6 +279,10 @@ distdos: $(DISTDOS_ROOT) $(DISTDOS_DOC)
 	rm -r tmp
 
 distwindows: $(DISTDOS_ROOT) $(DISTDOS_DOC)
+	i386-mingw32msvc-strip advdef.exe
+	i386-mingw32msvc-strip advzip.exe
+	i386-mingw32msvc-strip advpng.exe
+	i386-mingw32msvc-strip advmng.exe
 	rm -f $(PACKAGE)-$(VERSION)-windows-pentium.zip
 	mkdir tmp
 	cp $(DISTDOS_ROOT) tmp

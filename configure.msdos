@@ -1,7 +1,8 @@
 #!/bin/bash
 
 (
-	export CFLAGS="-O3 -march=i586 -mcpu=i686 -fomit-frame-pointer" ;
-	export CXXFLAGS="-O3 -march=i586 -mcpu=i686 -fomit-frame-pointer" ;
+	export CFLAGS="-O2 -march=i586 -mcpu=i686 -fomit-frame-pointer" ;
+	export CXXFLAGS="-O2 -march=i586 -mcpu=i686 -fomit-frame-pointer" ;
+	export LDFLAGS="-s"
 	./configure --host=i586-pc-msdosdjgpp --build=`./config.guess` $@
 )
