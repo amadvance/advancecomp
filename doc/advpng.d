@@ -48,7 +48,7 @@ Options
 	-3, --shrink-extra
 		Set the compression level to "extra".
 
-	-3, --shrink-insane
+	-4, --shrink-insane
 		Set the compression level to "insane".
 
 	-f, --force

@@ -1,10 +1,11 @@
 Name
 	advcomp - History For AdvanceCOMP
 
-AdvanceCOMP Version 1.14 2005/01
+AdvanceCOMP Version 1.14 2005/02
 	) Relaxed a consistency check for the local header in zip files.
 		The crc and size entries are allowed to contain the real
 		value also if a data descriptor is present.
+	) Minor fixes at the documentation.
 
 AdvanceCOMP Version 1.13 2004/11
 	) Added support for .svgz files at advdef [rener].
