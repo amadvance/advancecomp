@@ -1,9 +1,11 @@
 Name
 	advcomp - History For AdvanceCOMP
 
-AdvanceCOMP Version 1.11 2004/06
+AdvanceCOMP Version 1.11 2004/07
 	) Fixed a FreeBSD libc compatibility issue recompressing
 		.gz files [Radim Kolar].
+	) Fixed a segmentation fault when some invalid
+		compressed .zip files are tested.
 
 AdvanceCOMP Version 1.10 2004/04
 	) Added support for alpha channel and the new -n option

@@ -2,5 +2,5 @@
 	CFLAGS="-O2 -Wall -Wno-sign-compare -march=i586 -mcpu=i686 -fomit-frame-pointer" \
 	CXXFLAGS="-O2 -Wall -Wno-sign-compare -Wno-reorder -march=i586 -mcpu=i686 -fomit-frame-pointer" \
 	LDFLAGS="-s" \
-	--host=i386-mingw32msvc --build=`./config.guess` $@
+	--host=i586-pc-msdosdjgpp --build=`./config.guess` $@
 

@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 2002 Andrea Mazzoleni
+ * Copyright (C) 2002, 2004 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,27 +34,23 @@ void zip_entry::uncompressed_read(unsigned char* uncompressed_data) const {
 
 	if (info.compression_method == ZIP_METHOD_DEFLATE) {
 		if (!decompress_deflate_zlib(data,compressed_size_get(),uncompressed_data,uncompressed_size_get())) {
-			data_free(uncompressed_data);
 			throw error() << "Invalid compressed data on file " << name_get();
 		}
 #ifdef USE_BZIP2
 	} else if (info.compression_method == ZIP_METHOD_BZIP2) {
 		if (!decompress_bzip2(data,compressed_size_get(),uncompressed_data,uncompressed_size_get())) {
-			data_free(uncompressed_data);
 			throw error() << "Invalid compressed data on file " << name_get();
 		}
 #endif
 #ifdef USE_LZMA
 	} else if (info.compression_method == ZIP_METHOD_LZMA) {
 		if (!decompress_lzma_7z(data,compressed_size_get(),uncompressed_data,uncompressed_size_get())) {
-			data_free(uncompressed_data);
 			throw error() << "Invalid compressed data on file " << name_get();
 		}
 #endif
 	} else if (info.compression_method == ZIP_METHOD_STORE) {
 		memcpy(uncompressed_data, data, uncompressed_size_get());
 	} else {
-		data_free(uncompressed_data);
 		throw error() << "Unsupported compression method on file " << name_get();
 	}
 }
@@ -68,7 +64,7 @@ void zip_entry::test() const {
 		uncompressed_read(uncompressed_data);
 
 		if (info.crc32 != crc32(0, uncompressed_data, uncompressed_size_get())) {
-				throw error() << "Invalid crc on file " << name_get();
+			throw error() << "Invalid crc on file " << name_get();
 		}
 	} catch (...) {
 		data_free(uncompressed_data);
@@ -491,5 +487,4 @@ void zip::shrink(bool standard, shrink_t level) {
 		if (i->shrink(standard, level))
 			flag.modify = true;
 }
-
 

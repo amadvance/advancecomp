@@ -3,11 +3,13 @@
                             =======================
 
 
-1 ADVANCECOMP VERSION 1.11 2004/06
+1 ADVANCECOMP VERSION 1.11 2004/07
 ==================================
 
-* Fixed FreeBSD compatibility issue.
-* Minor source changes
+* Fixed a FreeBSD libc compatibility issue recompressing
+  .gz files [Radim Kolar].
+* Fixed a segmentation fault when some invalid
+  compressed .zip files are tested.
 
 
 2 ADVANCECOMP VERSION 1.10 2004/04

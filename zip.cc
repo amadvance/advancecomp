@@ -198,7 +198,7 @@ zip_entry::zip_entry(const zip& Aparent) {
 zip_entry::zip_entry(const zip_entry& A) {
 	info = A.info;
 	parent_name = A.parent_name;
-	file_name = data_dup(A.file_name, info.filename_length);;
+	file_name = data_dup(A.file_name, info.filename_length);
 	local_extra_field = data_dup(A.local_extra_field, info.local_extra_field_length);
 	central_extra_field = data_dup(A.central_extra_field, info.central_extra_field_length);
 	file_comment = data_dup(A.file_comment, info.file_comment_length);

@@ -1,0 +1,2 @@
+./configure --host=powerpc-apple-darwin7.3.0 --build=`./config.guess` $@
+
