@@ -117,9 +117,7 @@ Options
 Examples
 	A good tradeoff of compression and time is the command :
 
-		advmng -z -r -S 12 *.mng
-
-	And leave for a few hours.
+		advmng -z -r -S 16 *.mng
 
 Copyright
 	This file is Copyright (C) 2003 Andrea Mazzoleni, Filipe Estima

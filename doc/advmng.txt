@@ -130,9 +130,7 @@ strategies:
 
 A good tradeoff of compression and time is the command :
 
-    advmng -z -r -S 12 *.mng
-
-And leave for a few hours.
+    advmng -z -r -S 16 *.mng
 
 
 5 COPYRIGHT

@@ -17,6 +17,7 @@ Description
 
 	To compress the files this utility uses the following
 	strategies:
+
 	* Remove all ancillary chunks.
 	* Concatenate all the IDAT chunks.
 	* Use the 7zip Deflate implementation.
