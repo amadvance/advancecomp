@@ -194,9 +194,9 @@ Archive:  /mnt/bag/home/am/data/src/advscan/prova.zip
 			time_t t = i->time_get();
 			struct tm* tm = localtime(&t);
 
-			cout << setw(2) << setfill('0') << tm->tm_mday;
+			cout << setw(2) << setfill('0') << tm->tm_mon + 1;
 			cout << "-";
-			cout << setw(2) << setfill('0') << tm->tm_mon;
+			cout << setw(2) << setfill('0') << tm->tm_mday;
 			cout << "-";
 			cout << setw(2) << setfill('0') << (tm->tm_year % 100);
 

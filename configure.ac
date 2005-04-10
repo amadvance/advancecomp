@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT([AdvanceCOMP],[1.14])
+AC_INIT([AdvanceCOMP],[1.15])
 AC_CONFIG_SRCDIR([rezip.cc])
 AM_INIT_AUTOMAKE([foreign no-dependencies])
 AC_CONFIG_HEADERS([config.h])

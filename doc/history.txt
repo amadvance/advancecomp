@@ -3,6 +3,12 @@
                             =======================
 
 
+ADVANCECOMP VERSION 1.15 2005/04
+================================
+
+* Fixed the date displayed with the -l advzip command.
+
+
 ADVANCECOMP VERSION 1.14 2005/02
 ================================
 

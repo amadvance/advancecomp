@@ -1,6 +1,9 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 1.15 2005/04
+	) Fixed the date displayed with the -l advzip command.
+
 AdvanceCOMP Version 1.14 2005/02
 	) Relaxed a consistency check for the local header in zip files.
 		The crc and size entries are allowed to contain the real
