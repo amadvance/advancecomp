@@ -2,7 +2,7 @@
 
 namespace NStream {
 
-COutByte::COutByte(UINT32 aBufferSize):
+COutByte::COutByte(INT aBufferSize):
   m_BufferSize(aBufferSize)
 {
   m_Buffer = new BYTE[m_BufferSize];
@@ -24,7 +24,7 @@ HRESULT COutByte::Flush()
 {
   if (m_Pos == 0)
     return S_OK;
-  UINT32 aProcessedSize;
+  INT aProcessedSize;
   HRESULT aResult = m_Stream->Write(m_Buffer, m_Pos, &aProcessedSize);
   if (aResult != S_OK)
     return aResult;

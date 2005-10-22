@@ -32,10 +32,6 @@ public:
   UINT32 m_Probability;
   void UpdateModel(UINT32 aSymbol)
   {
-    /*
-    m_Probability -= (m_Probability + ((aSymbol - 1) & ((1 << aNumMoveBits) - 1))) >> aNumMoveBits;
-    m_Probability += (1 - aSymbol) << (kNumBitModelTotalBits - aNumMoveBits);
-    */
     if (aSymbol == 0)
       m_Probability += (kBitModelTotal - m_Probability) >> aNumMoveBits;
     else

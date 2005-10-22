@@ -1,7 +1,7 @@
 #include "Portable.h"
 #include "IInOutStreams.h"
 
-HRESULT ISequentialInStream::Read(void *aData, UINT32 aSize, UINT32* aProcessedSize) {
+HRESULT ISequentialInStream::Read(void *aData, INT aSize, INT* aProcessedSize) {
 	if (aSize > size)
 		aSize = size;
 	*aProcessedSize = aSize;
@@ -11,7 +11,7 @@ HRESULT ISequentialInStream::Read(void *aData, UINT32 aSize, UINT32* aProcessedS
 	return S_OK;
 }
 
-HRESULT ISequentialOutStream::Write(const void *aData, UINT32 aSize, UINT32* aProcessedSize) {
+HRESULT ISequentialOutStream::Write(const void *aData, INT aSize, INT* aProcessedSize) {
 	if (aSize > size) {
 		overflow = true;
 		aSize = size;

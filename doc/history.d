@@ -1,8 +1,11 @@
 Name
 	advcomp - History For AdvanceCOMP
 
-AdvanceCOMP Version 1.15 2005/04
+AdvanceCOMP Version 1.15 2005/10
 	) Fixed the date displayed with the -l advzip command.
+	) The advdef utility now detects the file type from the file
+		header instead of using the extension.
+	) Fixed a lot of bugs in the 64 bits platforms.
 
 AdvanceCOMP Version 1.14 2005/02
 	) Relaxed a consistency check for the local header in zip files.

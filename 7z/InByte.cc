@@ -2,7 +2,7 @@
 
 namespace NStream{
 
-CInByte::CInByte(UINT32 aBufferSize):
+CInByte::CInByte(INT aBufferSize):
   m_BufferSize(aBufferSize),
   m_BufferBase(0)
 {
@@ -28,7 +28,7 @@ bool CInByte::ReadBlock()
   if (m_StreamWasExhausted)
     return false;
   m_ProcessedSize += (m_Buffer - m_BufferBase);
-  UINT32 aNumProcessedBytes;
+  INT aNumProcessedBytes;
   HRESULT aResult = m_Stream->Read(m_BufferBase, m_BufferSize, &aNumProcessedBytes);
   if (aResult != S_OK)
     throw aResult;

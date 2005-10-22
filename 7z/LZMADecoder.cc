@@ -6,12 +6,12 @@
 namespace NCompress {
 namespace NLZMA {
 
-HRESULT CDecoder::SetDictionarySize(UINT32 aDictionarySize)
+HRESULT CDecoder::SetDictionarySize(INT aDictionarySize)
 {
   if (aDictionarySize > (1 << kDicLogSizeMax))
     return E_INVALIDARG;
   
-  UINT32 aWindowReservSize = MyMax(aDictionarySize, UINT32(1 << 21));
+  INT aWindowReservSize = MyMax(aDictionarySize, INT(1 << 21));
 
   if (m_DictionarySize != aDictionarySize)
   {
@@ -22,7 +22,7 @@ HRESULT CDecoder::SetDictionarySize(UINT32 aDictionarySize)
 }
 
 HRESULT CDecoder::SetLiteralProperties(
-    UINT32 aLiteralPosStateBits, UINT32 aLiteralContextBits)
+    INT aLiteralPosStateBits, INT aLiteralContextBits)
 {
   if (aLiteralPosStateBits > 8)
     return E_INVALIDARG;
@@ -32,11 +32,11 @@ HRESULT CDecoder::SetLiteralProperties(
   return S_OK;
 }
 
-HRESULT CDecoder::SetPosBitsProperties(UINT32 aNumPosStateBits)
+HRESULT CDecoder::SetPosBitsProperties(INT aNumPosStateBits)
 {
   if (aNumPosStateBits > NLength::kNumPosStatesBitsMax)
     return E_INVALIDARG;
-  UINT32 aNumPosStates = 1 << aNumPosStateBits;
+  INT aNumPosStates = 1 << aNumPosStateBits;
   m_LenDecoder.Create(aNumPosStates);
   m_RepMatchLenDecoder.Create(aNumPosStates);
   m_PosStateMask = aNumPosStates - 1;
@@ -44,7 +44,7 @@ HRESULT CDecoder::SetPosBitsProperties(UINT32 aNumPosStateBits)
 }
 
 CDecoder::CDecoder():
-  m_DictionarySize((UINT32)-1)
+  m_DictionarySize((INT)-1)
 {
   Create();
 }
@@ -70,7 +70,7 @@ HRESULT CDecoder::Init(ISequentialInStream *anInStream,
   int i;
   for(i = 0; i < kNumStates; i++)
   {
-    for (UINT32 j = 0; j <= m_PosStateMask; j++)
+    for (INT j = 0; j <= m_PosStateMask; j++)
     {
       m_MainChoiceDecoders[i][j].Init();
       m_MatchRepShortChoiceDecoders[i][j].Init();
@@ -83,8 +83,6 @@ HRESULT CDecoder::Init(ISequentialInStream *anInStream,
   
   m_LiteralDecoder.Init();
    
-  // m_RepMatchLenDecoder.Init();
-
   for (i = 0; i < kNumLenToPosStates; i++)
     m_PosSlotDecoder[i].Init();
 
@@ -112,7 +110,7 @@ HRESULT CDecoder::CodeReal(ISequentialInStream *anInStream,
   aState.Init();
   bool aPeviousIsMatch = false;
   BYTE aPreviousByte = 0;
-  UINT32 aRepDistances[kNumRepDistances];
+  INT aRepDistances[kNumRepDistances];
   for(int i = 0 ; i < kNumRepDistances; i++)
     aRepDistances[i] = 0;
 
@@ -123,28 +121,27 @@ HRESULT CDecoder::CodeReal(ISequentialInStream *anInStream,
     UINT64 aNext = MyMin(aNowPos64 + (1 << 18), aSize);
     while(aNowPos64 < aNext)
     {
-      UINT32 aPosState = UINT32(aNowPos64) & m_PosStateMask;
+      INT aPosState = INT(aNowPos64) & m_PosStateMask;
       if (m_MainChoiceDecoders[aState.m_Index][aPosState].Decode(&m_RangeDecoder) == kMainChoiceLiteralIndex)
       {
-        // aCounts[0]++;
         aState.UpdateChar();
         if(aPeviousIsMatch)
         {
           BYTE aMatchByte = m_OutWindowStream.GetOneByte(0 - aRepDistances[0] - 1);
           aPreviousByte = m_LiteralDecoder.DecodeWithMatchByte(&m_RangeDecoder, 
-              UINT32(aNowPos64), aPreviousByte, aMatchByte);
+              INT(aNowPos64), aPreviousByte, aMatchByte);
           aPeviousIsMatch = false;
         }
         else
           aPreviousByte = m_LiteralDecoder.DecodeNormal(&m_RangeDecoder, 
-              UINT32(aNowPos64), aPreviousByte);
+              INT(aNowPos64), aPreviousByte);
         m_OutWindowStream.PutOneByte(aPreviousByte);
         aNowPos64++;
       }
       else             
       {
         aPeviousIsMatch = true;
-        UINT32 aDistance, aLen;
+        INT aDistance, aLen;
         if(m_MatchChoiceDecoders[aState.m_Index].Decode(&m_RangeDecoder) == 
             kMatchChoiceRepetitionIndex)
         {
@@ -156,10 +153,8 @@ HRESULT CDecoder::CodeReal(ISequentialInStream *anInStream,
               aPreviousByte = m_OutWindowStream.GetOneByte(0 - aRepDistances[0] - 1);
               m_OutWindowStream.PutOneByte(aPreviousByte);
               aNowPos64++;
-              // aCounts[3 + 4]++;
               continue;
             }
-            // aCounts[3 + 0]++;
             aDistance = aRepDistances[0];
           }
           else
@@ -168,18 +163,15 @@ HRESULT CDecoder::CodeReal(ISequentialInStream *anInStream,
             {
               aDistance = aRepDistances[1];
               aRepDistances[1] = aRepDistances[0];
-              // aCounts[3 + 1]++;
             }
             else 
             {
               if (m_MatchRep2ChoiceDecoders[aState.m_Index].Decode(&m_RangeDecoder) == 0)
               {
-                // aCounts[3 + 2]++;
                 aDistance = aRepDistances[2];
               }
               else
               {
-                // aCounts[3 + 3]++;
                 aDistance = aRepDistances[3];
                 aRepDistances[3] = aRepDistances[2];
               }
@@ -189,15 +181,13 @@ HRESULT CDecoder::CodeReal(ISequentialInStream *anInStream,
             aRepDistances[0] = aDistance;
           }
           aLen = m_RepMatchLenDecoder.Decode(&m_RangeDecoder, aPosState) + kMatchMinLen;
-          // aCounts[aLen]++;
           aState.UpdateRep();
         }
         else
         {
           aLen = kMatchMinLen + m_LenDecoder.Decode(&m_RangeDecoder, aPosState);
           aState.UpdateMatch();
-          UINT32 aPosSlot = m_PosSlotDecoder[GetLenToPosState(aLen)].Decode(&m_RangeDecoder);
-          // aCounts[aPosSlot]++;
+          INT aPosSlot = m_PosSlotDecoder[GetLenToPosState(aLen)].Decode(&m_RangeDecoder);
           if (aPosSlot >= kStartPosModelIndex)
           {
             aDistance = kDistStart[aPosSlot];
@@ -219,7 +209,6 @@ HRESULT CDecoder::CodeReal(ISequentialInStream *anInStream,
           aRepDistances[1] = aRepDistances[0];
           
           aRepDistances[0] = aDistance;
-          // UpdateStat(aLen, aPosSlot);
         }
         if (aDistance >= aNowPos64)
           throw E_INVALIDDATA;
@@ -245,12 +234,12 @@ HRESULT CDecoder::Code(ISequentialInStream *anInStream, ISequentialOutStream *an
 
 HRESULT CDecoder::ReadCoderProperties(ISequentialInStream *anInStream)
 {
-  UINT32 aNumPosStateBits;
-  UINT32 aLiteralPosStateBits;
-  UINT32 aLiteralContextBits;
-  UINT32 aDictionarySize;
+  INT aNumPosStateBits;
+  INT aLiteralPosStateBits;
+  INT aLiteralContextBits;
+  INT aDictionarySize;
 
-   UINT32 aProcessesedSize;
+  INT aProcessesedSize;
 
   BYTE aByte;
   RETURN_IF_NOT_S_OK(anInStream->Read(&aByte, sizeof(aByte), &aProcessesedSize));

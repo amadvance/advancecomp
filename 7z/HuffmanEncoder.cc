@@ -7,10 +7,10 @@ namespace NHuffman {
 CEncoder::CEncoder(UINT32 aNumSymbols,
     const BYTE *anExtraBits, UINT32 anExtraBase, UINT32 aMaxLength):
   m_NumSymbols(aNumSymbols),
+  m_HeapSize(aNumSymbols * 2+ 1),
   m_ExtraBits(anExtraBits),
   m_ExtraBase(anExtraBase),
-  m_MaxLength(aMaxLength),
-  m_HeapSize(aNumSymbols * 2+ 1)
+  m_MaxLength(aMaxLength)
 {
   m_Items = new CItem[m_HeapSize];
   m_Heap = new UINT32[m_HeapSize];
@@ -158,9 +158,9 @@ void CEncoder::GenerateBitLen(UINT32 aMaxCode, UINT32 aHeapMax)
       UINT32 m = m_Heap[--h];
       if (m > aMaxCode) 
         continue;
-      if (m_Items[m].Len != (unsigned) aBits) 
+      if (m_Items[m].Len != aBits) 
       {
-        m_BlockBitLength += ((long)aBits - (long)m_Items[m].Len) * (long)m_Items[m].Freq;
+        m_BlockBitLength += (aBits - m_Items[m].Len) * m_Items[m].Freq;
         m_Items[m].Len = aBits;
       }
       aNumNodes--;

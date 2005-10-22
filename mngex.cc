@@ -591,13 +591,16 @@ static void mng_write_image_raw(adv_mng_write* mng, adv_fz* f, unsigned* fc, uns
 		mng_write_store(mng, img_ptr, img_scanline, pal_ptr, pal_size);
 		mng_write_first(mng, f, fc);
 	} else {
-		mng->current_ptr += shift_x * mng->pixel + shift_y * mng->line;
+		// shift may be negative, caste all to int to prevent conversion to 64 bit unsigned int
+		mng->current_ptr += shift_x * (int)mng->pixel + shift_y * (int)mng->line;
+
 		mng->current_x += shift_x;
 		mng->current_y += shift_y;
 
 		if (mng->type == mng_std) {
 			mng_write_move(mng, f, fc, shift_x, shift_y);
-			mng_write_delta_image(mng, f, fc, img_ptr, img_scanline, pal_ptr, pal_size);
+			mng_write_delta_image(mng, f, fc, img_ptr, img_scanline, pal_ptr,
+ pal_size);
 		} else {
 			mng_write_base_image(mng, f, fc, img_ptr, img_scanline, pal_ptr, pal_size);
 		}

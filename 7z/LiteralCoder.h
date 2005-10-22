@@ -34,7 +34,6 @@ public:
     RC_INIT_VAR
     do
     {
-      // aSymbol = (aSymbol << 1) | m_Decoders[0][aSymbol].Decode(aRangeDecoder);
       RC_GETBIT(kNumMoveBits, m_Decoders[0][aSymbol].m_Probability, aSymbol)
     }
     while (aSymbol < 0x100);
@@ -50,8 +49,6 @@ public:
     {
       UINT32 aMatchBit = (aMatchByte >> 7) & 1;
       aMatchByte <<= 1;
-      // UINT32 aBit = m_Decoders[1 + aMatchBit][aSymbol].Decode(aRangeDecoder);
-      // aSymbol = (aSymbol << 1) | aBit;
       UINT32 aBit;
       RC_GETBIT2(kNumMoveBits, m_Decoders[1 + aMatchBit][aSymbol].m_Probability, aSymbol, 
           aBit = 0, aBit = 1)
@@ -59,7 +56,6 @@ public:
       {
         while (aSymbol < 0x100)
         {
-          // aSymbol = (aSymbol << 1) | m_Decoders[0][aSymbol].Decode(aRangeDecoder);
           RC_GETBIT(kNumMoveBits, m_Decoders[0][aSymbol].m_Probability, aSymbol)
         }
         break;
@@ -70,14 +66,6 @@ public:
     return aSymbol;
   }
 };
-
-/*
-const UINT32 kNumPrevByteBits = 1;
-const UINT32 kNumPrevByteStates =  (1 << kNumPrevByteBits);
-
-inline UINT32 GetLiteralState(BYTE aPrevByte)
-  { return (aPrevByte >> (8 - kNumPrevByteBits)); }
-*/
 
 class CEncoder
 {

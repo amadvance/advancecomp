@@ -9,7 +9,7 @@ class CInByte
 {
   UINT64 m_ProcessedSize;
   BYTE *m_BufferBase;
-  UINT32 m_BufferSize;
+  INT m_BufferSize;
   BYTE *m_Buffer;
   BYTE *m_BufferLimit;
   ISequentialInStream* m_Stream;
@@ -18,7 +18,7 @@ class CInByte
   bool ReadBlock();
 
 public:
-  CInByte(UINT32 aBufferSize = 0x100000);
+  CInByte(INT aBufferSize = 0x100000);
   ~CInByte();
   
   void Init(ISequentialInStream *aStream);
@@ -38,15 +38,15 @@ public:
           return 0x0;
       return *m_Buffer++;
     }
-  void ReadBytes(void *aData, UINT32 aSize, UINT32 &aProcessedSize)
+  void ReadBytes(void *aData, INT aSize, INT &aProcessedSize)
     {
       for(aProcessedSize = 0; aProcessedSize < aSize; aProcessedSize++)
         if (!ReadByte(((BYTE *)aData)[aProcessedSize]))
           return;
     }
-  bool ReadBytes(void *aData, UINT32 aSize)
+  bool ReadBytes(void *aData, INT aSize)
     {
-      UINT32 aProcessedSize;
+      INT aProcessedSize;
       ReadBytes(aData, aSize, aProcessedSize);
       return (aProcessedSize == aSize);
     }

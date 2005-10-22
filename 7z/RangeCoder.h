@@ -49,24 +49,6 @@ public:
     }
   }
 
-  /*
-  void EncodeDirectBitsDiv(UINT32 aValue, UINT32 aNumTotalBits)
-  {
-    m_Low += aValue * (m_Range >>= aNumTotalBits);
-    Normalize();
-  }
-  
-  void EncodeDirectBitsDiv2(UINT32 aValue, UINT32 aNumTotalBits)
-  {
-    if (aNumTotalBits <= kNumBottomBits)
-      EncodeDirectBitsDiv(aValue, aNumTotalBits);
-    else
-    {
-      EncodeDirectBitsDiv(aValue >> kNumBottomBits, (aNumTotalBits - kNumBottomBits));
-      EncodeDirectBitsDiv(aValue & ((1 << kBottomValueBits) - 1), kNumBottomBits);
-    }
-  }
-  */
   void ShiftLow()
   {
     if (m_Low < (UINT32)0xFF000000 || UINT32(m_Low >> 32) == 1) 
@@ -152,26 +134,6 @@ public:
     m_Range *= aSize;
     Normalize();
   }
-
-  /*
-  UINT32 DecodeDirectBitsDiv(UINT32 aNumTotalBits)
-  {
-    m_Range >>= aNumTotalBits;
-    UINT32 aThreshold = m_Code / m_Range;
-    m_Code -= aThreshold * m_Range;
-    
-    Normalize();
-    return aThreshold;
-  }
-
-  UINT32 DecodeDirectBitsDiv2(UINT32 aNumTotalBits)
-  {
-    if (aNumTotalBits <= kNumBottomBits)
-      return DecodeDirectBitsDiv(aNumTotalBits);
-    UINT32 aResult = DecodeDirectBitsDiv(aNumTotalBits - kNumBottomBits) << kNumBottomBits;
-    return (aResult | DecodeDirectBitsDiv(kNumBottomBits));
-  }
-  */
 
   UINT32 DecodeDirectBits(UINT32 aNumTotalBits)
   {

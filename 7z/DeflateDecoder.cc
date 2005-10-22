@@ -227,14 +227,4 @@ HRESULT CCoder::Code(ISequentialInStream *anInStream, ISequentialOutStream *anOu
 	}
 }
 
-/*
-HRESULT CCoder::GetInStreamProcessedSize(UINT64 *aValue)
-{
-  if (aValue == NULL)
-    return E_INVALIDARG;
-  *aValue = m_InBitStream.GetProcessedSize();
-  return S_OK;
-}
-*/
-
 }}

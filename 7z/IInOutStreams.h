@@ -6,26 +6,26 @@
 class ISequentialInStream
 {
 	const char* data;
-	unsigned size;
+	INT size;
 public:
-	ISequentialInStream(const char* Adata, unsigned Asize) : data(Adata), size(Asize) { }
+	ISequentialInStream(const char* Adata, INT Asize) : data(Adata), size(Asize) { }
 
-	HRESULT Read(void *aData, UINT32 aSize, UINT32 *aProcessedSize);
+	HRESULT Read(void *aData, INT aSize, INT *aProcessedSize);
 };
 
 class ISequentialOutStream
 {
 	char* data;
-	unsigned size;
+	INT size;
 	bool overflow;
-	unsigned total;
+	INT total;
 public:
 	ISequentialOutStream(char* Adata, unsigned Asize) : data(Adata), size(Asize), overflow(false), total(0) { }
 
 	bool overflow_get() const { return overflow; }
-	unsigned size_get() const { return total; }
+	INT size_get() const { return total; }
 
-	HRESULT Write(const void *aData, UINT32 aSize, UINT32 *aProcessedSize);
+	HRESULT Write(const void *aData, INT aSize, INT *aProcessedSize);
 };
 
 #endif

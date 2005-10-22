@@ -31,7 +31,7 @@ class CInTree: public NStream::NWindow::CIn
 
   UINT32 m_CutValue;
 
-  void NormalizeLinks(CIndex *anArray, UINT32 aNumItems, UINT32 aSubValue);
+  void NormalizeLinks(CIndex *anArray, UINT32 aNumItems, INT32 aSubValue);
   void Normalize();
   void FreeMemory();
 
@@ -53,7 +53,7 @@ public:
       Normalize();
     return S_OK;
   }
-  void ReduceOffsets(UINT32 aSubValue)
+  void ReduceOffsets(INT32 aSubValue)
   {
     CIn::ReduceOffsets(aSubValue);
     m_Son += aSubValue;

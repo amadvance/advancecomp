@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 2002, 2004 Andrea Mazzoleni
+ * Copyright (C) 2002, 2004, 2005 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -295,7 +295,7 @@ string file_randomize(const string& path, int n) throw ()
 {
 	ostringstream os;
 
-	unsigned pos = path.rfind('.');
+	size_t pos = path.rfind('.');
 
 	if (pos == string::npos) 
 		os << path << ".";
@@ -312,7 +312,7 @@ string file_randomize(const string& path, int n) throw ()
  */
 string file_dir(const string& path) throw ()
 {
-	unsigned pos = path.rfind('/');
+	size_t pos = path.rfind('/');
 	if (pos == string::npos) {
 		return "";
 	} else {
@@ -325,7 +325,7 @@ string file_dir(const string& path) throw ()
  */
 string file_name(const string& path) throw ()
 {
-	unsigned pos = path.rfind('/');
+	size_t pos = path.rfind('/');
 	if (pos == string::npos) {
 		return path;
 	} else {
@@ -338,7 +338,7 @@ string file_name(const string& path) throw ()
  */
 string file_basepath(const string& path) throw ()
 {
-	unsigned dot = path.rfind('.');
+	size_t dot = path.rfind('.');
 	if (dot == string::npos)
 		return path;
 	else
@@ -351,7 +351,7 @@ string file_basepath(const string& path) throw ()
 string file_basename(const string& path) throw ()
 { 
 	string name = file_name(path);
-	unsigned dot = name.rfind('.');
+	size_t dot = name.rfind('.');
 	if (dot == string::npos)
 		return name;
 	else
@@ -364,7 +364,7 @@ string file_basename(const string& path) throw ()
 string file_ext(const string& path) throw ()
 { 
 	string name = file_name(path);
-	unsigned dot = name.rfind('.');
+	size_t dot = name.rfind('.');
 	if (dot == string::npos)
 		return "";
 	else

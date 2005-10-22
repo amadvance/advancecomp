@@ -2,25 +2,28 @@
 #define __PORTABLE_H
 
 #include <string.h>
+#include <stdint.h>
 
 typedef signed char INT8;
 typedef unsigned char UINT8;
-typedef short INT16;
-typedef unsigned short UINT16;
-typedef long INT32;
-typedef unsigned long UINT32;
-typedef long long INT64;
-typedef unsigned long long UINT64;
+typedef int16_t INT16;
+typedef uint16_t UINT16;
+typedef int32_t INT32;
+typedef uint32_t UINT32;
+typedef int64_t INT64;
+typedef uint64_t UINT64;
 
 typedef UINT8 BYTE;
 typedef UINT16 WORD;
 typedef UINT32 DWORD;
 
-typedef unsigned UINT_PTR;
+typedef uintptr_t UINT_PTR;
 
 typedef int BOOL;
 #define FALSE 0
 #define TRUE 1
+
+typedef int32_t INT;
 
 #define HRESULT int
 #define S_OK 0

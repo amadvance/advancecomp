@@ -169,6 +169,7 @@ UINT32 CInTree::GetLongestMatch(UINT32 *aDistances)
   UINT32 aMatchMinPos = (m_Pos > m_HistorySize) ? (m_Pos - m_HistorySize) : 1;
   BYTE *aCur = m_Buffer + m_Pos;
   
+  
   UINT32 aMatchHashLenMax = 0;
 
   #ifdef HASH_ARRAY_2
@@ -264,7 +265,6 @@ UINT32 CInTree::GetLongestMatch(UINT32 *aDistances)
   for(UINT32 aCount = m_CutValue; aCount > 0; aCount--)
   {
     BYTE *pby1 = m_Buffer + aCurMatch;
-    // CIndex aLeft = m_Son[aCurMatch].Left; // it's prefetch
     UINT32 aCurrentLen;
     for(aCurrentLen = aMinSame; aCurrentLen < aCurrentLimit; aCurrentLen++/*, dwComps++*/)
       if (pby1[aCurrentLen] != aCur[aCurrentLen])
@@ -288,7 +288,6 @@ UINT32 CInTree::GetLongestMatch(UINT32 *aDistances)
       {
         *aPtrLeft = aCurMatch;
         aPtrLeft = &m_Son[aCurMatch].Left;
-        // aCurMatch = aLeft;
         aCurMatch = m_Son[aCurMatch].Left;
         if(aCurrentLen > aMinSameRight)
         {
@@ -469,7 +468,7 @@ void CInTree::AfterMoveBlock()
   m_Son -= aSpecOffset;
 }
 
-void CInTree::NormalizeLinks(CIndex *anArray, UINT32 aNumItems, UINT32 aSubValue)
+void CInTree::NormalizeLinks(CIndex *anArray, UINT32 aNumItems, INT32 aSubValue)
 {
   for (UINT32 i = 0; i < aNumItems; i++)
   {
@@ -485,7 +484,7 @@ void CInTree::NormalizeLinks(CIndex *anArray, UINT32 aNumItems, UINT32 aSubValue
 void CInTree::Normalize()
 {
   UINT32 aStartItem = m_Pos - m_HistorySize;
-  UINT32 aSubValue = aStartItem - 1;
+  INT32 aSubValue = aStartItem - 1;
   NormalizeLinks((CIndex *)(m_Son + aStartItem), m_HistorySize * 2, aSubValue);
   NormalizeLinks(m_Hash, kHashSize, aSubValue);
 

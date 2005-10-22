@@ -9,14 +9,14 @@ namespace NStream {
 class COutByte
 {
   BYTE *m_Buffer;
-  UINT32 m_Pos;
-  UINT32 m_BufferSize;
+  INT m_Pos;
+  INT m_BufferSize;
   ISequentialOutStream* m_Stream;
   UINT64 m_ProcessedSize;
 
   void WriteBlock();
 public:
-  COutByte(UINT32 aBufferSize = (1 << 20));
+  COutByte(INT aBufferSize = (1 << 20));
   ~COutByte();
 
   void Init(ISequentialOutStream *aStream);
@@ -28,9 +28,9 @@ public:
     if(m_Pos >= m_BufferSize)
       WriteBlock();
   }
-  void WriteBytes(const void *aBytes, UINT32 aSize)
+  void WriteBytes(const void *aBytes, INT aSize)
   {
-    for (UINT32 i = 0; i < aSize; i++)
+    for (INT i = 0; i < aSize; i++)
       WriteByte(((const BYTE *)aBytes)[i]);
   }
 

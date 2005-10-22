@@ -22,21 +22,21 @@ struct COptimal
   bool Prev1IsChar;
   bool Prev2;
 
-  UINT32 PosPrev2;
-  UINT32 BackPrev2;     
+  INT PosPrev2;
+  INT BackPrev2;     
 
-  UINT32 Price;    
-  UINT32 PosPrev;         // posNext;
-  UINT32 BackPrev;     
-  UINT32 Backs[kNumRepDistances];
-  void MakeAsChar() { BackPrev = UINT32(-1); Prev1IsChar = false; }
+  INT Price;    
+  INT PosPrev;         // posNext;
+  INT BackPrev;     
+  INT Backs[kNumRepDistances];
+  void MakeAsChar() { BackPrev = INT(-1); Prev1IsChar = false; }
   void MakeAsShortRep() { BackPrev = 0; ; Prev1IsChar = false; }
   bool IsShortRep() { return (BackPrev == 0); }
 };
 
 
 extern BYTE g_FastPos[1024];
-inline UINT32 GetPosSlot(UINT32 aPos)
+inline INT GetPosSlot(INT aPos)
 {
   if (aPos < (1 << 10))
     return g_FastPos[aPos];
@@ -45,7 +45,7 @@ inline UINT32 GetPosSlot(UINT32 aPos)
   return g_FastPos[aPos >> 18] + 36;
 }
 
-inline UINT32 GetPosSlot2(UINT32 aPos)
+inline INT GetPosSlot2(INT aPos)
 {
   if (aPos < (1 << 16))
     return g_FastPos[aPos >> 6] + 12;
@@ -79,8 +79,6 @@ private:
 
   CReverseBitTreeEncoder2<kNumMoveBitsForPosCoders> m_PosEncoders[kNumPosModels];
   CReverseBitTreeEncoder2<kNumMoveBitsForAlignCoders> m_PosAlignEncoder;
-  // CBitTreeEncoder2<kNumMoveBitsForPosCoders> m_PosEncoders[kNumPosModels];
-  // CBitTreeEncoder2<kNumMoveBitsForAlignCoders> m_PosAlignEncoder;
   
   NLength::CPriceTableEncoder m_LenEncoder;
   NLength::CPriceTableEncoder m_RepMatchLenEncoder;
@@ -91,40 +89,40 @@ private:
 
   bool m_FastMode;
   bool m_MaxMode;
-  UINT32 m_NumFastBytes;
-  UINT32 m_LongestMatchLength;    
+  INT m_NumFastBytes;
+  INT m_LongestMatchLength;    
 
-  UINT32 m_AdditionalOffset;
+  INT m_AdditionalOffset;
 
-  UINT32 m_OptimumEndIndex;
-  UINT32 m_OptimumCurrentIndex;
+  INT m_OptimumEndIndex;
+  INT m_OptimumCurrentIndex;
 
   bool m_LongestMatchWasFound;
 
-  UINT32 m_PosSlotPrices[kNumLenToPosStates][kDistTableSizeMax];
+  INT m_PosSlotPrices[kNumLenToPosStates][kDistTableSizeMax];
   
-  UINT32 m_DistancesPrices[kNumLenToPosStates][kNumFullDistances];
+  INT m_DistancesPrices[kNumLenToPosStates][kNumFullDistances];
 
-  UINT32 m_AlignPrices[kAlignTableSize];
-  UINT32 m_AlignPriceCount;
+  INT m_AlignPrices[kAlignTableSize];
+  INT m_AlignPriceCount;
 
-  UINT32 m_DistTableSize;
+  INT m_DistTableSize;
 
-  UINT32 m_PosStateBits;
-  UINT32 m_PosStateMask;
-  UINT32 m_LiteralPosStateBits;
-  UINT32 m_LiteralContextBits;
+  INT m_PosStateBits;
+  INT m_PosStateMask;
+  INT m_LiteralPosStateBits;
+  INT m_LiteralContextBits;
 
-  UINT32 m_DictionarySize;
+  INT m_DictionarySize;
 
 
-  UINT32 m_DictionarySizePrev;
-  UINT32 m_NumFastBytesPrev;
+  INT m_DictionarySizePrev;
+  INT m_NumFastBytesPrev;
 
   
-  UINT32 ReadMatchDistances()
+  INT ReadMatchDistances()
   {
-    UINT32 aLen = m_MatchFinder.GetLongestMatch(m_MatchDistances);
+    INT aLen = m_MatchFinder.GetLongestMatch(m_MatchDistances);
     if (aLen == m_NumFastBytes)
       aLen += m_MatchFinder.GetMatchLen(aLen, m_MatchDistances[aLen], 
           kMatchMaxLen - aLen);
@@ -135,15 +133,15 @@ private:
     return aLen;
   }
 
-  void MovePos(UINT32 aNum);
-  UINT32 GetRepLen1Price(CState aState, UINT32 aPosState) const
+  void MovePos(INT aNum);
+  INT GetRepLen1Price(CState aState, INT aPosState) const
   {
     return m_MatchRepChoiceEncoders[aState.m_Index].GetPrice(0) +
         m_MatchRepShortChoiceEncoders[aState.m_Index][aPosState].GetPrice(0);
   }
-  UINT32 GetRepPrice(UINT32 aRepIndex, UINT32 aLen, CState aState, UINT32 aPosState) const
+  INT GetRepPrice(INT aRepIndex, INT aLen, CState aState, INT aPosState) const
   {
-    UINT32 aPrice = m_RepMatchLenEncoder.GetPrice(aLen - kMatchMinLen, aPosState);
+    INT aPrice = m_RepMatchLenEncoder.GetPrice(aLen - kMatchMinLen, aPosState);
     if(aRepIndex == 0)
     {
       aPrice += m_MatchRepChoiceEncoders[aState.m_Index].GetPrice(0);
@@ -162,31 +160,12 @@ private:
     }
     return aPrice;
   }
-  /*
-  UINT32 GetPosLen2Price(UINT32 aPos, UINT32 aPosState) const
-  {
-    if (aPos >= kNumFullDistances)
-      return kIfinityPrice;
-    return m_DistancesPrices[0][aPos] + m_LenEncoder.GetPrice(0, aPosState);
-  }
-  UINT32 GetPosLen3Price(UINT32 aPos, UINT32 aLen, UINT32 aPosState) const
-  {
-    UINT32 aPrice;
-    UINT32 aLenToPosState = GetLenToPosState(aLen);
-    if (aPos < kNumFullDistances)
-      aPrice = m_DistancesPrices[aLenToPosState][aPos];
-    else
-      aPrice = m_PosSlotPrices[aLenToPosState][GetPosSlot2(aPos)] + 
-          m_AlignPrices[aPos & kAlignMask];
-    return aPrice + m_LenEncoder.GetPrice(aLen - kMatchMinLen, aPosState);
-  }
-  */
-  UINT32 GetPosLenPrice(UINT32 aPos, UINT32 aLen, UINT32 aPosState) const
+  INT GetPosLenPrice(INT aPos, INT aLen, INT aPosState) const
   {
     if (aLen == 2 && aPos >= 0x80)
       return kIfinityPrice;
-    UINT32 aPrice;
-    UINT32 aLenToPosState = GetLenToPosState(aLen);
+    INT aPrice;
+    INT aLenToPosState = GetLenToPosState(aLen);
     if (aPos < kNumFullDistances)
       aPrice = m_DistancesPrices[aLenToPosState][aPos];
     else
@@ -195,9 +174,9 @@ private:
     return aPrice + m_LenEncoder.GetPrice(aLen - kMatchMinLen, aPosState);
   }
 
-  UINT32 Backward(UINT32 &aBackRes, UINT32 aCur);
-  UINT32 GetOptimum(UINT32 &aBackRes, UINT32 aPosition);
-  UINT32 GetOptimumFast(UINT32 &aBackRes, UINT32 aPosition);
+  INT Backward(INT &aBackRes, INT aCur);
+  INT GetOptimum(INT &aBackRes, INT aPosition);
+  INT GetOptimumFast(INT &aBackRes, INT aPosition);
 
   void FillPosSlotPrices();
   void FillDistancesPrices();
@@ -214,11 +193,11 @@ private:
 public:
   CEncoder();
 
-  HRESULT SetEncoderAlgorithm(UINT32 A);
-  HRESULT SetEncoderNumFastBytes(UINT32 A);
-  HRESULT SetDictionarySize(UINT32 aDictionarySize);
-  HRESULT SetLiteralProperties(UINT32 aLiteralPosStateBits, UINT32 aLiteralContextBits);
-  HRESULT SetPosBitsProperties(UINT32 aNumPosStateBits);
+  HRESULT SetEncoderAlgorithm(INT A);
+  HRESULT SetEncoderNumFastBytes(INT A);
+  HRESULT SetDictionarySize(INT aDictionarySize);
+  HRESULT SetLiteralProperties(INT aLiteralPosStateBits, INT aLiteralContextBits);
+  HRESULT SetPosBitsProperties(INT aNumPosStateBits);
   HRESULT Code(ISequentialInStream *anInStream, ISequentialOutStream *anOutStream, const UINT64 *anInSize);
   HRESULT WriteCoderProperties(ISequentialOutStream *anOutStream);
 };

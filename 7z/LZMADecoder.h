@@ -27,17 +27,15 @@ class CDecoder
 
   CReverseBitTreeDecoder2<kNumMoveBitsForPosCoders> m_PosDecoders[kNumPosModels];
   CReverseBitTreeDecoder<kNumMoveBitsForAlignCoders, kNumAlignBits> m_PosAlignDecoder;
-  // CBitTreeDecoder2<kNumMoveBitsForPosCoders> m_PosDecoders[kNumPosModels];
-  // CBitTreeDecoder<kNumMoveBitsForAlignCoders, kNumAlignBits> m_PosAlignDecoder;
   
   NLength::CDecoder m_LenDecoder;
   NLength::CDecoder m_RepMatchLenDecoder;
 
   NLiteral::CDecoder m_LiteralDecoder;
 
-  UINT32 m_DictionarySize;
+  INT m_DictionarySize;
   
-  UINT32 m_PosStateMask;
+  INT m_PosStateMask;
 
   HRESULT Create();
 
@@ -54,9 +52,9 @@ public:
   HRESULT Code(ISequentialInStream *anInStream, ISequentialOutStream *anOutStream, const UINT64 *anInSize, const UINT64 *anOutSize);
   HRESULT ReadCoderProperties(ISequentialInStream *anInStream);
 
-  HRESULT SetDictionarySize(UINT32 aDictionarySize);
-  HRESULT SetLiteralProperties(UINT32 aLiteralPosStateBits, UINT32 aLiteralContextBits);
-  HRESULT SetPosBitsProperties(UINT32 aNumPosStateBits);
+  HRESULT SetDictionarySize(INT aDictionarySize);
+  HRESULT SetLiteralProperties(INT aLiteralPosStateBits, INT aLiteralContextBits);
+  HRESULT SetPosBitsProperties(INT aNumPosStateBits);
 };
 
 }}

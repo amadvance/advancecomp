@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 2002, 2004 Andrea Mazzoleni
+ * Copyright (C) 2002, 2004, 2005 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -176,17 +176,17 @@ bool zip_entry::shrink(bool standard, shrink_t level)
 			case shrink_normal :
 				lzma_algo = 1;
 				lzma_dictsize = 1 << 20;
-				lzma_fastbytes = 64;
+				lzma_fastbytes = 32;
 				break;
 			case shrink_extra :
 				lzma_algo = 2;
 				lzma_dictsize = 1 << 22;
-				lzma_fastbytes = 128;
+				lzma_fastbytes = 64;
 				break;
 			case shrink_extreme :
 				lzma_algo = 2;
 				lzma_dictsize = 1 << 24;
-				lzma_fastbytes = 255;
+				lzma_fastbytes = 64;
 				break;
 			default:
 				assert(0);

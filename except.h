@@ -75,7 +75,7 @@ public:
 	error& operator<<(const unsigned A)
 	{
 		std::ostringstream s;
-		s << A << "(" << std::hex << A << "h)";
+		s << A /* << " (" << std::hex << A << "h)" */ ;
 		desc += s.str();
 		return *this;
 	}

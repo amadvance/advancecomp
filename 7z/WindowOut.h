@@ -14,15 +14,15 @@ namespace NWindow {
 class COut
 {
   BYTE  *m_Buffer;
-  UINT32 m_Pos;
-  UINT32 m_PosLimit;
-  UINT32 m_KeepSizeBefore;
-  UINT32 m_KeepSizeAfter;
-  UINT32 m_KeepSizeReserv;
-  UINT32 m_StreamPos;
+  INT m_Pos;
+  INT m_PosLimit;
+  INT m_KeepSizeBefore;
+  INT m_KeepSizeAfter;
+  INT m_KeepSizeReserv;
+  INT m_StreamPos;
 
-  UINT32 m_WindowSize;
-  UINT32 m_MoveFrom;
+  INT m_WindowSize;
+  INT m_MoveFrom;
 
   ISequentialOutStream *m_Stream;
 
@@ -30,23 +30,23 @@ class COut
 public:
   COut(): m_Buffer(0), m_Stream(0) {}
   virtual ~COut();
-  void Create(UINT32 aKeepSizeBefore,
-      UINT32 aKeepSizeAfter, UINT32 aKeepSizeReserv = (1<<17));
-  void SetWindowSize(UINT32 aWindowSize);
+  void Create(INT aKeepSizeBefore,
+      INT aKeepSizeAfter, INT aKeepSizeReserv = (1<<17));
+  void SetWindowSize(INT aWindowSize);
 
   void Init(ISequentialOutStream *aStream, bool aSolid = false);
   HRESULT Flush();
   
-  UINT32 GetCurPos() const { return m_Pos; }
+  INT GetCurPos() const { return m_Pos; }
   const BYTE *GetPointerToCurrentPos() const { return m_Buffer + m_Pos;};
 
-  void CopyBackBlock(UINT32 aDistance, UINT32 aLen)
+  void CopyBackBlock(INT aDistance, INT aLen)
   {
     if (m_Pos >= m_PosLimit)
       MoveBlockBackward();  
     BYTE *p = m_Buffer + m_Pos;
     aDistance++;
-    for(UINT32 i = 0; i < aLen; i++)
+    for(INT i = 0; i < aLen; i++)
       p[i] = p[i - aDistance];
     m_Pos += aLen;
   }
@@ -58,7 +58,7 @@ public:
     m_Buffer[m_Pos++] = aByte;
   }
 
-  BYTE GetOneByte(UINT32 anIndex) const
+  BYTE GetOneByte(INT anIndex) const
   {
     return m_Buffer[m_Pos + anIndex];
   }

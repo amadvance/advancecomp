@@ -3,7 +3,7 @@
 namespace NStream {
 namespace NWindow {
 
-void COut::Create(UINT32 aKeepSizeBefore, UINT32 aKeepSizeAfter, UINT32 aKeepSizeReserv)
+void COut::Create(INT aKeepSizeBefore, INT aKeepSizeAfter, INT aKeepSizeReserv)
 {
   m_Pos = 0;
   m_PosLimit = aKeepSizeReserv + aKeepSizeBefore;
@@ -13,7 +13,7 @@ void COut::Create(UINT32 aKeepSizeBefore, UINT32 aKeepSizeAfter, UINT32 aKeepSiz
   m_StreamPos = 0;
   m_MoveFrom = m_KeepSizeReserv;
   m_WindowSize = aKeepSizeBefore;
-  UINT32 aBlockSize = m_KeepSizeBefore + m_KeepSizeAfter + m_KeepSizeReserv;
+  INT aBlockSize = m_KeepSizeBefore + m_KeepSizeAfter + m_KeepSizeReserv;
   delete []m_Buffer;
   m_Buffer = new BYTE[aBlockSize];
 }
@@ -23,7 +23,7 @@ COut::~COut()
   delete []m_Buffer;
 }
 
-void COut::SetWindowSize(UINT32 aWindowSize)
+void COut::SetWindowSize(INT aWindowSize)
 {
   m_WindowSize = aWindowSize;
   m_MoveFrom = m_KeepSizeReserv + m_KeepSizeBefore - aWindowSize;
@@ -45,10 +45,10 @@ void COut::Init(ISequentialOutStream *aStream, bool aSolid)
 
 HRESULT COut::Flush()
 {
-  UINT32 aSize = m_Pos - m_StreamPos;
+  INT aSize = m_Pos - m_StreamPos;
   if(aSize == 0)
     return S_OK;
-  UINT32 aProcessedSize;
+  INT aProcessedSize;
   HRESULT aResult = m_Stream->Write(m_Buffer + m_StreamPos, aSize, &aProcessedSize);
   if (aResult != S_OK)
     return aResult;

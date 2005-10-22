@@ -1,7 +1,7 @@
 /*
  * This file is part of the Advance project.
  *
- * Copyright (C) 2002, 2003, 2004 Andrea Mazzoleni
+ * Copyright (C) 2002, 2003, 2004, 2005 Andrea Mazzoleni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -459,56 +459,67 @@ void convert_gz(adv_fz* f_in, adv_fz* f_out)
 		throw error() << "Invalid size";
 }
 
-void convert_f(ftype_t ftype, adv_fz* f_in, adv_fz* f_out)
-{
-	switch (ftype) {
-	case ftype_png :
-		convert_png(f_in, f_out);
-		break;
-	case ftype_mng :
-		convert_mng(f_in, f_out);
-		break;
-	case ftype_gz :
-		convert_gz(f_in, f_out);
-		break;
-	}
-}
-
 void convert_inplace(const string& path)
 {
 	adv_fz* f_in;
 	adv_fz* f_out;
-	ftype_t ftype;
 
 	// temp name of the saved file
 	string path_dst = file_basepath(path) + ".tmp";
-
-	if (file_compare(file_ext(path), ".png") == 0)
-		ftype = ftype_png;
-	else if (file_compare(file_ext(path), ".mng") == 0)
-		ftype = ftype_mng;
-	else if (file_compare(file_ext(path), ".gz") == 0 || file_compare(file_ext(path), ".tgz") || file_compare(file_ext(path), ".svgz") == 0)
-		ftype = ftype_gz;
-	else
-		throw error() << "File type not supported";
 
 	f_in = fzopen(path.c_str(), "rb");
 	if (!f_in) {
 		throw error() << "Failed open for reading " << path;
 	}
 
-	f_out = fzopen(path_dst.c_str(), "wb");
-	if (!f_out) {
-		fzclose(f_in);
-		throw error() << "Failed open for writing " << path_dst;
-	}
-
 	try {
-		convert_f(ftype, f_in, f_out);
+		// read the header
+		unsigned char header[8];
+		if (fzread(header, 8, 1, f_in) != 1)
+			throw error() << "Error reading " << path;
+
+		// detect the file type
+		ftype_t ftype;
+		if (header[0] == 0x1f && header[1] == 0x8b) {
+			ftype = ftype_gz;
+		} else if (header[0] == 0x89 && header[1] == 0x50 && header[2] == 0x4E && header[3] == 0x47) {
+			ftype = ftype_png;
+		} else if (header[0] == 0x8A && header[1] == 0x4D && header[2] == 0x4E && header[3] == 0x47) {
+			ftype = ftype_mng;
+		} else {
+			throw error() << "File type not supported";
+		}
+
+		// restore the file position
+		if (fzseek(f_in, 0, SEEK_SET) != 0) {
+			throw error() << "Error seeking " << path;
+		}
+
+		f_out = fzopen(path_dst.c_str(), "wb");
+		if (!f_out) {
+			throw error() << "Failed open for writing " << path_dst;
+		}
+
+		try {
+			switch (ftype) {
+			case ftype_png :
+				convert_png(f_in, f_out);
+				break;
+			case ftype_mng :
+				convert_mng(f_in, f_out);
+				break;
+			case ftype_gz :
+				convert_gz(f_in, f_out);
+				break;
+			}
+		} catch (...) {
+			fzclose(f_out);
+			remove(path_dst.c_str());
+			throw;
+		}
+
 	} catch (...) {
 		fzclose(f_in);
-		fzclose(f_out);
-		remove(path_dst.c_str());
 		throw;
 	}
 
