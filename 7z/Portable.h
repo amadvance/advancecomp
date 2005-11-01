@@ -12,18 +12,16 @@ typedef int32_t INT32;
 typedef uint32_t UINT32;
 typedef int64_t INT64;
 typedef uint64_t UINT64;
+typedef uintptr_t UINT_PTR;
+typedef int32_t INT;
 
 typedef UINT8 BYTE;
 typedef UINT16 WORD;
 typedef UINT32 DWORD;
 
-typedef uintptr_t UINT_PTR;
-
 typedef int BOOL;
 #define FALSE 0
 #define TRUE 1
-
-typedef int32_t INT;
 
 #define HRESULT int
 #define S_OK 0

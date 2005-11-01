@@ -16,14 +16,16 @@ AC_CHECK_PROGS(GROFF, groff)
 AC_CHECK_PROGS(COL, col)
 
 # Checks for libraries.
-AC_CHECK_LIB([z], [adler32])
+AC_CHECK_LIB([z], [adler32], [], [
+AC_MSG_ERROR([the zlib library is required])
+])
 
 # Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_HEADER_DIRENT
 AC_HEADER_TIME
-AC_CHECK_HEADERS([unistd.h getopt.h utime.h stdarg.h varargs.h])
+AC_CHECK_HEADERS([unistd.h getopt.h utime.h stdarg.h varargs.h stdint.h])
 AC_CHECK_HEADERS([sys/types.h sys/stat.h sys/time.h sys/utime.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
