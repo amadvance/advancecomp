@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT([AdvanceCOMP],[1.15])
+AC_INIT([AdvanceCOMP],[1.16])
 AC_CONFIG_SRCDIR([rezip.cc])
 AM_INIT_AUTOMAKE([foreign no-dependencies])
 AC_CONFIG_HEADERS([config.h])
@@ -16,9 +16,7 @@ AC_CHECK_PROGS(GROFF, groff)
 AC_CHECK_PROGS(COL, col)
 
 # Checks for libraries.
-AC_CHECK_LIB([z], [adler32], [], [
-AC_MSG_ERROR([the zlib library is required])
-])
+AC_CHECK_LIB([z], [adler32], [], [AC_MSG_ERROR([the libz library is missing])])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -42,7 +40,7 @@ AC_ARG_ENABLE(
 	bzip2,
 	[  --enable-bzip2       Use the bzip2 compression],
 	AC_DEFINE(USE_BZIP2,1,[Use the bzip2 compression])
-	AC_CHECK_LIB([bz2],[BZ2_bzBuffToBuffCompress])
+	AC_CHECK_LIB([bz2], [BZ2_bzBuffToBuffCompress], [], [AC_MSG_ERROR([the libbz2 library is missing])])
 )
 
 # Configure the library
