@@ -3,6 +3,12 @@
                             =======================
 
 
+ADVANCECOMP VERSION 1.16 2007/11
+================================
+
+* Allowed recompression with files with zero length.
+
+
 ADVANCECOMP VERSION 1.15 2005/10
 ================================
 
