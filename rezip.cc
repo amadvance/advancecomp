@@ -378,8 +378,9 @@ void add_single(zip& z, const string& local, const string& common, bool quiet, b
 			if (!f)
 				throw error() << "Failed open for reading file " << file;
 
-			if (fread(data, st.st_size, 1, f)!=1)
-				throw error() << "Failed read file " << file;
+			if (st.st_size != 0)
+				if (fread(data, st.st_size, 1, f)!=1)
+					throw error() << "Failed read file " << file;
 
 			fclose(f);
 
