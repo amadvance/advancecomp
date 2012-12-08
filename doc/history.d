@@ -1,8 +1,9 @@
 Name
 	advcomp - History For AdvanceCOMP
 
-AdvanceCOMP Version 1.16 2007/11
+AdvanceCOMP Version 1.16 2012/12
 	) Allowed recompression with files with zero length.
+	) Now in git repository.
 
 AdvanceCOMP Version 1.15 2005/10
 	) Fixed the date displayed with the -l advzip command.
