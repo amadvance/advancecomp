@@ -1,8 +1,9 @@
 Name
 	advcomp - History For AdvanceCOMP
 
-AdvanceCOMP Version 1.16 2012/12
+AdvanceCOMP Version 1.16 2013/03
 	) Allowed recompression with files with zero length.
+	) Some other minor bugfixes.
 	) Now in git repository.
 
 AdvanceCOMP Version 1.15 2005/10

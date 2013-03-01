@@ -7,7 +7,7 @@ if ! ./configure.windows; then
 	exit 1
 fi
 
-if ! make all distwindows distclean; then
+if ! make distwindows distclean; then
 	exit 1
 fi
 
@@ -15,7 +15,7 @@ if ! ./configure.dos; then
 	exit 1
 fi
 
-if ! make all distdos distclean; then
+if ! make distdos distclean; then
 	exit 1
 fi
 

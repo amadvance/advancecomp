@@ -3,10 +3,11 @@
                             =======================
 
 
-ADVANCECOMP VERSION 1.16 2012/12
+ADVANCECOMP VERSION 1.16 2013/03
 ================================
 
 * Allowed recompression with files with zero length.
+* Some other minor bugfixes.
 * Now in git repository.
 
 
