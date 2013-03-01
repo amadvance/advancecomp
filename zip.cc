@@ -1086,7 +1086,7 @@ void zip::save()
 		sig_auto_lock sal;
 
 		// temp name of the saved file
-		string save_path = file_basepath(path) + ".tmp";
+		string save_path = file_temp(path);
 
 		FILE* f = fopen(save_path.c_str(), "wb");
 		if (!f)

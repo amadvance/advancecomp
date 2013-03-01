@@ -176,7 +176,7 @@ void convert_inplace(const string& path)
 	adv_fz* f_out;
 
 	// temp name of the saved file
-	string path_dst = file_basepath(path) + ".tmp";
+	string path_dst = file_temp(path);
 
 	f_in = fzopen(path.c_str(), "rb");
 	if (!f_in) {

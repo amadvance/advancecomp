@@ -80,6 +80,7 @@ void file_move(const std::string& path1, const std::string& path2) throw (error)
 void file_remove(const std::string& path1) throw (error);
 void file_mktree(const std::string& path1) throw (error);
 
+std::string file_temp(const std::string& path) throw ();
 std::string file_randomize(const std::string& path, int n) throw ();
 std::string file_name(const std::string& file) throw ();
 std::string file_dir(const std::string& file) throw ();

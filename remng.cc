@@ -608,7 +608,7 @@ void convert_mng(const string& path_src, const string& path_dst)
 void convert_mng_inplace(const string& path)
 {
 	// temp name of the saved file
-	string path_dst = file_basepath(path) + ".tmp";
+	string path_dst = file_temp(path);
 
 	try {
 		convert_mng(path, path_dst);

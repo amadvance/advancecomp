@@ -307,6 +307,15 @@ string file_randomize(const string& path, int n) throw ()
 	return os.str();
 }
 
+string file_temp(const string& path) throw ()
+{
+	ostringstream os;
+
+	os << path << ".tmp" << time(0) << ends;
+
+	return os.str();
+}
+
 /**
  * Get the directory from a path.
  */
