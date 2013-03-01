@@ -1,0 +1,45 @@
+# archives
+*.zip
+*.tar.gz
+
+# objects
+*.o
+*.exe
+advdef
+advmng
+advpng
+advzip
+
+# docs
+doc/advdef.hh
+doc/advmng.hh
+doc/advpng.hh
+doc/advzip.hh
+doc/history.hh
+
+# others
+resource/
+support/
+
+# autotools
+Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache/
+config.guess
+config.h
+config.h.in~
+config.h.in
+config.log
+config.status
+config.sub
+configure
+install-sh
+missing
+stamp-h1
+
+# projects
+*.dst
+*.epr
+
+
