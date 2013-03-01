@@ -312,10 +312,6 @@ DISTDOS_DOC = \
 	doc/readme.html doc/authors.html doc/history.html 
 
 distdos: $(DISTDOS_ROOT) $(DISTDOS_DOC)
-	i586-pc-msdosdjgpp-strip advdef.exe
-	i586-pc-msdosdjgpp-strip advzip.exe
-	i586-pc-msdosdjgpp-strip advpng.exe
-	i586-pc-msdosdjgpp-strip advmng.exe
 	rm -f $(PACKAGE)-$(VERSION)-dos-pentium.zip
 	mkdir tmp
 	cp $(DISTDOS_ROOT) tmp
@@ -325,10 +321,6 @@ distdos: $(DISTDOS_ROOT) $(DISTDOS_DOC)
 	rm -r tmp
 
 distwindows: $(DISTDOS_ROOT) $(DISTDOS_DOC)
-	i386-mingw32msvc-strip advdef.exe
-	i386-mingw32msvc-strip advzip.exe
-	i386-mingw32msvc-strip advpng.exe
-	i386-mingw32msvc-strip advmng.exe
 	rm -f $(PACKAGE)-$(VERSION)-windows-pentium.zip
 	mkdir tmp
 	cp $(DISTDOS_ROOT) tmp
