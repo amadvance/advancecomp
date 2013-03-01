@@ -312,22 +312,22 @@ DISTDOS_DOC = \
 	doc/readme.html doc/authors.html doc/history.html 
 
 distdos: $(DISTDOS_ROOT) $(DISTDOS_DOC)
-	rm -f $(PACKAGE)-$(VERSION)-dos-pentium.zip
+	rm -f $(PACKAGE)-$(VERSION)-dos-x86.zip
 	mkdir tmp
 	cp $(DISTDOS_ROOT) tmp
 	mkdir tmp/doc
 	cp $(DISTDOS_DOC) tmp/doc
-	cd tmp && zip -r ../$(PACKAGE)-$(VERSION)-dos-pentium.zip *
+	cd tmp && zip -r ../$(PACKAGE)-$(VERSION)-dos-x86.zip *
 	rm -r tmp
 
 distwindows: $(DISTDOS_ROOT) $(DISTDOS_DOC)
-	rm -f $(PACKAGE)-$(VERSION)-windows-pentium.zip
+	rm -f $(PACKAGE)-$(VERSION)-windows-x86.zip
 	mkdir tmp
 	cp $(DISTDOS_ROOT) tmp
 	mkdir tmp/doc
 	cp support/zlib.dll tmp
 	cp $(DISTDOS_DOC) tmp/doc
-	cd tmp && zip -r ../$(PACKAGE)-$(VERSION)-windows-pentium.zip *
+	cd tmp && zip -r ../$(PACKAGE)-$(VERSION)-windows-x86.zip *
 	rm -r tmp
 
 DISTWEB = \
