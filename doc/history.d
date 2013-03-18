@@ -1,6 +1,9 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 1.17 2013/03
+	) Changes to GPL3.
+
 AdvanceCOMP Version 1.16 2013/03
 	) Allowed recompression with files with zero length.
 	) Some other minor bugfixes.
