@@ -22,6 +22,10 @@
 
 #include "compress.h"
 
+#if defined(USE_ZOPFLI)
+ZopfliOptions opt_zopfli;
+#endif
+
 bool decompress_deflate_zlib(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned out_size)
 {
 
@@ -202,6 +206,27 @@ bool decompress_bzip2(const unsigned char* in_data, unsigned in_size, unsigned c
 
 bool compress_zlib(shrink_t level, unsigned char* out_data, unsigned& out_size, const unsigned char* in_data, unsigned in_size)
 {
+#if defined(USE_ZOPFLI)
+	if (opt_zopfli.numiterations > 0) {
+		size_t zopfli_size = 0;
+		unsigned char* zopfli_data = 0;
+
+		ZopfliCompress(&opt_zopfli, ZOPFLI_FORMAT_ZLIB, in_data, static_cast<size_t>(in_size), &zopfli_data, &zopfli_size);
+
+		if (zopfli_size <= out_size) {
+			memcpy(out_data, zopfli_data, zopfli_size); 
+			out_size = static_cast<unsigned>(zopfli_size);
+			free(zopfli_data);
+			return true;
+		}
+
+		if (zopfli_data)
+			free (zopfli_data);
+
+		return false;
+	}
+#endif
+
 #if defined(USE_7Z)
 	if (level == shrink_normal || level == shrink_extra || level == shrink_extreme) {
 		unsigned sz_passes;
@@ -261,6 +286,27 @@ bool compress_zlib(shrink_t level, unsigned char* out_data, unsigned& out_size, 
 
 bool compress_deflate(shrink_t level, unsigned char* out_data, unsigned& out_size, const unsigned char* in_data, unsigned in_size)
 {
+#if defined(USE_ZOPFLI)
+	if (opt_zopfli.numiterations > 0) {
+		size_t zopfli_size = 0;
+		unsigned char* zopfli_data = 0;
+
+		ZopfliCompress(&opt_zopfli, ZOPFLI_FORMAT_DEFLATE, in_data, static_cast<size_t>(in_size), &zopfli_data, &zopfli_size);
+
+		if (zopfli_size <= out_size) {
+			memcpy(out_data, zopfli_data, zopfli_size); 
+			out_size = static_cast<unsigned>(zopfli_size);
+			free(zopfli_data);
+			return true;
+		}
+
+		if (zopfli_data)
+			free (zopfli_data);
+
+		return false;
+	}
+#endif
+
 #if defined(USE_7Z)
 	if (level == shrink_normal || level == shrink_extra || level == shrink_extreme) {
 		unsigned sz_passes;

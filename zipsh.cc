@@ -27,6 +27,10 @@
 
 #include <iostream>
 
+#if defined(USE_ZOPFLI)
+extern ZopfliOptions opt_zopfli;
+#endif
+
 using namespace std;
 
 void zip_entry::uncompressed_read(unsigned char* uncompressed_data) const
@@ -165,6 +169,31 @@ bool zip_entry::shrink(bool standard, shrink_t level)
 		unsigned c1_ver;
 		unsigned c1_met;
 		unsigned c1_fla;
+
+#if defined(USE_ZOPFLI)
+		if (opt_zopfli.numiterations > 0) {
+			c1_data = 0;
+			c1_size = 0;
+			c1_ver = 20; // zopfli always produces a version 2.0 deflate stream
+			c1_met = ZIP_METHOD_DEFLATE;
+			c1_fla = ZIP_GEN_FLAGS_DEFLATE_MAXIMUM;
+
+			ZopfliCompress(&opt_zopfli, ZOPFLI_FORMAT_DEFLATE, uncompressed_data, static_cast<size_t>(uncompressed_size_get()), &c1_data, static_cast<size_t*>(&c1_size));
+			
+			if (got(c0_data, c0_size, c0_met, c1_data, c1_size, c1_met, false, standard, false)) {
+				data_free(c0_data);
+				c0_data = c1_data;
+				c0_size = c1_size;
+				c0_ver = c1_ver;
+				c0_met = c1_met;
+				c0_fla = c1_fla;
+				modify = true;
+			} else {
+				if (c1_data)
+					data_free(c1_data);
+			}
+		}
+#endif
 
 #if defined(USE_7Z) && defined(USE_LZMA)
 		if (level != shrink_fast && !standard) {

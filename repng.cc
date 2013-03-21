@@ -36,6 +36,9 @@ shrink_t opt_level;
 bool opt_quiet;
 bool opt_force;
 bool opt_crc;
+#if defined(USE_ZOPFLI)
+extern ZopfliOptions opt_zopfli;
+#endif
 
 bool reduce_image(unsigned char** out_ptr, unsigned* out_scanline, unsigned char* pal_ptr, unsigned* pal_count, unsigned char* palrns_ptr, unsigned *palrns_count, unsigned width, unsigned height, unsigned char* img_ptr, unsigned img_scanline, const unsigned char* rns_ptr, unsigned rns_size)
 {
@@ -348,6 +351,9 @@ struct option long_options[] = {
 	{"shrink-normal", 0, 0, '2'},
 	{"shrink-extra", 0, 0, '3'},
 	{"shrink-insane", 0, 0, '4'},
+#if defined(USE_ZOPFLI)
+	{"zopfli", 1, 0, 'i'},
+#endif
 
 	{"quiet", 0, 0, 'q'},
 	{"help", 0, 0, 'h'},
@@ -356,7 +362,7 @@ struct option long_options[] = {
 };
 #endif
 
-#define OPTIONS "zlL01234fqhV"
+#define OPTIONS "zlL01234i:fqhV"
 
 void version()
 {
@@ -378,6 +384,9 @@ void usage()
 	cout << "  " SWITCH_GETOPT_LONG("-2, --shrink-normal ", "-2") "  Compress normal" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-3, --shrink-extra  ", "-3") "  Compress extra" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-4, --shrink-insane ", "-4") "  Compress extreme" << endl;
+#if defined(USE_ZOPFLI)
+	cout << "  " SWITCH_GETOPT_LONG("-i N, --zopfli=N    ", "-i") "  Compress zopfli iterations" << endl;
+#endif
 	cout << "  " SWITCH_GETOPT_LONG("-f, --force         ", "-f") "  Force the new file also if it's bigger" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-q, --quiet         ", "-q") "  Don't print on the console" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-h, --help          ", "-h") "  Help of the program" << endl;
@@ -394,6 +403,10 @@ void process(int argc, char* argv[])
 	opt_level = shrink_normal;
 	opt_force = false;
 	opt_crc = false;
+#if defined(USE_ZOPFLI)
+	ZopfliInitOptions(&opt_zopfli);
+	opt_zopfli.numiterations = 0;
+#endif
 
 	if (argc <= 1) {
 		usage();
@@ -444,6 +457,12 @@ void process(int argc, char* argv[])
 		case '4' :
 			opt_level = shrink_extreme;
 			break;
+#if defined(USE_ZOPFLI)
+		case 'i' :
+			if (optarg)
+				opt_zopfli.numiterations = atoi(optarg);
+			break;
+#endif
 		case 'f' :
 			opt_force = true;
 			break;

@@ -51,6 +51,9 @@ bool opt_scroll;
 adv_mng_type opt_type;
 bool opt_force;
 bool opt_crc;
+#if defined(USE_ZOPFLI)
+extern ZopfliOptions opt_zopfli;
+#endif
 
 void clear_line()
 {
@@ -1025,6 +1028,9 @@ struct option long_options[] = {
 	{"shrink-normal", 0, 0, '2'},
 	{"shrink-extra", 0, 0, '3'},
 	{"shrink-insane", 0, 0, '4'},
+#if defined(USE_ZOPFLI)
+	{"zopfli", 1, 0, 'i'},
+#endif
 
 	{"scroll-square", 1, 0, 'S'},
 	{"scroll", 1, 0, 's'},
@@ -1042,7 +1048,7 @@ struct option long_options[] = {
 };
 #endif
 
-#define OPTIONS "zlLxa:01234s:S:rencCfqvhV"
+#define OPTIONS "zlLxa:01234i:s:S:rencCfqvhV"
 
 void version()
 {
@@ -1066,6 +1072,9 @@ void usage()
 	cout << "  " SWITCH_GETOPT_LONG("-2, --shrink-normal   ", "-2    ") "  Compress normal" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-3, --shrink-extra    ", "-3    ") "  Compress extra" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-4, --shrink-insane   ", "-4    ") "  Compress extreme" << endl;
+#if defined(USE_ZOPFLI)
+	cout << "  " SWITCH_GETOPT_LONG("-i N, --zopfli=N      ", "-i N  ") "  Compress zopfli iterations" << endl;
+#endif
 	cout << "  " SWITCH_GETOPT_LONG("-s, --scroll NxM      ", "-s NxM") "  Enable the scroll optimization with a NxM pattern" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("                      ", "      ") "  search. from -Nx-M to NxM. Example: -s 4x6" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-S, --scroll-square N ", "-S N  ") "  Enable the square scroll optimization with a NxN pattern" << endl;
@@ -1101,6 +1110,10 @@ void process(int argc, char* argv[])
 	opt_type = mng_std;
 	opt_force = false;
 	opt_crc = false;
+#if defined(USE_ZOPFLI)
+	ZopfliInitOptions(&opt_zopfli);
+	opt_zopfli.numiterations = 0;
+#endif
 
 	if (argc <= 1) {
 		usage();
@@ -1167,6 +1180,12 @@ void process(int argc, char* argv[])
 		case '4' :
 			opt_level = shrink_extreme;
 			break;
+#if defined(USE_ZOPFLI)
+		case 'i' :
+			if (optarg)
+				opt_zopfli.numiterations = atoi(optarg);
+			break;
+#endif
 		case 's' : {
 			int n;
 			opt_dx = 0;
