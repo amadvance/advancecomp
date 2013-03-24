@@ -2,16 +2,7 @@
 
 bin_PROGRAMS = advzip advpng advmng advdef
 
-advzip_SOURCES = \
-	rezip.cc \
-	zip.cc \
-	file.cc \
-	data.cc \
-	siglock.cc \
-	compress.cc \
-	zipsh.cc \
-	getopt.c \
-	snprintf.c \
+7z_SOURCES = \
 	7z/7zdeflate.cc \
 	7z/7zlzma.cc \
 	7z/AriBitCoder.cc \
@@ -32,6 +23,34 @@ advzip_SOURCES = \
 	7z/WindowIn.cc \
 	7z/WindowOut.cc
 
+zopfli_SOURCES = \
+	zopfli/blocksplitter.c \
+	zopfli/cache.c \
+	zopfli/deflate.c \
+	zopfli/gzip_container.c \
+	zopfli/hash.c \
+	zopfli/katajainen.c \
+	zopfli/lz77.c \
+	zopfli/squeeze.c \
+	zopfli/tree.c \
+	zopfli/util.c \
+	zopfli/zlib_container.c \
+	zopfli/zopfli.h \
+	zopfli/zopfli_lib.c
+
+advzip_SOURCES = \
+	rezip.cc \
+	zip.cc \
+	file.cc \
+	data.cc \
+	siglock.cc \
+	compress.cc \
+	zipsh.cc \
+	getopt.c \
+	snprintf.c \
+	$(7z_SOURCES) \
+	$(zopfli_SOURCES)
+
 advpng_SOURCES = \
 	repng.cc \
 	pngex.cc \
@@ -45,25 +64,8 @@ advpng_SOURCES = \
 	lib/png.c \
 	lib/error.c \
 	lib/snstring.c \
-	7z/7zdeflate.cc \
-	7z/7zlzma.cc \
-	7z/AriBitCoder.cc \
-	7z/CRC.cc \
-	7z/DeflateDecoder.cc \
-	7z/DeflateEncoder.cc \
-	7z/HuffmanEncoder.cc \
-	7z/IInOutStreams.cc \
-	7z/InByte.cc \
-	7z/LSBFDecoder.cc \
-	7z/LSBFEncoder.cc \
-	7z/LZMA.cc \
-	7z/LZMADecoder.cc \
-	7z/LZMAEncoder.cc \
-	7z/LenCoder.cc \
-	7z/LiteralCoder.cc \
-	7z/OutByte.cc \
-	7z/WindowIn.cc \
-	7z/WindowOut.cc
+	$(7z_SOURCES) \
+	$(zopfli_SOURCES)
 
 advmng_SOURCES = \
 	remng.cc \
@@ -81,25 +83,8 @@ advmng_SOURCES = \
 	lib/mng.c \
 	lib/error.c \
 	lib/snstring.c \
-	7z/7zdeflate.cc \
-	7z/7zlzma.cc \
-	7z/AriBitCoder.cc \
-	7z/CRC.cc \
-	7z/DeflateDecoder.cc \
-	7z/DeflateEncoder.cc \
-	7z/HuffmanEncoder.cc \
-	7z/IInOutStreams.cc \
-	7z/InByte.cc \
-	7z/LSBFDecoder.cc \
-	7z/LSBFEncoder.cc \
-	7z/LZMA.cc \
-	7z/LZMADecoder.cc \
-	7z/LZMAEncoder.cc \
-	7z/LenCoder.cc \
-	7z/LiteralCoder.cc \
-	7z/OutByte.cc \
-	7z/WindowIn.cc \
-	7z/WindowOut.cc
+	$(7z_SOURCES) \
+	$(zopfli_SOURCES)
 
 advdef_SOURCES = \
 	redef.cc \
@@ -115,25 +100,8 @@ advdef_SOURCES = \
 	lib/snstring.c \
 	lib/png.c \
 	lib/mng.c \
-	7z/7zdeflate.cc \
-	7z/7zlzma.cc \
-	7z/AriBitCoder.cc \
-	7z/CRC.cc \
-	7z/DeflateDecoder.cc \
-	7z/DeflateEncoder.cc \
-	7z/HuffmanEncoder.cc \
-	7z/IInOutStreams.cc \
-	7z/InByte.cc \
-	7z/LSBFDecoder.cc \
-	7z/LSBFEncoder.cc \
-	7z/LZMA.cc \
-	7z/LZMADecoder.cc \
-	7z/LZMAEncoder.cc \
-	7z/LenCoder.cc \
-	7z/LiteralCoder.cc \
-	7z/OutByte.cc \
-	7z/WindowIn.cc \
-	7z/WindowOut.cc
+	$(7z_SOURCES) \
+	$(zopfli_SOURCES)
 
 EXTRA_DIST = \
 	README AUTHORS HISTORY INSTALL COPYING \
@@ -143,8 +111,12 @@ EXTRA_DIST = \
 	doc/advdef.html doc/advzip.html doc/advpng.html doc/advmng.html doc/history.html doc/readme.html doc/authors.html doc/install.html \
 	autogen.sh noautomake.sh \
 	7z/README \
+	zopfli/README \
+	zopfli/COPYING \
+	zopfli/CONTRIBUTORS \
 	test/test.lst \
-	test/mappy.png \
+	test/archive.zip \
+	test/italy.png \
 	test/mappy.mng \
 	test/basn2c08.png \
 	test/basn3p01.png \
@@ -212,12 +184,24 @@ noinst_HEADERS = \
 	7z/RCDefs.h \
 	7z/RangeCoder.h \
 	7z/WindowIn.h \
-	7z/WindowOut.h
+	7z/WindowOut.h \
+	zopfli/blocksplitter.h \
+	zopfli/cache.h \
+	zopfli/deflate.h \
+	zopfli/gzip_container.h \
+	zopfli/hash.h \
+	zopfli/katajainen.h \
+	zopfli/lz77.h \
+	zopfli/squeeze.h \
+	zopfli/tree.h \
+	zopfli/util.h \
+	zopfli/zlib_container.h \
+	zopfli/zopfli.h
 
 man_MANS = doc/advdef.1 doc/advzip.1 doc/advpng.1 doc/advmng.1
 
 clean-local:
-	rm -f check.lst check.zip mappy.mng mappy.png
+	rm -f check.lst check.zip archive.zip mappy.mng italy.png
 	rm -f basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png
 	rm -f advdef.exe advzip.exe advpng.exe advmng.exe
 	rm -f mappy*.png
@@ -258,47 +242,67 @@ doc/copying.txt: COPYING
 	cat $< | todos > $@
 
 check-local: advzip test/test.lst
-	@./advzip -a -1 check.zip $(srcdir)/COPYING
-	@./advzip -L check.zip > check.lst
-	@./advzip -t -p check.zip
-	@./advzip -a -2 check.zip $(srcdir)/COPYING
-	@./advzip -L check.zip >> check.lst
-	@./advzip -t -p check.zip
-	@./advzip -a -3 check.zip $(srcdir)/COPYING
-	@./advzip -L check.zip >> check.lst
-	@./advzip -t -p check.zip
-	@./advzip -a -4 check.zip $(srcdir)/COPYING
-	@./advzip -L check.zip >> check.lst
-	@./advzip -t -p check.zip
-	@./advzip -a -1 -N check.zip $(srcdir)/COPYING
-	@./advzip -L check.zip >> check.lst
-	@./advzip -t -p check.zip
-	@./advzip -a -2 -N check.zip $(srcdir)/COPYING
-	@./advzip -L check.zip >> check.lst
-	@./advzip -t -p check.zip
-	@./advzip -a -3 -N check.zip $(srcdir)/COPYING
-	@./advzip -L check.zip >> check.lst
-	@./advzip -t -p check.zip
-	@./advzip -a -4 -N check.zip $(srcdir)/COPYING
-	@./advzip -L check.zip >> check.lst
-	@./advzip -t -p check.zip
+	@cp $(srcdir)/test/archive.zip .
+	@echo CRC SIZE > check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -z -3 archive.zip
+	$(TESTENV) ./advzip$(EXEEXT) -L archive.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -z -3 -i 20 archive.zip
+	$(TESTENV) ./advzip$(EXEEXT) -L archive.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -z -4 archive.zip
+	$(TESTENV) ./advzip$(EXEEXT) -L archive.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -z -4 -i 20 archive.zip
+	$(TESTENV) ./advzip$(EXEEXT) -L archive.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -z -3 -N archive.zip
+	$(TESTENV) ./advzip$(EXEEXT) -L archive.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -z -4 -N archive.zip
+	$(TESTENV) ./advzip$(EXEEXT) -L archive.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -a check.zip $(srcdir)/COPYING
+	$(TESTENV) ./advzip$(EXEEXT) -L check.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -t -p check.zip
+	$(TESTENV) ./advzip$(EXEEXT) -a -3 check.zip $(srcdir)/COPYING
+	$(TESTENV) ./advzip$(EXEEXT) -L check.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -t -p check.zip
+	$(TESTENV) ./advzip$(EXEEXT) -a -4 check.zip $(srcdir)/COPYING
+	$(TESTENV) ./advzip$(EXEEXT) -L check.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -t -p check.zip
+	$(TESTENV) ./advzip$(EXEEXT) -a -N check.zip $(srcdir)/COPYING
+	$(TESTENV) ./advzip$(EXEEXT) -L check.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -t -p check.zip
+	$(TESTENV) ./advzip$(EXEEXT) -a -3 -N check.zip $(srcdir)/COPYING
+	$(TESTENV) ./advzip$(EXEEXT) -L check.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -t -p check.zip
+	$(TESTENV) ./advzip$(EXEEXT) -a -4 -N check.zip $(srcdir)/COPYING
+	$(TESTENV) ./advzip$(EXEEXT) -L check.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -t -p check.zip
 	@cp $(srcdir)/test/mappy.mng .
-	@./advmng -v -z -1 -f -S 8 mappy.mng
-	@./advmng -L mappy.mng >> check.lst
-	@./advmng -v -x -1 mappy.mng
-	@./advmng -v -a 30 -1 -S 8 mappy.mng mappy-*.png
-	@./advmng -L mappy.mng >> check.lst
-	@./advmng -v -a 30 -n -1 -S 8 mappy.mng mappy-*.png
-	@./advmng -L mappy.mng >> check.lst
-	@./advmng -v -a 30 -n -r -1 -S 8 mappy.mng mappy-*.png
-	@./advmng -L mappy.mng >> check.lst
-	@cp $(srcdir)/test/mappy.png .
-	@./advpng -f -z mappy.png
-	@./advpng -L mappy.png >> check.lst
+	$(TESTENV) ./advmng$(EXEEXT) -v -z -f -S 8 mappy.mng
+	$(TESTENV) ./advmng$(EXEEXT) -L mappy.mng >> check.lst
+	$(TESTENV) ./advmng$(EXEEXT) -v -x mappy.mng
+	$(TESTENV) ./advmng$(EXEEXT) -v -a 30 -S 8 mappy.mng mappy-*.png
+	$(TESTENV) ./advmng$(EXEEXT) -L mappy.mng >> check.lst
+	$(TESTENV) ./advmng$(EXEEXT) -v -a 30 -n -S 8 mappy.mng mappy-*.png
+	$(TESTENV) ./advmng$(EXEEXT) -L mappy.mng >> check.lst
+	$(TESTENV) ./advmng$(EXEEXT) -v -a 30 -n -r -S 8 mappy.mng mappy-*.png
+	$(TESTENV) ./advmng$(EXEEXT) -L mappy.mng >> check.lst
+	@cp $(srcdir)/test/italy.png .
+	$(TESTENV) ./advpng$(EXEEXT) -z italy.png
+	$(TESTENV) ./advpng$(EXEEXT) -L italy.png >> check.lst
+	$(TESTENV) ./advpng$(EXEEXT) -z -3 italy.png
+	$(TESTENV) ./advpng$(EXEEXT) -L italy.png >> check.lst
+	$(TESTENV) ./advpng$(EXEEXT) -z -3 -i 20 italy.png
+	$(TESTENV) ./advpng$(EXEEXT) -L italy.png >> check.lst
+	$(TESTENV) ./advpng$(EXEEXT) -z -4 italy.png
+	$(TESTENV) ./advpng$(EXEEXT) -L italy.png >> check.lst
+	$(TESTENV) ./advpng$(EXEEXT) -z -4 -i 20 italy.png
+	$(TESTENV) ./advpng$(EXEEXT) -L italy.png >> check.lst
 	@cp $(srcdir)/test/basn2c08.png $(srcdir)/test/basn3p01.png $(srcdir)/test/basn3p02.png $(srcdir)/test/basn3p04.png $(srcdir)/test/basn3p08.png $(srcdir)/test/basn6a08.png $(srcdir)/test/basn6a04.png .
-	@./advpng -f -z basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png
-	@./advpng -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png >> check.lst
-	@cmp check.lst $(srcdir)/test/test.lst
+	$(TESTENV) ./advpng$(EXEEXT) -f -z basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png
+	$(TESTENV) ./advpng$(EXEEXT) -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png >> check.lst
+	$(TESTENV) ./advdef$(EXEEXT) -f -z -3 basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png
+	$(TESTENV) ./advpng$(EXEEXT) -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png >> check.lst
+	$(TESTENV) ./advdef$(EXEEXT) -f -z -4 basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png
+	$(TESTENV) ./advpng$(EXEEXT) -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png >> check.lst
+	cat check.lst | fromdos | cmp $(srcdir)/test/test.lst
 	@echo Success!
 
 DISTDOS_ROOT = \
@@ -325,7 +329,6 @@ distwindows: $(DISTDOS_ROOT) $(DISTDOS_DOC)
 	mkdir tmp
 	cp $(DISTDOS_ROOT) tmp
 	mkdir tmp/doc
-	cp support/zlib.dll tmp
 	cp $(DISTDOS_DOC) tmp/doc
 	cd tmp && zip -r ../$(PACKAGE)-$(VERSION)-windows-x86.zip *
 	rm -r tmp
@@ -334,5 +337,4 @@ DISTWEB = \
 	doc/advdef.hh doc/advzip.hh doc/advpng.hh doc/advmng.hh doc/history.hh
 
 web: $(DISTWEB)
-
 

@@ -27,10 +27,6 @@
 #include <iomanip>
 #include <string>
 
-#if defined(USE_ZOPFLI)
-extern ZopfliOptions opt_zopfli;
-#endif
-
 using namespace std;
 
 void rezip_single(const string& file, unsigned long long& total_0, unsigned long long& total_1, bool quiet, bool standard, shrink_t level)
@@ -390,7 +386,7 @@ void add_single(zip& z, const string& local, const string& common, bool quiet, b
 
 			zip::iterator i = z.insert_uncompressed(common, data, st.st_size, crc32(0, (unsigned char*)data, st.st_size), st.st_mtime, false);
 
-			if (level != shrink_none)
+			if (level.level != shrink_none)
 				i->shrink(standard, level);
 		} catch (...) {
 			operator delete(data);
@@ -442,9 +438,7 @@ struct option long_options[] = {
 	{"shrink-normal", 0, 0, '2'},
 	{"shrink-extra", 0, 0, '3'},
 	{"shrink-insane", 0, 0, '4'},
-#if defined(USE_ZOPFLI)
-	{"zopfli", 1, 0, 'i'},
-#endif
+	{"iter", 1, 0, 'i'},
 
 	{"verbose", 0, 0, 'v'},
 	{"help", 0, 0, 'h'},
@@ -475,13 +469,11 @@ void usage()
 	cout << "Options:" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-p, --pedantic      ", "-p") "  Be pedantic on the zip tests" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-0, --shrink-store  ", "-0") "  Don't compress" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-1, --shrink-fast   ", "-1") "  Compress fast" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-2, --shrink-normal ", "-2") "  Compress normal" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-3, --shrink-extra  ", "-3") "  Compress extra" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-4, --shrink-insane ", "-4") "  Compress extreme" << endl;
-#if defined(USE_ZOPFLI)
-	cout << "  " SWITCH_GETOPT_LONG("-i N, --zopfli=N    ", "-i") "  Compress zopfli iterations" << endl;
-#endif
+	cout << "  " SWITCH_GETOPT_LONG("-1, --shrink-fast   ", "-1") "  Compress fast (zlib)" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-2, --shrink-normal ", "-2") "  Compress normal (7z)" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-3, --shrink-extra  ", "-3") "  Compress extra (7z)" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-4, --shrink-insane ", "-4") "  Compress extreme (zopfli)" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-i N, --iter=N      ", "-i") "  Compress iterations" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-q, --quiet         ", "-q") "  Don't print on the console" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-h, --help          ", "-h") "  Help of the program" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-V, --version       ", "-V") "  Version of the program" << endl;
@@ -496,11 +488,10 @@ void process(int argc, char* argv[])
 	bool notzip = false;
 	bool pedantic = false;
 	bool crc = false;
-	shrink_t level = shrink_normal;
-#if defined(USE_ZOPFLI)
-	ZopfliInitOptions(&opt_zopfli);
-	opt_zopfli.numiterations = 0;
-#endif
+	shrink_t level;
+
+	level.level = shrink_normal;
+	level.iter = 0;
 
 	if (argc <= 1) {
 		usage();
@@ -510,7 +501,6 @@ void process(int argc, char* argv[])
 	int c = 0;
 
 	opterr = 0; // don't print errors
-
 	while ((c =
 #if HAVE_GETOPT_LONG
 		getopt_long(argc, argv, OPTIONS, long_options, 0))
@@ -557,26 +547,23 @@ void process(int argc, char* argv[])
 			pedantic = true;
 			break;
 		case '0' :
-			level = shrink_none;
+			level.level = shrink_none;
 			break;
 		case '1' :
-			level = shrink_fast;
+			level.level = shrink_fast;
 			break;
 		case '2' :
-			level = shrink_normal;
+			level.level = shrink_normal;
 			break;
 		case '3' :
-			level = shrink_extra;
+			level.level = shrink_extra;
 			break;
 		case '4' :
-			level = shrink_extreme;
+			level.level = shrink_insane;
 			break;
-#if defined(USE_ZOPFLI)
 		case 'i':
-			if (optarg)
-				opt_zopfli.numiterations = atoi(optarg);
+			level.iter = atoi(optarg);
 			break;
-#endif
 		case 'q' :
 			quiet = true;
 			break;

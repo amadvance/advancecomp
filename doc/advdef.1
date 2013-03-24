@@ -10,7 +10,11 @@ advdef [\(hyz, \(hy\(hyrecompress] [\(hy0, \(hy\(hyshrink\(hystore]
 .PD 0
 .PP
 .PD
-	[\(hy4, \(hy\(hyshrink\(hyinsane] [\(hyf, \(hy\(hyforce] [\(hyq, \(hy\(hyquiet]
+	[\(hy4, \(hy\(hyshrink\(hyinsane] [\(hyi, \(hy\(hyiter N]
+.PD 0
+.PP
+.PD
+	[\(hyf, \(hy\(hyforce] [\(hyq, \(hy\(hyquiet]
 .PD 0
 .PP
 .PD
@@ -40,18 +44,32 @@ only stored and not compressed. The file is always
 rewritten also if it\(cqs bigger.
 .TP
 .B \(hy1, \(hy\(hyshrink\(hyfast
-Set the compression level to \(a"fast\(a".
+Set the compression level to \(a"fast\(a" using the zlib
+compressor.
 .TP
 .B \(hy2, \(hy\(hyshrink\(hynormal
-Set the compression level to \(a"normal\(a". This is the
-default level of compression.
+Set the compression level to \(a"normal\(a" using the 7z
+compressor.
+This is the default level of compression.
 .TP
 .B \(hy3, \(hy\(hyshrink\(hyextra
-Set the compression level to \(a"extra\(a".
+Set the compression level to \(a"extra\(a" using the 7z
+compressor.
+You can define the compressor iterations with
+the \(hyi, \(hy\(hyiter option.
 .TP
 .B \(hy4, \(hy\(hyshrink\(hyinsane
-Set the compression level to \(a"insane\(a". It\(cqs VERY
-SLOW.
+Set the compression level to \(a"insane\(a" using the zopfli
+compressor.
+You can define the compressor iterations with
+the \(hyi, \(hy\(hyiter option.
+.TP
+.B \(hyi, \(hy\(hyiter N
+Define an additional numer of iterations for the 7z and zopfli
+compressors for modes \(hy3 and \(hy4.
+More iterations usually give a better compression, but may
+require a lot more time.
+Try for example with 10, 15, 20, and so on.
 .TP
 .B \(hyf, \(hy\(hyforce
 Force the use of the new file also if it\(cqs bigger.

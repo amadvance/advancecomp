@@ -51,9 +51,6 @@ bool opt_scroll;
 adv_mng_type opt_type;
 bool opt_force;
 bool opt_crc;
-#if defined(USE_ZOPFLI)
-extern ZopfliOptions opt_zopfli;
-#endif
 
 void clear_line()
 {
@@ -1028,9 +1025,7 @@ struct option long_options[] = {
 	{"shrink-normal", 0, 0, '2'},
 	{"shrink-extra", 0, 0, '3'},
 	{"shrink-insane", 0, 0, '4'},
-#if defined(USE_ZOPFLI)
-	{"zopfli", 1, 0, 'i'},
-#endif
+	{"iter", 1, 0, 'i'},
 
 	{"scroll-square", 1, 0, 'S'},
 	{"scroll", 1, 0, 's'},
@@ -1068,13 +1063,11 @@ void usage()
 	cout << "  " SWITCH_GETOPT_LONG("-a, --add F MNG PNG...", "-a    ") "  Create a .MNG file at F frame/s from .PNG files" << endl;
 	cout << "Options:" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-0, --shrink-store    ", "-0    ") "  Don't compress" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-1, --shrink-fast     ", "-1    ") "  Compress fast" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-2, --shrink-normal   ", "-2    ") "  Compress normal" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-3, --shrink-extra    ", "-3    ") "  Compress extra" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-4, --shrink-insane   ", "-4    ") "  Compress extreme" << endl;
-#if defined(USE_ZOPFLI)
-	cout << "  " SWITCH_GETOPT_LONG("-i N, --zopfli=N      ", "-i N  ") "  Compress zopfli iterations" << endl;
-#endif
+	cout << "  " SWITCH_GETOPT_LONG("-1, --shrink-fast     ", "-1    ") "  Compress fast (zlib)" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-2, --shrink-normal   ", "-2    ") "  Compress normal (7z)" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-3, --shrink-extra    ", "-3    ") "  Compress extra (7z)" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-4, --shrink-insane   ", "-4    ") "  Compress extreme (zopfli)" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-i N, --iter=N        ", "-i    ") "  Compress iterations" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-s, --scroll NxM      ", "-s NxM") "  Enable the scroll optimization with a NxM pattern" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("                      ", "      ") "  search. from -Nx-M to NxM. Example: -s 4x6" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-S, --scroll-square N ", "-S N  ") "  Enable the square scroll optimization with a NxN pattern" << endl;
@@ -1099,7 +1092,8 @@ void process(int argc, char* argv[])
 
 	opt_quiet = false;
 	opt_verbose = false;
-	opt_level = shrink_normal;
+	opt_level.level = shrink_normal;
+	opt_level.iter = 0;
 	opt_reduce = false;
 	opt_expand = false;
 	opt_noalpha = false;
@@ -1110,10 +1104,6 @@ void process(int argc, char* argv[])
 	opt_type = mng_std;
 	opt_force = false;
 	opt_crc = false;
-#if defined(USE_ZOPFLI)
-	ZopfliInitOptions(&opt_zopfli);
-	opt_zopfli.numiterations = 0;
-#endif
 
 	if (argc <= 1) {
 		usage();
@@ -1165,27 +1155,24 @@ void process(int argc, char* argv[])
 				throw error() << "Invalid frequency";
 			} break;
 		case '0' :
-			opt_level = shrink_none;
+			opt_level.level = shrink_none;
 			opt_force = true;
 			break;
 		case '1' :
-			opt_level = shrink_fast;
+			opt_level.level = shrink_fast;
 			break;
 		case '2' :
-			opt_level = shrink_normal;
+			opt_level.level = shrink_normal;
 			break;
 		case '3' :
-			opt_level = shrink_extra;
+			opt_level.level = shrink_extra;
 			break;
 		case '4' :
-			opt_level = shrink_extreme;
+			opt_level.level = shrink_insane;
 			break;
-#if defined(USE_ZOPFLI)
 		case 'i' :
-			if (optarg)
-				opt_zopfli.numiterations = atoi(optarg);
+			opt_level.iter = atoi(optarg);
 			break;
-#endif
 		case 's' : {
 			int n;
 			opt_dx = 0;

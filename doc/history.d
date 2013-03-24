@@ -2,7 +2,11 @@ Name
 	advcomp - History For AdvanceCOMP
 
 AdvanceCOMP Version 1.17 2013/03
-	) Changes to GPL3.
+	) Changed to GPL3.
+	) Added zopfli support. It's enabled using -4, --shrink-insane.
+		You can control the number of iterations with the
+		new -i, --iter option.
+		Thanks to Darik Horn for the patches.
 
 AdvanceCOMP Version 1.16 2013/03
 	) Allowed recompression with files with zero length.

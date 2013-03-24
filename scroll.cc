@@ -24,9 +24,8 @@
 #include "data.h"
 
 #if defined(__GNUC__) && defined(__i386__)
-#define USE_MMX
+#define USE_MMX 1
 #endif
-// #define USE_OPTC
 
 static unsigned compare_line(unsigned width, unsigned height, unsigned char* p0, unsigned char* p1, unsigned line)
 {
@@ -177,10 +176,7 @@ static void compare(adv_scroll* scroll, int* x, int* y, unsigned width, unsigned
 	int best_x;
 	int best_y;
 	unsigned best_count;
-	int prev_x;
-	int prev_y;
 	unsigned prev_count;
-	unsigned center_count;
 	unsigned total;
 
 	best_x = 0;
@@ -188,10 +184,6 @@ static void compare(adv_scroll* scroll, int* x, int* y, unsigned width, unsigned
 	best_count = compare_shift(0, 0, width, height, p0, p1, pixel, line);
 
 	prev_count = 0;
-	prev_x = 0;
-	prev_y = 0;
-
-	center_count = best_count;
 
 	total = width * height;
 
@@ -203,15 +195,11 @@ static void compare(adv_scroll* scroll, int* x, int* y, unsigned width, unsigned
 				count = compare_shift(i, j, width, height, p0, p1, pixel, line);
 				if (count > best_count) {
 					prev_count = best_count;
-					prev_x = best_x;
-					prev_y = best_y;
 					best_count = count;
 					best_x = i;
 					best_y = j;
 				} else if (count > prev_count) {
 					prev_count = count;
-					prev_x = i;
-					prev_y = j;
 				}
 			}
 		}

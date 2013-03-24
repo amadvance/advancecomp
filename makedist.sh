@@ -3,11 +3,11 @@
 
 make distclean
 
-if ! ./configure.windows; then
+if ! ./configure.windows-x86; then
 	exit 1
 fi
 
-if ! make distwindows distclean; then
+if ! make check distwindows distclean; then
 	exit 1
 fi
 

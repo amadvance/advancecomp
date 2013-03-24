@@ -21,15 +21,19 @@
 #ifndef __COMPRESS_H
 #define __COMPRESS_H
 
-#ifdef USE_7Z
 #include "7z/7z.h"
-#endif
 
-#ifdef USE_BZIP2
+extern "C" {
+#include "zopfli/zopfli.h"
+}
+
+#if USE_BZIP2
 #include <bzlib.h>
 #endif
 
 #include <zlib.h>
+
+#define RETRY_FOR_SMALL_FILES 65536 /**< Size for which we try multiple algorithms */
 
 unsigned oversize_deflate(unsigned size);
 unsigned oversize_zlib(unsigned size);
@@ -43,12 +47,17 @@ bool compress_bzip2(const unsigned char* in_data, unsigned in_size, unsigned cha
 bool decompress_rfc1950_zlib(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned out_size);
 bool compress_rfc1950_zlib(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned& out_size, int compression_level, int strategy, int mem_level);
 
-enum shrink_t {
+enum shrink_level_t {
 	shrink_none,
 	shrink_fast,
 	shrink_normal,
 	shrink_extra,
-	shrink_extreme
+	shrink_insane
+};
+
+struct shrink_t {
+	enum shrink_level_t level;
+	unsigned iter;
 };
 
 bool compress_zlib(shrink_t level, unsigned char* out_data, unsigned& out_size, const unsigned char* in_data, unsigned in_size);

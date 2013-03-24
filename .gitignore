@@ -19,7 +19,6 @@ doc/history.hh
 
 # others
 resource/
-support/
 
 # autotools
 Makefile

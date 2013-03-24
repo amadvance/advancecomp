@@ -1,11 +1,13 @@
-# Process this file with autoconf to produce a configure script.
+dnl Process this file with autoconf to produce a configure script.
+AC_PREREQ([2.65])
 AC_INIT([AdvanceCOMP],[1.17])
-AC_CONFIG_SRCDIR([rezip.cc])
 AM_INIT_AUTOMAKE([foreign no-dependencies])
+AC_CONFIG_SRCDIR([rezip.cc])
 AC_CONFIG_HEADERS([config.h])
 AC_CANONICAL_HOST
 
-# Checks for programs.
+dnl Checks for programs.
+AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
@@ -14,11 +16,13 @@ AC_CHECK_PROGS(TAR, tar)
 AC_CHECK_PROGS(GZIP, gzip)
 AC_CHECK_PROGS(GROFF, groff)
 AC_CHECK_PROGS(COL, col)
+AC_CHECK_PROG([VALGRIND],[valgrind],[valgrind --leak-check=full --track-fds=yes --error-exitcode=1],[])
+AC_CHECK_PROG([WINE],[wine],[wine],[])
 
-# Checks for libraries.
+dnl Checks for libraries.
 AC_CHECK_LIB([z], [adler32], [], [AC_MSG_ERROR([the libz library is missing])])
 
-# Checks for header files.
+dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_HEADER_DIRENT
@@ -26,15 +30,12 @@ AC_HEADER_TIME
 AC_CHECK_HEADERS([unistd.h getopt.h utime.h stdarg.h varargs.h stdint.h])
 AC_CHECK_HEADERS([sys/types.h sys/stat.h sys/time.h sys/utime.h])
 
-# Checks for typedefs, structures, and compiler characteristics.
+dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
 
-# Checks for library functions.
+dnl Checks for library functions.
 AC_CHECK_FUNCS([getopt getopt_long snprintf vsnprintf])
-
-AC_DEFINE(USE_7Z,1,[Use the 7z library])
-AC_DEFINE(USE_LZMA,1,[Use the lzma compression])
 
 AC_ARG_ENABLE(
 	bzip2,
@@ -43,10 +44,32 @@ AC_ARG_ENABLE(
 	AC_CHECK_LIB([bz2], [BZ2_bzBuffToBuffCompress], [], [AC_MSG_ERROR([the libbz2 library is missing])])
 )
 
-# Configure the library
+dnl Checks for test environment
+AS_CASE([$host], [*-*-mingw*], [TESTENV="$WINE"], [])
+
+AC_ARG_ENABLE([valgrind],
+	[AS_HELP_STRING([--enable-valgrind],[enable the use of valgrind in testing])],
+	[
+	TESTENV="$VALGRIND"
+	CFLAGS="$CFLAGS -DCHECKER"
+	CXXFLAGS="$CXXFLAGS -DCHECKER"
+	],
+	[])
+
+AC_ARG_ENABLE([debug],
+	[AS_HELP_STRING([--enable-debug],[enable debugging])],
+	[
+	TESTENV=""
+	CFLAGS="-O0 -g -Wall -Wextra"
+	CXXFLAGS="-O0 -g -Wall -Wextra"
+	],
+	[])
+
+dnl Configure the library
 CFLAGS="$CFLAGS -DUSE_ERROR_SILENT -DUSE_COMPRESS"
 CXXFLAGS="$CXXFLAGS -DUSE_ERROR_SILENT -DUSE_COMPRESS"
 
+AC_ARG_VAR([TESTENV], [Test environment])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 

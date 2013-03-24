@@ -21,14 +21,10 @@
 #include "portable.h"
 
 #include "compress.h"
-
-#if defined(USE_ZOPFLI)
-ZopfliOptions opt_zopfli;
-#endif
+#include "data.h"
 
 bool decompress_deflate_zlib(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned out_size)
 {
-
 	z_stream stream;
 	int r;
 
@@ -206,79 +202,86 @@ bool decompress_bzip2(const unsigned char* in_data, unsigned in_size, unsigned c
 
 bool compress_zlib(shrink_t level, unsigned char* out_data, unsigned& out_size, const unsigned char* in_data, unsigned in_size)
 {
-#if defined(USE_ZOPFLI)
-	if (opt_zopfli.numiterations > 0) {
-		size_t zopfli_size = 0;
-		unsigned char* zopfli_data = 0;
+	if (level.level == shrink_insane) {
+		ZopfliOptions opt_zopfli;
+		unsigned char* data;
+		size_t size;
 
-		ZopfliCompress(&opt_zopfli, ZOPFLI_FORMAT_ZLIB, in_data, static_cast<size_t>(in_size), &zopfli_data, &zopfli_size);
+		ZopfliInitOptions(&opt_zopfli);
+		opt_zopfli.numiterations = level.iter > 5 ? level.iter : 5;
 
-		if (zopfli_size <= out_size) {
-			memcpy(out_data, zopfli_data, zopfli_size); 
-			out_size = static_cast<unsigned>(zopfli_size);
-			free(zopfli_data);
-			return true;
+		size = 0;
+		data = 0;
+
+		ZopfliCompress(&opt_zopfli, ZOPFLI_FORMAT_ZLIB, in_data, in_size, &data, &size);
+
+		if (size < out_size) {
+			memcpy(out_data, data, size);
+			out_size = static_cast<unsigned>(size);
 		}
 
-		if (zopfli_data)
-			free (zopfli_data);
-
-		return false;
+		free(data);
 	}
-#endif
 
-#if defined(USE_7Z)
-	if (level == shrink_normal || level == shrink_extra || level == shrink_extreme) {
+	if (level.level == shrink_normal || level.level == shrink_extra || level.level == shrink_insane) {
 		unsigned sz_passes;
 		unsigned sz_fastbytes;
+		unsigned char* data;
+		unsigned size;
 
-		switch (level) {
+		switch (level.level) {
 		case shrink_normal :
 			sz_passes = 1;
 			sz_fastbytes = 64;
 			break;
 		case shrink_extra :
-			sz_passes = 3;
-			sz_fastbytes = 128;
+			sz_passes = level.iter > 15 ? level.iter : 15;
+			sz_fastbytes = 255;
 			break;
-		case shrink_extreme :
-			sz_passes = 5;
+		case shrink_insane :
+			sz_passes = 3; // assume that zopfli is better, but does a fast try to cover some corner cases
 			sz_fastbytes = 255;
 			break;
 		default:
 			assert(0);
 		}
 
-		if (!compress_rfc1950_7z(in_data, in_size, out_data, out_size, sz_passes, sz_fastbytes)) {
-			return false;
+		size = out_size;
+		data = data_alloc(size);
+
+		if (compress_rfc1950_7z(in_data, in_size, data, size, sz_passes, sz_fastbytes)) {
+			memcpy(out_data, data, size);
+			out_size = size;
 		}
+
+		data_free(data);
 
 		return true;
 	}
-#endif
 
-	int libz_level = Z_BEST_COMPRESSION;
+	if (level.level == shrink_none || level.level == shrink_fast) {
+		int libz_level;
+		unsigned char* data;
+		unsigned size;
 
-	switch (level) {
-	case shrink_none :
-		libz_level = Z_NO_COMPRESSION;
-		break;
-	case shrink_fast :
-		libz_level = Z_DEFAULT_COMPRESSION;
-		break;
-	case shrink_normal :
-		libz_level = Z_DEFAULT_COMPRESSION;
-		break;
-	case shrink_extra :
-		libz_level = Z_BEST_COMPRESSION;
-		break;
-	case shrink_extreme :
-		libz_level = Z_BEST_COMPRESSION;
-		break;
-	}
+		switch (level.level) {
+		case shrink_none :
+			libz_level = Z_NO_COMPRESSION;
+			break;
+		default:
+			libz_level = Z_BEST_COMPRESSION;
+			break;
+		}
 
-	if (!compress_rfc1950_zlib(in_data, in_size, out_data, out_size, libz_level, Z_DEFAULT_STRATEGY, MAX_MEM_LEVEL)) {
-		return false;
+		size = out_size;
+		data = data_alloc(size);
+
+		if (compress_rfc1950_zlib(in_data, in_size, data, size, libz_level, Z_DEFAULT_STRATEGY, MAX_MEM_LEVEL)) {
+			memcpy(out_data, data, size);
+			out_size = size;
+		}
+
+		data_free(data);
 	}
 
 	return true;
@@ -286,79 +289,85 @@ bool compress_zlib(shrink_t level, unsigned char* out_data, unsigned& out_size, 
 
 bool compress_deflate(shrink_t level, unsigned char* out_data, unsigned& out_size, const unsigned char* in_data, unsigned in_size)
 {
-#if defined(USE_ZOPFLI)
-	if (opt_zopfli.numiterations > 0) {
-		size_t zopfli_size = 0;
-		unsigned char* zopfli_data = 0;
+	if (level.level == shrink_insane) {
+		ZopfliOptions opt_zopfli;
+		unsigned char* data;
+		size_t size;
+		
+		ZopfliInitOptions(&opt_zopfli);
+		opt_zopfli.numiterations = level.iter > 5 ? level.iter : 5;
 
-		ZopfliCompress(&opt_zopfli, ZOPFLI_FORMAT_DEFLATE, in_data, static_cast<size_t>(in_size), &zopfli_data, &zopfli_size);
+		size = 0;
+		data = 0;
 
-		if (zopfli_size <= out_size) {
-			memcpy(out_data, zopfli_data, zopfli_size); 
-			out_size = static_cast<unsigned>(zopfli_size);
-			free(zopfli_data);
-			return true;
+		ZopfliCompress(&opt_zopfli, ZOPFLI_FORMAT_DEFLATE, in_data, in_size, &data, &size);
+
+		if (size < out_size) {
+			memcpy(out_data, data, size);
+			out_size = static_cast<unsigned>(size);
 		}
 
-		if (zopfli_data)
-			free (zopfli_data);
-
-		return false;
+		free(data);
 	}
-#endif
 
-#if defined(USE_7Z)
-	if (level == shrink_normal || level == shrink_extra || level == shrink_extreme) {
+	// note that in some case, 7z is better than zopfli
+	if (level.level == shrink_normal || level.level == shrink_extra || level.level == shrink_insane) {
 		unsigned sz_passes;
 		unsigned sz_fastbytes;
+		unsigned char* data;
+		unsigned size;
 
-		switch (level) {
+		switch (level.level) {
 		case shrink_normal :
 			sz_passes = 1;
 			sz_fastbytes = 64;
 			break;
 		case shrink_extra :
-			sz_passes = 3;
-			sz_fastbytes = 128;
+			sz_passes = level.iter > 15 ? level.iter : 15;
+			sz_fastbytes = 255;
 			break;
-		case shrink_extreme :
-			sz_passes = 5;
+		case shrink_insane :
+			sz_passes = 3; // assume that zopfli is better, but does a fast try to cover some corner cases
 			sz_fastbytes = 255;
 			break;
 		default:
 			assert(0);
 		}
 
-		if (!compress_deflate_7z(in_data, in_size, out_data, out_size, sz_passes, sz_fastbytes)) {
-			return false;
+		size = out_size;
+		data = data_alloc(size);
+
+		if (compress_deflate_7z(in_data, in_size, data, size, sz_passes, sz_fastbytes)) {
+			memcpy(out_data, data, size);
+			out_size = size;
 		}
 
-		return true;
-	}
-#endif
-
-	int libz_level = Z_BEST_COMPRESSION;
-
-	switch (level) {
-	case shrink_none :
-		libz_level = Z_NO_COMPRESSION;
-		break;
-	case shrink_fast :
-		libz_level = Z_DEFAULT_COMPRESSION;
-		break;
-	case shrink_normal :
-		libz_level = Z_DEFAULT_COMPRESSION;
-		break;
-	case shrink_extra :
-		libz_level = Z_BEST_COMPRESSION;
-		break;
-	case shrink_extreme :
-		libz_level = Z_BEST_COMPRESSION;
-		break;
+		data_free(data);
 	}
 
-	if (!compress_deflate_zlib(in_data, in_size, out_data, out_size, libz_level, Z_DEFAULT_STRATEGY, MAX_MEM_LEVEL)) {
-		return false;
+	if (level.level == shrink_none || level.level == shrink_fast) {
+		int libz_level;
+		unsigned char* data;
+		unsigned size;
+
+		switch (level.level) {
+		case shrink_none :
+			libz_level = Z_NO_COMPRESSION;
+			break;
+		default:
+			libz_level = Z_BEST_COMPRESSION;
+			break;
+		}
+
+		size = out_size;
+		data = data_alloc(size);
+
+		if (compress_deflate_zlib(in_data, in_size, out_data, out_size, libz_level, Z_DEFAULT_STRATEGY, MAX_MEM_LEVEL)) {
+			memcpy(out_data, data, size);
+			out_size = size;
+		}
+
+		data_free(data);
 	}
 
 	return true;

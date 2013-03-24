@@ -1,0 +1,6 @@
+./configure \
+	CFLAGS="-O3 -march=pentium4 -mtune=generic" \
+	CXXFLAGS="-O3 -march=pentium4 -mtune=generic" \
+	LDFLAGS="-s" \
+	--host=i686-pc-mingw32 --build=`./config.guess` $@
+

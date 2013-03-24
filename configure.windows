@@ -1,6 +1,0 @@
-./configure \
-	CFLAGS="-O2 -Wall -march=i686 -fomit-frame-pointer -fno-strength-reduce" \
-	CXXFLAGS="-O2 -Wall -march=i686 -fomit-frame-pointer -fno-strength-reduce" \
-	LDFLAGS="-s" \
-	--host=i686-pc-mingw32 --build=`./config.guess` $@
-

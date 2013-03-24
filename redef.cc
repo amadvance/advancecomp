@@ -36,9 +36,6 @@ using namespace std;
 shrink_t opt_level;
 bool opt_quiet;
 bool opt_force;
-#if defined(USE_ZOPFLI)
-extern ZopfliOptions opt_zopfli;
-#endif
 
 enum ftype_t {
 	ftype_png,
@@ -624,10 +621,7 @@ struct option long_options[] = {
 	{"shrink-normal", 0, 0, '2'},
 	{"shrink-extra", 0, 0, '3'},
 	{"shrink-insane", 0, 0, '4'},
-#if defined(USE_ZOPFLI)
-	{"zopfli", 1, 0, 'i'},
-#endif
-	
+	{"iter", 1, 0, 'i'},
 
 	{"quiet", 0, 0, 'q'},
 	{"help", 0, 0, 'h'},
@@ -653,13 +647,11 @@ void usage()
 	cout << "  " SWITCH_GETOPT_LONG("-z, --recompress    ", "-z") "  Recompress the specified files" << endl;
 	cout << "Options:" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-0, --shrink-store  ", "-0") "  Don't compress" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-1, --shrink-fast   ", "-1") "  Compress fast" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-2, --shrink-normal ", "-2") "  Compress normal" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-3, --shrink-extra  ", "-3") "  Compress extra" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-4, --shrink-insane ", "-4") "  Compress extreme" << endl;
-#if defined(USE_ZOPFLI)
-	cout << "  " SWITCH_GETOPT_LONG("-i N, --zopfli=N    ", "-i") "  Compress zopfli iterations" << endl;
-#endif
+	cout << "  " SWITCH_GETOPT_LONG("-1, --shrink-fast   ", "-1") "  Compress fast (zlib)" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-2, --shrink-normal ", "-2") "  Compress normal (7z)" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-3, --shrink-extra  ", "-3") "  Compress extra (7z)" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-4, --shrink-insane ", "-4") "  Compress extreme (zopfli)" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-i N, --iter=N      ", "-i") "  Compress iterations" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-f, --force         ", "-f") "  Force the new file also if it's bigger" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-q, --quiet         ", "-q") "  Don't print on the console" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-h, --help          ", "-h") "  Help of the program" << endl;
@@ -673,12 +665,9 @@ void process(int argc, char* argv[])
 	} cmd = cmd_unset;
 
 	opt_quiet = false;
-	opt_level = shrink_normal;
+	opt_level.level = shrink_normal;
+	opt_level.iter = 0;
 	opt_force = false;
-#if defined(USE_ZOPFLI)
-	ZopfliInitOptions(&opt_zopfli);
-	opt_zopfli.numiterations = 0;
-#endif
 
 	if (argc <= 1) {
 		usage();
@@ -703,27 +692,24 @@ void process(int argc, char* argv[])
 			cmd = cmd_recompress;
 			break;
 		case '0' :
-			opt_level = shrink_none;
+			opt_level.level = shrink_none;
 			opt_force = true;
 			break;
 		case '1' :
-			opt_level = shrink_fast;
+			opt_level.level = shrink_fast;
 			break;
 		case '2' :
-			opt_level = shrink_normal;
+			opt_level.level = shrink_normal;
 			break;
 		case '3' :
-			opt_level = shrink_extra;
+			opt_level.level = shrink_extra;
 			break;
 		case '4' :
-			opt_level = shrink_extreme;
+			opt_level.level = shrink_insane;
 			break;
-#if defined(USE_ZOPFLI)
 		case 'i' :
-			if (optarg)
-				opt_zopfli.numiterations = atoi(optarg);
+			opt_level.iter = atoi(optarg);
 			break;
-#endif
 		case 'f' :
 			opt_force = true;
 			break;
