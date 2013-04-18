@@ -215,11 +215,11 @@ bool zip_entry::shrink(bool standard, shrink_t level)
 		}
 
 #if USE_BZIP2
-		if (level != shrink_fast && !standard) {
+		if (level.level != shrink_fast && !standard) {
 			unsigned bzip2_level;
 			unsigned bzip2_workfactor;
 
-			switch (level) {
+			switch (level.level) {
 			case shrink_normal :
 				bzip2_level = 6;
 				bzip2_workfactor = 30;

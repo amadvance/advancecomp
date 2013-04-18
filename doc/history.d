@@ -1,6 +1,9 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 1.18 2013/04
+	) Fixed build with BZIP.
+
 AdvanceCOMP Version 1.17 2013/03
 	) Changed to GPL3.
 	) Added zopfli support. It's enabled using -4, --shrink-insane.
