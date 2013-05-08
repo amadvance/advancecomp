@@ -1144,12 +1144,12 @@ void process(int argc, char* argv[])
 			cmd = cmd_extract;
 			break;
 		case 'a' : {
-			int n;
+			int n, s;
 			if (cmd != cmd_unset)
 				throw error() << "Too many commands";
 			cmd = cmd_add;
-			n = sscanf(optarg, "%d", &add_frequency);
-			if (n != 1)
+			n = sscanf(optarg, "%d%n", &add_frequency, &s);
+			if (n < 1 || strlen(optarg) != s)
 				throw error() << "Invalid option -a";
 			if (add_frequency < 1 || add_frequency > 250)
 				throw error() << "Invalid frequency";
@@ -1174,11 +1174,11 @@ void process(int argc, char* argv[])
 			opt_level.iter = atoi(optarg);
 			break;
 		case 's' : {
-			int n;
+			int n, s;
 			opt_dx = 0;
 			opt_dy = 0;
-			n = sscanf(optarg, "%dx%d", &opt_dx, &opt_dy);
-			if (n != 2)
+			n = sscanf(optarg, "%dx%d%n", &opt_dx, &opt_dy, &s);
+			if (n < 2 || strlen(optarg) != s)
 				throw error() << "Invalid option -s";
 			if (opt_dx < 0 || opt_dy < 0
 				|| (opt_dx == 0 && opt_dy == 0)
@@ -1188,10 +1188,10 @@ void process(int argc, char* argv[])
 			opt_limit = opt_dx + opt_dy;
 			} break;
 		case 'S' : {
-			int n;
+			int n, s;
 			opt_limit = 0;
-			n = sscanf(optarg, "%d", &opt_limit);
-			if (n != 1)
+			n = sscanf(optarg, "%d%n", &opt_limit, &s);
+			if (n < 1 || strlen(optarg) != s)
 				throw error() << "Invalid option -S";
 			if (opt_limit < 1 || opt_limit > 128)
 				throw error() << "Invalid argument for option -S";
