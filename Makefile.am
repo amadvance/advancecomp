@@ -241,7 +241,7 @@ HISTORY: doc/history.txt
 doc/copying.txt: COPYING
 	cat $< | todos > $@
 
-check-local: advzip test/test.lst
+check-local: ./advzip$(EXEEXT) test/test.lst
 	@cp $(srcdir)/test/archive.zip .
 	@echo CRC SIZE > check.lst
 	$(TESTENV) ./advzip$(EXEEXT) -z -3 archive.zip

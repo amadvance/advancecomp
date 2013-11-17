@@ -1,8 +1,10 @@
 .TH "History For AdvanceCOMP" 1
 .SH NAME
-advcomp \(hy History For AdvanceCOMP
-.SH ADVANCECOMP VERSION 1.18 2013/04 
+advcomp \- History For AdvanceCOMP
+.SH ADVANCECOMP VERSION 1.18 2013/11 
 .PD 0
+.IP \(bu
+Added build support for new powerpc architectures.
 .IP \(bu
 Fixed build with BZIP.
 .PD
@@ -11,9 +13,9 @@ Fixed build with BZIP.
 .IP \(bu
 Changed to GPL3.
 .IP \(bu
-Added zopfli support. It\(cqs enabled using \(hy4, \(hy\(hyshrink\(hyinsane.
+Added zopfli support. It\(cqs enabled using \-4, \-\-shrink\-insane.
 You can control the number of iterations with the
-new \(hyi, \(hy\(hyiter option.
+new \-i, \-\-iter option.
 Thanks to Darik Horn for the patches.
 .PD
 .SH ADVANCECOMP VERSION 1.16 2013/03 
@@ -28,7 +30,7 @@ Now in git repository.
 .SH ADVANCECOMP VERSION 1.15 2005/10 
 .PD 0
 .IP \(bu
-Fixed the date displayed with the \(hyl advzip command.
+Fixed the date displayed with the \-l advzip command.
 .IP \(bu
 The advdef utility now detects the file type from the file
 header instead of using the extension.
@@ -71,7 +73,7 @@ compressed .zip files are tested.
 .SH ADVANCECOMP VERSION 1.10 2004/04 
 .PD 0
 .IP \(bu
-Added support for alpha channel and the new \(hyn option
+Added support for alpha channel and the new \-n option
 at advmng.
 .IP \(bu
 Fixed the uncompressing error \(a"Invalid compressed data in ...\(a"
@@ -82,7 +84,7 @@ with some GZIP files [Christian Lestrade].
 .IP \(bu
 Added support for .tgz files at advdef.
 .IP \(bu
-Added the \(hya option at advmng to create .mng files from
+Added the \-a option at advmng to create .mng files from
 a sequence of .png files.
 .PD
 .SH ADVANCECOMP VERSION 1.8 2003/10 
@@ -95,7 +97,7 @@ Fixed support for .png files with splitted IDATs.
 .SH ADVANCECOMP VERSION 1.7 2003/08 
 .PD 0
 .IP \(bu
-Fixed a Segmentation Fault bug on the advmng \(hyr option on
+Fixed a Segmentation Fault bug on the advmng \-r option on
 the latest gcc.
 .IP \(bu
 Better and faster (MMX) move recognition in the advmng scroll
@@ -104,9 +106,9 @@ compression.
 The frame reduction of the advmng utility is now done only if possible.
 The compression process never fails.
 .IP \(bu
-Added a new \(hyS (\(hy\(hyscroll\(hysquare) option at advmng.
+Added a new \-S (\-\-scroll\-square) option at advmng.
 .IP \(bu
-Added a new \(hyv (\(hy\(hyverbose) option at advmng to show the
+Added a new \-v (\-\-verbose) option at advmng to show the
 compression status.
 .IP \(bu
 Changed the internal ID for the bzip2 and LZMA compression.
@@ -119,7 +121,7 @@ Updated with automake 1.7.6.
 .SH ADVANCECOMP VERSION 1.6 2003/05 
 .PD 0
 .IP \(bu
-Added the \(oq\(hyx\(cq option at the advmng utility to export .png files
+Added the \(oq\-x\(cq option at the advmng utility to export .png files
 from a .mng clip. Useful to compress it in an MPEG file.
 .IP \(bu
 Fixed the support for zips with additional data descriptors.
@@ -179,10 +181,10 @@ First public release.
 .IP \(bu
 Fixed the compression percentage computation on big files.
 .IP \(bu
-Added the \(hy\(hypedantic option at the advzip utility. These
+Added the \-\-pedantic option at the advzip utility. These
 tests are only done if requested.
 .PD
-.SH ADVANCESCAN VERSION 0.6\(hyBETA 2002/05 
+.SH ADVANCESCAN VERSION 0.6\-BETA 2002/05 
 .PD 0
 .IP \(bu
 Added the AdvanceZIP utility.

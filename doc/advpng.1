@@ -1,24 +1,24 @@
 .TH "AdvanceCOMP PNG Compression Utility" 1
 .SH NAME
-advpng \(hy AdvanceCOMP PNG Compression Utility
+advpng \- AdvanceCOMP PNG Compression Utility
 .SH SYNOPSIS 
-advpng [\(hyl, \(hy\(hylist] [\(hyz, \(hy\(hyrecompress] [\(hy0, \(hy\(hyshrink\(hy0]
+advpng [\-l, \-\-list] [\-z, \-\-recompress] [\-0, \-\-shrink\-0]
 .PD 0
 .PP
 .PD
-	[\(hy1, \(hy\(hyshrink\(hyfast] [\(hy2, \(hy\(hyshrink\(hynormal [\(hy3, \(hy\(hyshrink\(hyextra]
+	[\-1, \-\-shrink\-fast] [\-2, \-\-shrink\-normal [\-3, \-\-shrink\-extra]
 .PD 0
 .PP
 .PD
-	[\(hy4, \(hy\(hyshrink\(hyinsane] [\(hyi, \(hy\(hyiter N]
+	[\-4, \-\-shrink\-insane] [\-i, \-\-iter N]
 .PD 0
 .PP
 .PD
-	[\(hyf, \(hy\(hyforce] [\(hyq, \(hy\(hyquiet]
+	[\-f, \-\-force] [\-q, \-\-quiet]
 .PD 0
 .PP
 .PD
-	[\(hyh, \(hy\(hyhelp] [\(hyV, \(hy\(hyversion] FILES...
+	[\-h, \-\-help] [\-V, \-\-version] FILES...
 .PD 0
 .PP
 .PD
@@ -42,50 +42,50 @@ Use the 7zip Deflate implementation.
 .PD
 .SH OPTIONS 
 .TP
-.B \(hyl, \(hy\(hylist FILES...
+.B \-l, \-\-list FILES...
 List the content of the specified files.
 .TP
-.B \(hyz, \(hy\(hyrecompress FILES...
-Recompress the specified files. If the \(hy1, \(hy2, \(hy3
+.B \-z, \-\-recompress FILES...
+Recompress the specified files. If the \-1, \-2, \-3
 options are specified it\(cqs used the smallest file
 choice from the previous compressed data and the
-new compression. If the \(hy0 option is specified the
+new compression. If the \-0 option is specified the
 file is always rewritten without any compression.
 .TP
-.B \(hy0, \(hy\(hyshrink\(hystore
+.B \-0, \-\-shrink\-store
 Disable the compression. The file is
 only stored and not compressed. The file is always
 rewritten also if it\(cqs bigger.
 .TP
-.B \(hy1, \(hy\(hyshrink\(hyfast
+.B \-1, \-\-shrink\-fast
 Set the compression level to \(a"fast\(a" using the zlib
 compressor.
 .TP
-.B \(hy2, \(hy\(hyshrink\(hynormal
+.B \-2, \-\-shrink\-normal
 Set the compression level to \(a"normal\(a" using the 7z
 compressor.
 This is the default level of compression.
 .TP
-.B \(hy3, \(hy\(hyshrink\(hyextra
+.B \-3, \-\-shrink\-extra
 Set the compression level to \(a"extra\(a" using the 7z
 compressor.
 You can define the compressor iterations with
-the \(hyi, \(hy\(hyiter option.
+the \-i, \-\-iter option.
 .TP
-.B \(hy4, \(hy\(hyshrink\(hyinsane
+.B \-4, \-\-shrink\-insane
 Set the compression level to \(a"insane\(a" using the zopfli
 compressor.
 You can define the compressor iterations with
-the \(hyi, \(hy\(hyiter option.
+the \-i, \-\-iter option.
 .TP
-.B \(hyi, \(hy\(hyiter N
+.B \-i, \-\-iter N
 Define an additional numer of iterations for the 7z and zopfli
-compressors for modes \(hy3 and \(hy4.
+compressors for modes \-3 and \-4.
 More iterations usually give a better compression, but may
 require a lot more time.
 Try for example with 10, 15, 20, and so on.
 .TP
-.B \(hyf, \(hy\(hyforce
+.B \-f, \-\-force
 Force the use of the new file also if it\(cqs bigger.
 .SH COPYRIGHT 
 This file is Copyright (C) 2002 Andrea Mazzoleni, Filipe Estima
