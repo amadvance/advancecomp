@@ -1,6 +1,9 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 1.19 2014/03
+	) Limited the iterations number to 255 with the -3 option.
+
 AdvanceCOMP Version 1.18 2013/11
 	) Added build support for new powerpc architectures.
 	) Fixed build with BZIP.

@@ -236,6 +236,8 @@ bool compress_zlib(shrink_t level, unsigned char* out_data, unsigned& out_size, 
 			break;
 		case shrink_extra :
 			sz_passes = level.iter > 15 ? level.iter : 15;
+			if (sz_passes > 255)
+				sz_passes = 255;
 			sz_fastbytes = 255;
 			break;
 		case shrink_insane :
@@ -324,6 +326,8 @@ bool compress_deflate(shrink_t level, unsigned char* out_data, unsigned& out_siz
 			break;
 		case shrink_extra :
 			sz_passes = level.iter > 15 ? level.iter : 15;
+			if (sz_passes > 255)
+				sz_passes = 255;
 			sz_fastbytes = 255;
 			break;
 		case shrink_insane :
