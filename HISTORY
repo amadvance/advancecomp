@@ -7,6 +7,7 @@ ADVANCECOMP VERSION 1.19 2014/03
 ================================
 
 * Limited the iterations number to 255 with the -3 option.
+* Added a new -k, --keep-file-time option to advzip [Marco Banfi].
 
 
 ADVANCECOMP VERSION 1.18 2013/11

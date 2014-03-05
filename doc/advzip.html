@@ -12,7 +12,7 @@ advzip [-a, --add] [-x, --extract] [-l, --list]
 &nbsp;&nbsp;&nbsp;&nbsp;[-z, --recompress] [-t, --test] [-0, --shrink-store]
 &nbsp;&nbsp;&nbsp;&nbsp;[-1, --shrink-fast] [-2, --shrink-normal] [-3, --shrink-extra]
 &nbsp;&nbsp;&nbsp;&nbsp;[-4, --shrink-insane] [-i, --iter N]
-&nbsp;&nbsp;&nbsp;&nbsp;[-N, --not-zip] [-p, --pedantic] [-q, --quiet]
+&nbsp;&nbsp;&nbsp;&nbsp;[-k, --keep-file-time] [-p, --pedantic] [-q, --quiet]
 &nbsp;&nbsp;&nbsp;&nbsp;[-h, --help] [-V, --version] ARCHIVES... [FILES...]
 </pre>
 <h2><a name="2">2</a> 
@@ -63,7 +63,7 @@ List the content of the specified archives.
 -z, --recompress ARCHIVES...
 </strong></td></tr><tr><td>
 Recompress the specified archives. If the -1, -2,
--3 options are specified, it's used the smallest file
+-3, -4 options are specified, it's used the smallest file
 choice from: the previous compressed data, the new
 compression and the uncompressed format. If the -0
 option is specified the archive is always rewritten
@@ -80,11 +80,9 @@ extended with the -p option.
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="2">
 <tr valign="top" align="left"><td><strong>
--N, --not-zip
+-k, --keep-file-time
 </strong></td></tr><tr><td>
-Use the LZMA algorithm when compressing. The
-generated zips will not be readable by any other
-application!
+When recompressing with -z keep the .zip file time.
 </td></tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="2">

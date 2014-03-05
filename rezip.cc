@@ -29,18 +29,20 @@
 
 using namespace std;
 
-void rezip_single(const string& file, unsigned long long& total_0, unsigned long long& total_1, bool quiet, bool standard, shrink_t level)
+void rezip_single(const string& file, unsigned long long& total_0, unsigned long long& total_1, bool quiet, bool standard, shrink_t level, bool keep_file_time)
 {
 	zip z(file);
 
 	unsigned size_0;
 	unsigned size_1;
+	time_t mtime;
 
 	if (!file_exists(file)) {
 		throw error() << "File " << file << " doesn't exist";
 	}
 
 	try {
+		mtime = file_time(file);
 		size_0 = file_size(file);
 
 		z.open();
@@ -53,6 +55,8 @@ void rezip_single(const string& file, unsigned long long& total_0, unsigned long
 		z.close();
 
 		size_1 = file_size(file);
+		if (keep_file_time)
+			file_utime(file, mtime);
 	} catch (error& e) {
 		throw e << " on " << file;
 	}
@@ -72,13 +76,13 @@ void rezip_single(const string& file, unsigned long long& total_0, unsigned long
 	total_1 += size_1;
 }
 
-void rezip_all(int argc, char* argv[], bool quiet, bool standard, shrink_t level)
+void rezip_all(int argc, char* argv[], bool quiet, bool standard, shrink_t level, bool keep_file_time)
 {
 	unsigned long long total_0 = 0;
 	unsigned long long total_1 = 0;
 
 	for(int i=0;i<argc;++i)
-		rezip_single(argv[i], total_0, total_1, quiet, standard, level);
+		rezip_single(argv[i], total_0, total_1, quiet, standard, level, keep_file_time);
 
 	if (!quiet) {
 		cout << setw(12) << total_0 << setw(12) << total_1 << " ";
@@ -432,6 +436,7 @@ struct option long_options[] = {
 
 	{"not-zip", 0, 0, 'N'},
 	{"pedantic", 0, 0, 'p'},
+	{"keep-file-time", 0, 0, 'k'},
 
 	{"shrink-store", 0, 0, '0'},
 	{"shrink-fast", 0, 0, '1'},
@@ -447,7 +452,7 @@ struct option long_options[] = {
 };
 #endif
 
-#define OPTIONS "axztlLNp01234i:qhV"
+#define OPTIONS "axztlLNpk01234i:qhV"
 
 void version()
 {
@@ -474,6 +479,7 @@ void usage()
 	cout << "  " SWITCH_GETOPT_LONG("-3, --shrink-extra  ", "-3") "  Compress extra (7z)" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-4, --shrink-insane ", "-4") "  Compress extreme (zopfli)" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-i N, --iter=N      ", "-i") "  Compress iterations" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-k, --keep-file-time", "-k") "  REZIP! Don't alter zip time" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-q, --quiet         ", "-q") "  Don't print on the console" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-h, --help          ", "-h") "  Help of the program" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-V, --version       ", "-V") "  Version of the program" << endl;
@@ -488,6 +494,7 @@ void process(int argc, char* argv[])
 	bool notzip = false;
 	bool pedantic = false;
 	bool crc = false;
+	bool keep_file_time = false;
 	shrink_t level;
 
 	level.level = shrink_normal;
@@ -546,6 +553,9 @@ void process(int argc, char* argv[])
 		case 'p' :
 			pedantic = true;
 			break;
+		case 'k' :
+			keep_file_time = true;
+			break;
 		case '0' :
 			level.level = shrink_none;
 			break;
@@ -587,7 +597,7 @@ void process(int argc, char* argv[])
 
 	switch (cmd) {
 	case cmd_recompress :
-		rezip_all(argc - optind, argv + optind, quiet, !notzip, level);
+		rezip_all(argc - optind, argv + optind, quiet, !notzip, level, keep_file_time);
 		break;
 	case cmd_extract :
 		extract_all(argc - optind, argv + optind, quiet);

@@ -10,7 +10,7 @@ advzip [-a, --add] [-x, --extract] [-l, --list]
 	[-z, --recompress] [-t, --test] [-0, --shrink-store]
 	[-1, --shrink-fast] [-2, --shrink-normal] [-3, --shrink-extra]
 	[-4, --shrink-insane] [-i, --iter N]
-	[-N, --not-zip] [-p, --pedantic] [-q, --quiet]
+	[-k, --keep-file-time] [-p, --pedantic] [-q, --quiet]
 	[-h, --help] [-V, --version] ARCHIVES... [FILES...]
 
 
@@ -49,7 +49,7 @@ compression than the 7-Zip Deflate implementation.
 
     -z, --recompress ARCHIVES...
         Recompress the specified archives. If the -1, -2,
-        -3 options are specified, it's used the smallest file
+        -3, -4 options are specified, it's used the smallest file
         choice from: the previous compressed data, the new
         compression and the uncompressed format. If the -0
         option is specified the archive is always rewritten
@@ -59,10 +59,8 @@ compression than the 7-Zip Deflate implementation.
         Test the specified archives. The tests may be
         extended with the -p option.
 
-    -N, --not-zip
-        Use the LZMA algorithm when compressing. The
-        generated zips will not be readable by any other
-        application!
+    -k, --keep-file-time
+        When recompressing with -z keep the .zip file time.
 
     -p, --pedantic
         Be pedantic on the zip tests. If this flag is
