@@ -11,12 +11,10 @@ advpng
 advzip
 
 # docs
-doc/advdef.hh
-doc/advmng.hh
-doc/advpng.hh
-doc/advzip.hh
-doc/history.hh
+doc/*.hh
 doc/*.1
+doc/*.html
+doc/*.txt
 
 # others
 resource/
