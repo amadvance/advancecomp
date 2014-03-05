@@ -16,6 +16,7 @@ doc/advmng.hh
 doc/advpng.hh
 doc/advzip.hh
 doc/history.hh
+doc/*.1
 
 # others
 resource/
@@ -23,6 +24,7 @@ resource/
 # autotools
 Makefile
 Makefile.in
+compile
 aclocal.m4
 autom4te.cache/
 config.guess
@@ -36,6 +38,7 @@ configure
 install-sh
 missing
 stamp-h1
+.dirstamp
 
 # projects
 *.dst
