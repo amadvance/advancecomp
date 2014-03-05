@@ -20,7 +20,12 @@ Author: jyrki.alakuijala@gmail.com (Jyrki Alakuijala)
 #ifndef ZOPFLI_ZOPFLI_H_
 #define ZOPFLI_ZOPFLI_H_
 
+#include <stddef.h>
 #include <stdlib.h> /* for size_t */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
 Options used throughout the program.
@@ -84,5 +89,9 @@ outsize: pointer to the dynamic output array size
 void ZopfliCompress(const ZopfliOptions* options, ZopfliFormat output_type,
                     const unsigned char* in, size_t insize,
                     unsigned char** out, size_t* outsize);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif  /* ZOPFLI_ZOPFLI_H_ */
