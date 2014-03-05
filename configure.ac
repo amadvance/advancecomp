@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.65])
-AC_INIT([AdvanceCOMP],[1.18])
-AM_INIT_AUTOMAKE([foreign no-dependencies])
+AC_INIT([AdvanceCOMP],[1.19])
+AM_INIT_AUTOMAKE([foreign no-dependencies -Wall subdir-objects])
 AC_CONFIG_SRCDIR([rezip.cc])
 AC_CONFIG_HEADERS([config.h])
 AC_CANONICAL_HOST

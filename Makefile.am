@@ -1,5 +1,3 @@
-## Process this file with automake to produce Makefile.in
-
 bin_PROGRAMS = advzip advpng advmng advdef
 
 7z_SOURCES = \
