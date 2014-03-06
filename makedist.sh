@@ -30,12 +30,12 @@ if ! ./configure ; then
 fi
 
 if ! test "x$1" = "x-f"; then
-	if ! make check; then
+	if ! make distcheck; then
 		exit 1
 	fi
-fi
-
-if ! make dist; then
-	exit 1
+else
+	if ! make dist; then
+		exit 1
+	fi
 fi
 

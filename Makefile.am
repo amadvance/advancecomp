@@ -107,7 +107,7 @@ EXTRA_DIST = \
 	doc/advdef.1 doc/advzip.1 doc/advpng.1 doc/advmng.1 doc/history.1 doc/readme.1 doc/authors.1 doc/install.1 \
 	doc/advdef.txt doc/advzip.txt doc/advpng.txt doc/advmng.txt doc/history.txt doc/readme.txt doc/authors.txt doc/install.txt \
 	doc/advdef.html doc/advzip.html doc/advpng.html doc/advmng.html doc/history.html doc/readme.html doc/authors.html doc/install.html \
-	autogen.sh noautomake.sh \
+	autogen.sh \
 	7z/README \
 	zopfli/README \
 	zopfli/COPYING \
