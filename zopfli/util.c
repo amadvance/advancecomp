@@ -25,13 +25,8 @@ Author: jyrki.alakuijala@gmail.com (Jyrki Alakuijala)
 #include <stdio.h>
 #include <stdlib.h>
 
-#if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4))
-// __builtin_clz available only from GCC 3.4
-#define HAVE_BUILTIN_CLZ 1
-#endif
-
 int ZopfliGetDistExtraBits(int dist) {
-#if HAVE_BUILTIN_CLZ
+#ifdef __GNUC__
   if (dist < 5) return 0;
   return (31 ^ __builtin_clz(dist - 1)) - 1; /* log2(dist - 1) - 1 */
 #else
@@ -53,7 +48,7 @@ int ZopfliGetDistExtraBits(int dist) {
 }
 
 int ZopfliGetDistExtraBitsValue(int dist) {
-#if HAVE_BUILTIN_CLZ
+#ifdef __GNUC__
   if (dist < 5) {
     return 0;
   } else {
@@ -79,7 +74,7 @@ int ZopfliGetDistExtraBitsValue(int dist) {
 }
 
 int ZopfliGetDistSymbol(int dist) {
-#if HAVE_BUILTIN_CLZ
+#ifdef __GNUC__
   if (dist < 5) {
     return dist - 1;
   } else {
