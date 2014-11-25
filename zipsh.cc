@@ -386,7 +386,8 @@ bool zip_entry::shrink(bool standard, shrink_t level)
 	info.compressed_size = c0_size;
 	info.version_needed_to_extract = c0_ver;
 	info.compression_method = c0_met;
-	info.general_purpose_bit_flag = c0_fla;
+    // preserve original EFS flag
+	info.general_purpose_bit_flag = c0_fla | (info.general_purpose_bit_flag & ZIP_GEN_FLAGS_EFS);
 
 	return modify;
 }

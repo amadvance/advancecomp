@@ -77,6 +77,10 @@
 #define ZIP_GEN_FLAGS_IMPLODE_8KD3T 0x06
 #define ZIP_GEN_FLAGS_IMPLODE_MASK 0x06
 
+// if bit 11 is set filename and comment fields for this file
+// must be encoded using UTF-8
+#define ZIP_GEN_FLAGS_EFS 0x800
+
 // Internal file attributes
 // If set, that the file is apparently an ASCII or text file.
 #define ZIP_INT_ATTR_TEXT 0x01
