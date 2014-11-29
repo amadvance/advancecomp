@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.65])
-AC_INIT([AdvanceCOMP],[1.19])
+AC_INIT([AdvanceCOMP],[1.20])
 AM_INIT_AUTOMAKE([foreign no-dependencies subdir-objects])
 AC_CONFIG_SRCDIR([rezip.cc])
 AC_CONFIG_HEADERS([config.h])

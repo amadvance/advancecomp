@@ -1,6 +1,9 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 1.20 2014/12
+	) Updated to the latest zopfli [Aaron Kaluszka].
+
 AdvanceCOMP Version 1.19 2014/03
 	) Limited the iterations number to 255 with the -3 option.
 	) Added a new -k, --keep-file-time option to advzip [Marco Banfi].
