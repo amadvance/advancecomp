@@ -3,6 +3,7 @@ Name
 
 AdvanceCOMP Version 1.20 2014/12
 	) Updated to the latest zopfli [Aaron Kaluszka].
+	) Preserve the EFS flag in .zip files [Jason Penney].
 
 AdvanceCOMP Version 1.19 2014/03
 	) Limited the iterations number to 255 with the -3 option.
