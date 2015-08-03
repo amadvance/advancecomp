@@ -446,6 +446,7 @@ struct option long_options[] = {
 	{"iter", 1, 0, 'i'},
 
 	{"verbose", 0, 0, 'v'},
+	{"quiet", 0, 0, 'q'},
 	{"help", 0, 0, 'h'},
 	{"version", 0, 0, 'V'},
 	{0, 0, 0, 0}
