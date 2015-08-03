@@ -379,7 +379,7 @@ bool compress_deflate(shrink_t level, unsigned char* out_data, unsigned& out_siz
 
 unsigned oversize_deflate(unsigned size)
 {
-	return size * 11 / 10 + 12;
+	return size + size / 10 + 12;
 }
 
 unsigned oversize_zlib(unsigned size)
