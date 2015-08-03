@@ -1,7 +1,7 @@
 Name
 	advcomp - History For AdvanceCOMP
 
-AdvanceCOMP Version 1.20 2014/12
+AdvanceCOMP Version 1.20 2015/08
 	) Updated to the latest zopfli [Aaron Kaluszka].
 	) Preserve the EFS flag in .zip files [Jason Penney].
 

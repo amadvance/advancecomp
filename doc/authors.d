@@ -7,7 +7,7 @@ Authors
 
 	You can contact me sending an email at:
 
-		amadvance@users.sourceforge.net
+		amadvance@gmail.com
 
 Acknowledgments
 	A lot of other people helped submitting patches, bug reports

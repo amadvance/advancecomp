@@ -9,7 +9,7 @@ Name
 
 	The official site of AdvanceCOMP is:
 
-		http://advancemame.sourceforge.net
+		http://www.advancemame.it
 
 	This package contains:
 		advzip - Recompression and test utility for zip files
