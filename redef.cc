@@ -167,9 +167,14 @@ void read_deflate(adv_fz* f_in, unsigned size, unsigned char*& res_data, unsigne
 		r = inflate(&z, Z_NO_FLUSH);
 	}
 
+	if (size != 0) {
+		inflateEnd(&z);
+		throw error_unsupported() << "Extra " << size << " data at the end";
+	}
+
 	if (r != Z_STREAM_END) {
 		inflateEnd(&z);
-		throw error() << "Invalid compressed data";
+		throw error() << "Unexpected end of data";
 	}
 
 	r = inflateEnd(&z);
@@ -434,6 +439,9 @@ void convert_gz(adv_fz* f_in, adv_fz* f_out)
 	read_deflate(f_in, size, res_data, res_size);
 
 	unsigned cmp_size = oversize_deflate(res_size);
+	if (cmp_size < res_size)
+		throw error() << "Data size bigger than 4GB is not supported";
+
 	unsigned char* cmp_data = data_alloc(cmp_size);
 
 	unsigned crc = crc32(0, res_data, res_size);
