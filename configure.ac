@@ -20,6 +20,7 @@ AC_CHECK_PROG([VALGRIND],[valgrind],[valgrind --leak-check=full --track-fds=yes 
 AC_CHECK_PROG([WINE],[wine],[wine],[])
 
 dnl Checks for libraries.
+AC_SYS_LARGEFILE
 AC_CHECK_LIB([z], [adler32], [], [AC_MSG_ERROR([the libz library is missing])])
 
 dnl Checks for header files.
