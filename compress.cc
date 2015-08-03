@@ -366,7 +366,7 @@ bool compress_deflate(shrink_t level, unsigned char* out_data, unsigned& out_siz
 		size = out_size;
 		data = data_alloc(size);
 
-		if (compress_deflate_zlib(in_data, in_size, out_data, out_size, libz_level, Z_DEFAULT_STRATEGY, MAX_MEM_LEVEL)) {
+		if (compress_deflate_zlib(in_data, in_size, data, size, libz_level, Z_DEFAULT_STRATEGY, MAX_MEM_LEVEL)) {
 			memcpy(out_data, data, size);
 			out_size = size;
 		}
