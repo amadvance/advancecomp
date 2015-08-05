@@ -1047,7 +1047,7 @@ struct option long_options[] = {
 
 void version()
 {
-	cout << PACKAGE " v" VERSION " by Andrea Mazzoleni" << endl;
+	cout << PACKAGE " v" VERSION " by Andrea Mazzoleni, " PACKAGE_URL "\n";
 }
 
 void usage()
