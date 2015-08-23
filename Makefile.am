@@ -214,7 +214,7 @@ maintainer-clean-local:
 	advd2 man < $(srcdir)/$< > $@
 
 %.txt : %.d
-	advd2 txt < $(srcdir)/$< | todos > $@
+	advd2 txt < $(srcdir)/$< | $(TODOS) > $@
 
 %.html : %.d
 	advd2 html < $(srcdir)/$< > $@
@@ -225,19 +225,19 @@ maintainer-clean-local:
 # Archives
 
 README: doc/readme.txt
-	cat $< | fromdos > $@
+	cat $< | $(FROMDOS) > $@
 
 AUTHORS: doc/authors.txt
-	cat $< | fromdos > $@
+	cat $< | $(FROMDOS) > $@
 
 INSTALL: doc/install.txt
-	cat $< | fromdos > $@
+	cat $< | $(FROMDOS) > $@
 
 HISTORY: doc/history.txt
-	cat $< | fromdos > $@
+	cat $< | $(FROMDOS) > $@
 
 doc/copying.txt: COPYING
-	cat $< | todos > $@
+	cat $< | $(TODOS) > $@
 
 check-local: ./advzip$(EXEEXT) test/test.lst
 	@cp $(srcdir)/test/archive.zip .
@@ -300,7 +300,7 @@ check-local: ./advzip$(EXEEXT) test/test.lst
 	$(TESTENV) ./advpng$(EXEEXT) -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png >> check.lst
 	$(TESTENV) ./advdef$(EXEEXT) -f -z -4 basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png
 	$(TESTENV) ./advpng$(EXEEXT) -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png >> check.lst
-	cat check.lst | fromdos | cmp $(srcdir)/test/test.lst
+	cat check.lst | $(FROMDOS) | cmp $(srcdir)/test/test.lst
 	@echo Success!
 
 DISTDOS_ROOT = \

@@ -18,6 +18,8 @@ AC_CHECK_PROGS(GROFF, groff)
 AC_CHECK_PROGS(COL, col)
 AC_CHECK_PROG([VALGRIND],[valgrind],[valgrind --leak-check=full --track-fds=yes --error-exitcode=1],[])
 AC_CHECK_PROG([WINE],[wine],[wine],[])
+AC_CHECK_PROGS(FROMDOS, fromdos dos2unix)
+AC_CHECK_PROGS(TODOS, todos unix2dos)
 
 dnl Checks for libraries.
 AC_SYS_LARGEFILE
