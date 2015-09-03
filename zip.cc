@@ -527,14 +527,22 @@ void zip_entry::check_local(const unsigned char* buf) const
 
 void zip_entry::check_descriptor(const unsigned char* buf) const
 {
-	if (info.crc32 != le_uint32_read(buf+ZIP_DO_crc32)) {
-		throw error_invalid() << "Invalid crc on data descriptor " << info.crc32 << "/" << le_uint32_read(buf+ZIP_DO_crc32);
+	ptrdiff_t offset = -0x04;
+	if (info.crc32 != le_uint32_read(buf+ZIP_DO_crc32+offset)) {
+		offset += 0x04;
+		// assume that signature is present and repeat comparison
+		if (info.crc32 != le_uint32_read(buf+ZIP_DO_crc32+offset)) {
+			throw error_invalid() << "Invalid crc on data descriptor " << info.crc32 << "/" << le_uint32_read(buf+ZIP_DO_crc32+offset);
+		}
 	}
-	if (info.compressed_size != le_uint32_read(buf+ZIP_DO_compressed_size)) {
-		throw error_invalid() << "Invalid compressed size in data descriptor " << info.compressed_size << "/" << le_uint32_read(buf+ZIP_DO_compressed_size);
+	if (info.compressed_size != le_uint32_read(buf+ZIP_DO_compressed_size+offset)) {
+		throw error_invalid() << "Invalid compressed size in data descriptor " << info.compressed_size << "/" << le_uint32_read(buf+ZIP_DO_compressed_size+offset);
 	}
-	if (info.uncompressed_size != le_uint32_read(buf+ZIP_DO_uncompressed_size)) {
-		throw error_invalid() << "Invalid uncompressed size in data descriptor " << info.uncompressed_size << "/" << le_uint32_read(buf+ZIP_DO_uncompressed_size);
+	if (info.uncompressed_size != le_uint32_read(buf+ZIP_DO_uncompressed_size+offset)) {
+		throw error_invalid() << "Invalid uncompressed size in data descriptor " << info.uncompressed_size << "/" << le_uint32_read(buf+ZIP_DO_uncompressed_size+offset);
+	}
+	if (0 == offset && le_uint32_read(buf+ZIP_DO_extended_local_file_header_signature) != ZIP_D_signature) {
+		throw error_invalid()  << "Invalid signature in extended local header";
 	}
 }
 

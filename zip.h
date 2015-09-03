@@ -89,6 +89,7 @@
 #define ZIP_L_signature 0x04034b50
 #define ZIP_C_signature 0x02014b50
 #define ZIP_E_signature 0x06054b50
+#define ZIP_D_signature 0x08074b50
 
 // Offsets in end of central directory structure
 #define ZIP_EO_end_of_central_dir_signature 0x00
@@ -126,10 +127,11 @@
 #define ZIP_CO_filename 0x2E
 
 // Offsets in data descriptor structure
-#define ZIP_DO_crc32 0x00
-#define ZIP_DO_compressed_size 0x04
-#define ZIP_DO_uncompressed_size 0x08
-#define ZIP_DO_FIXED 0x0C // size of fixed data structure
+#define ZIP_DO_extended_local_file_header_signature 0x00
+#define ZIP_DO_crc32 0x04
+#define ZIP_DO_compressed_size 0x08
+#define ZIP_DO_uncompressed_size 0x0C
+#define ZIP_DO_FIXED 0x10 // size of fixed data structure
 
 // Offsets in local file header structure
 #define ZIP_LO_local_file_header_signature 0x00
