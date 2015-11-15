@@ -1,6 +1,8 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 1.21 2015/12
+
 AdvanceCOMP Version 1.20 2015/08
 	) Fixed .gz recompression of data bigger than 400 MB.
 	) Fixed .gz recompression with -0 and -1 options.
