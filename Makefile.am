@@ -303,7 +303,6 @@ check-local: ./advzip$(EXEEXT) test/test.lst
 	$(TESTENV) ./advpng$(EXEEXT) -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png >> check.lst
 	$(TESTENV) ./advdef$(EXEEXT) -f -z -4 basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png
 	$(TESTENV) ./advpng$(EXEEXT) -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png >> check.lst
-	-diff -u check.lst $(srcdir)/test/test.lst
 	cat check.lst | $(DTOU) | cmp $(srcdir)/test/test.lst
 	@echo Success!
 
