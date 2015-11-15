@@ -106,7 +106,6 @@ EXTRA_DIST = \
 	doc/advdef.d doc/advzip.d doc/advpng.d doc/advmng.d doc/history.d doc/readme.d doc/authors.d doc/install.d \
 	doc/advdef.1 doc/advzip.1 doc/advpng.1 doc/advmng.1 doc/history.1 doc/readme.1 doc/authors.1 doc/install.1 \
 	doc/advdef.txt doc/advzip.txt doc/advpng.txt doc/advmng.txt doc/history.txt doc/readme.txt doc/authors.txt doc/install.txt \
-	doc/advdef.html doc/advzip.html doc/advpng.html doc/advmng.html doc/history.html doc/readme.html doc/authors.html doc/install.html \
 	autogen.sh \
 	7z/README \
 	zopfli/README \
@@ -208,8 +207,9 @@ maintainer-clean-local:
 	rm -f README AUTHORS HISTORY INSTALL doc/copying.txt
 	rm -f doc/*.hh
 
-# Docs
+# Rules for documentation
 
+if HAVE_ADVD2
 %.1 : %.d
 	advd2 man < $(srcdir)/$< > $@
 
@@ -221,6 +221,7 @@ maintainer-clean-local:
 
 %.hh : %.d
 	advd2 frame < $(srcdir)/$< > $@
+endif
 
 # Archives
 
@@ -309,9 +310,7 @@ DISTDOS_ROOT = \
 
 DISTDOS_DOC = \
 	doc/advdef.txt doc/advzip.txt doc/advpng.txt doc/advmng.txt \
-	doc/readme.txt doc/authors.txt doc/history.txt \
-	doc/advdef.html doc/advzip.html doc/advpng.html doc/advmng.html \
-	doc/readme.html doc/authors.html doc/history.html 
+	doc/readme.txt doc/authors.txt doc/history.txt
 
 distdos: $(DISTDOS_ROOT) $(DISTDOS_DOC)
 	rm -f $(PACKAGE)-$(VERSION)-dos-x86.zip

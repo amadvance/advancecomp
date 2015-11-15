@@ -1,0 +1,216 @@
+.TH "History For AdvanceCOMP" 1
+.SH NAME
+advcomp \- History For AdvanceCOMP
+.SH ADVANCECOMP VERSION 1.21 2015/12 
+.PD 0
+.IP \(bu
+Update to latest zopfli
+.PD
+.SH ADVANCECOMP VERSION 1.20 2015/08 
+.PD 0
+.IP \(bu
+Fixed .gz recompression of data bigger than 400 MB.
+.IP \(bu
+Fixed .gz recompression with \-0 and \-1 options.
+.IP \(bu
+Updated to the latest zopfli [Aaron Kaluszka].
+.IP \(bu
+Preserve the EFS flag in .zip files [Jason Penney].
+.PD
+.SH ADVANCECOMP VERSION 1.19 2014/03 
+.PD 0
+.IP \(bu
+Limited the iterations number to 255 with the \-3 option.
+.IP \(bu
+Added a new \-k, \-\-keep\-file\-time option to advzip [Marco Banfi].
+.IP \(bu
+Made the Windows binary again compatible with old 686 processors.
+.PD
+.SH ADVANCECOMP VERSION 1.18 2013/11 
+.PD 0
+.IP \(bu
+Added build support for new powerpc architectures.
+.IP \(bu
+Fixed build with BZIP.
+.PD
+.SH ADVANCECOMP VERSION 1.17 2013/03 
+.PD 0
+.IP \(bu
+Changed to GPL3.
+.IP \(bu
+Added zopfli support. It\'s enabled using \-4, \-\-shrink\-insane.
+You can control the number of iterations with the
+new \-i, \-\-iter option.
+Thanks to Darik Horn for the patches.
+.PD
+.SH ADVANCECOMP VERSION 1.16 2013/03 
+.PD 0
+.IP \(bu
+Allowed recompression with files with zero length.
+.IP \(bu
+Some other minor bugfixes.
+.IP \(bu
+Now in git repository.
+.PD
+.SH ADVANCECOMP VERSION 1.15 2005/10 
+.PD 0
+.IP \(bu
+Fixed the date displayed with the \-l advzip command.
+.IP \(bu
+The advdef utility now detects the file type from the file
+header instead of using the extension.
+.IP \(bu
+Fixed a lot of bugs in the 64 bits platforms.
+.PD
+.SH ADVANCECOMP VERSION 1.14 2005/02 
+.PD 0
+.IP \(bu
+Relaxed a consistency check for the local header in zip files.
+The crc and size entries are allowed to contain the real
+value also if a data descriptor is present.
+.IP \(bu
+Fixed the conversion of RGB images with less than 256 color
+with transparency data.
+.IP \(bu
+Minor fixes at the documentation.
+.PD
+.SH ADVANCECOMP VERSION 1.13 2004/11 
+.PD 0
+.IP \(bu
+Added support for .svgz files at advdef [rener].
+.IP \(bu
+Fixed the 8 bit color reduction of 32 bit png files.
+.PD
+.SH ADVANCECOMP VERSION 1.12 2004/09 
+.PD 0
+.IP \(bu
+Fixed a compilation problem with gcc 3.4.
+.PD
+.SH ADVANCECOMP VERSION 1.11 2004/07 
+.PD 0
+.IP \(bu
+Fixed a FreeBSD libc compatibility issue recompressing
+.gz files [Radim Kolar].
+.IP \(bu
+Fixed a segmentation fault when some invalid
+compressed .zip files are tested.
+.PD
+.SH ADVANCECOMP VERSION 1.10 2004/04 
+.PD 0
+.IP \(bu
+Added support for alpha channel and the new \-n option
+at advmng.
+.IP \(bu
+Fixed the uncompressing error \[dq]Invalid compressed data in ...\[dq]
+with some GZIP files [Christian Lestrade].
+.PD
+.SH ADVANCECOMP VERSION 1.9 2003/11 
+.PD 0
+.IP \(bu
+Added support for .tgz files at advdef.
+.IP \(bu
+Added the \-a option at advmng to create .mng files from
+a sequence of .png files.
+.PD
+.SH ADVANCECOMP VERSION 1.8 2003/10 
+.PD 0
+.IP \(bu
+Added support for .gz files at advdef.
+.IP \(bu
+Fixed support for .png files with splitted IDATs.
+.PD
+.SH ADVANCECOMP VERSION 1.7 2003/08 
+.PD 0
+.IP \(bu
+Fixed a Segmentation Fault bug on the advmng \-r option on
+the latest gcc.
+.IP \(bu
+Better and faster (MMX) move recognition in the advmng scroll
+compression.
+.IP \(bu
+The frame reduction of the advmng utility is now done only if possible.
+The compression process never fails.
+.IP \(bu
+Added a new \-S (\-\-scroll\-square) option at advmng.
+.IP \(bu
+Added a new \-v (\-\-verbose) option at advmng to show the
+compression status.
+.IP \(bu
+Changed the internal ID for the bzip2 and LZMA compression.
+The bzip2 ID is now compatible with the PKWARE specification.
+.IP \(bu
+Added support for RGB images with alpha channel at the advpng utility.
+.IP \(bu
+Updated with automake 1.7.6.
+.PD
+.SH ADVANCECOMP VERSION 1.6 2003/05 
+.PD 0
+.IP \(bu
+Added the \`\-x\' option at the advmng utility to export .png files
+from a .mng clip. Useful to compress it in an MPEG file.
+.IP \(bu
+Fixed the support for zips with additional data descriptors.
+.IP \(bu
+Updated with autoconf 2.57 and automake 1.7.4.
+.IP \(bu
+Some fixes for the gcc 3.3 compiler.
+.PD
+.SH ADVANCECOMP VERSION 1.5 2003/01 
+.PD 0
+.IP \(bu
+Splitted from AdvanceSCAN
+.IP \(bu
+Added the \`advdef\' compression utility.
+.PD
+.SH ADVANCESCAN VERSION 1.4 2002/12 
+.PD 0
+.IP \(bu
+Fixed a bug in the advmng utility when it was called with
+more than one file in the command line. The program
+was incorrectly adding a PLTE chunk at rgb images.
+.PD
+.SH ADVANCESCAN VERSION 1.3 2002/11 
+.PD 0
+.IP \(bu
+Added the support for the transparency tRNS chunk at the
+advpng utility.
+.IP \(bu
+Upgraded at the latest Advance Library.
+.IP \(bu
+Fixes at the docs. [Filipe Estima]
+.IP \(bu
+Minor changes at the autoconf/automake scripts.
+.PD
+.SH ADVANCESCAN VERSION 1.2 2002/08 
+.PD 0
+.IP \(bu
+Added the advpng utility to compress the PNG files.
+.IP \(bu
+Added the advmng utility to compress the MNG files.
+.IP \(bu
+Added a Windows version.
+.IP \(bu
+Other minor fixes.
+.PD
+.SH ADVANCESCAN VERSION 1.1 2002/06 
+.PD 0
+.IP \(bu
+Fixed an infinite loop bug testing some small damaged zips.
+.IP \(bu
+Removed some warning compiling with gcc 3.1.
+.PD
+.SH ADVANCESCAN VERSION 1.0 2002/05 
+.PD 0
+.IP \(bu
+First public release.
+.IP \(bu
+Fixed the compression percentage computation on big files.
+.IP \(bu
+Added the \-\-pedantic option at the advzip utility. These
+tests are only done if requested.
+.PD
+.SH ADVANCESCAN VERSION 0.6\-BETA 2002/05 
+.PD 0
+.IP \(bu
+Added the AdvanceZIP utility.
+.PD
