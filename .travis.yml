@@ -1,0 +1,16 @@
+# Travis CI configuration file
+
+sudo: false
+
+language: c
+
+script: autoreconf -i && ./configure && make check
+
+compiler:
+  - clang
+  - gcc
+
+os:
+  - linux
+  - osx
+
