@@ -33,20 +33,30 @@ decompressor.
 #include "gzip_container.h"
 #include "zlib_container.h"
 
+/* Windows workaround for stdout output. */
+#if _WIN32
+#include <fcntl.h>
+#endif
+
 /*
-Loads a file into a memory array.
+Loads a file into a memory array. Returns 1 on success, 0 if file doesn't exist
+or couldn't be opened.
 */
-static void LoadFile(const char* filename,
-                     unsigned char** out, size_t* outsize) {
+static int LoadFile(const char* filename,
+                    unsigned char** out, size_t* outsize) {
   FILE* file;
 
   *out = 0;
   *outsize = 0;
   file = fopen(filename, "rb");
-  if (!file) return;
+  if (!file) return 0;
 
   fseek(file , 0 , SEEK_END);
   *outsize = ftell(file);
+  if(*outsize > 2147483647) {
+    fprintf(stderr,"Files larger than 2GB are not supported.\n");
+    exit(EXIT_FAILURE);
+  }
   rewind(file);
 
   *out = (unsigned char*)malloc(*outsize);
@@ -58,11 +68,14 @@ static void LoadFile(const char* filename,
       free(*out);
       *out = 0;
       *outsize = 0;
+      fclose(file);
+      return 0;
     }
   }
 
   assert(!(*outsize) || out);  /* If size is not zero, out must be allocated. */
   fclose(file);
+  return 1;
 }
 
 /*
@@ -71,6 +84,10 @@ Saves a file from a memory array, overwriting the file if it existed.
 static void SaveFile(const char* filename,
                      const unsigned char* in, size_t insize) {
   FILE* file = fopen(filename, "wb" );
+  if (file == NULL) {
+      fprintf(stderr,"Error: Cannot write to output file, terminating.\n");
+      exit (EXIT_FAILURE);
+  }
   assert(file);
   fwrite((char*)in, 1, insize, file);
   fclose(file);
@@ -87,8 +104,7 @@ static void CompressFile(const ZopfliOptions* options,
   size_t insize;
   unsigned char* out = 0;
   size_t outsize = 0;
-  LoadFile(infilename, &in, &insize);
-  if (insize == 0) {
+  if (!LoadFile(infilename, &in, &insize)) {
     fprintf(stderr, "Invalid filename: %s\n", infilename);
     return;
   }
@@ -99,8 +115,11 @@ static void CompressFile(const ZopfliOptions* options,
     SaveFile(outfilename, out, outsize);
   } else {
     size_t i;
+#if _WIN32
+    /* Windows workaround for stdout output. */
+    _setmode(_fileno(stdout), _O_BINARY);
+#endif
     for (i = 0; i < outsize; i++) {
-      /* Works only if terminal does not convert newlines. */
       printf("%c", out[i]);
     }
   }
@@ -143,14 +162,14 @@ int main(int argc, char* argv[]) {
     }
     else if (StringsEqual(arg, "--zlib")) output_type = ZOPFLI_FORMAT_ZLIB;
     else if (StringsEqual(arg, "--gzip")) output_type = ZOPFLI_FORMAT_GZIP;
-    else if (StringsEqual(arg, "--splitlast")) options.blocksplittinglast = 1;
+    else if (StringsEqual(arg, "--splitlast"))  /* Ignore */;
     else if (arg[0] == '-' && arg[1] == '-' && arg[2] == 'i'
         && arg[3] >= '0' && arg[3] <= '9') {
       options.numiterations = atoi(arg + 3);
     }
     else if (StringsEqual(arg, "-h")) {
       fprintf(stderr,
-          "Usage: zopfli [OPTION]... FILE\n"
+          "Usage: zopfli [OPTION]... FILE...\n"
           "  -h    gives this help\n"
           "  -c    write the result on standard output, instead of disk"
           " filename + '.gz'\n"
@@ -162,13 +181,13 @@ int main(int argc, char* argv[]) {
           "  --gzip        output to gzip format (default)\n"
           "  --zlib        output to zlib format instead of gzip\n"
           "  --deflate     output to deflate format instead of gzip\n"
-          "  --splitlast   do block splitting last instead of first\n");
+          "  --splitlast   ignored, left for backwards compatibility\n");
       return 0;
     }
   }
 
   if (options.numiterations < 1) {
-    fprintf(stderr, "Error: must have 1 or more iterations");
+    fprintf(stderr, "Error: must have 1 or more iterations\n");
     return 0;
   }
 
