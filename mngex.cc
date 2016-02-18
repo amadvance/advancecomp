@@ -650,13 +650,45 @@ void mng_write_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned width
 	} 
 }
 
+void mng_write_loop(adv_mng_write* mng, adv_fz* f, unsigned* fc)
+{
+	unsigned char loopchunk[5];
+	unsigned fram_size;
+
+	loopchunk[0] = 1;   /* Priority Layer */
+        loopchunk[1] = 255;
+        loopchunk[2] = 255;
+        loopchunk[3] = 255;
+        loopchunk[4] = 255; /* Repetition (32 bits) */
+        
+        unsigned int type = ('L' << 24 | 'O' << 16 | 'O' << 8 | 'P');
+
+	if (adv_png_write_chunk(f, type, loopchunk, 5, fc) != 0) {
+		throw_png_error();
+	}
+}
+
+void mng_end_loop(adv_mng_write* mng, adv_fz* f, unsigned* fc)
+{
+	unsigned char eloopchunk[1];
+	unsigned fram_size;
+
+	eloopchunk[0] = 1;   /* Priority Layer */
+        
+        unsigned type = ('E' << 24 | 'N' << 16 | 'D' << 8 | 'L');
+
+	if (adv_png_write_chunk(f, type, eloopchunk, 1, fc) != 0) {
+		throw_png_error();
+	}
+}
+
 void mng_write_frame(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned tick)
 {
 	unsigned char fram[10];
 	unsigned fram_size;
 
 	if (tick == mng->tick) {
-		fram[0] = 1;
+		fram[0] = 3;
 		fram_size = 1;
 	} else {
 		fram[0] = 1;
