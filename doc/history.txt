@@ -3,10 +3,17 @@
                             =======================
 
 
+ADVANCECOMP VERSION 1.22 2017/09
+================================
+
+* Added libdeflate support. It's the new default,
+  enabled using -2, --shrink-normal.
+
+
 ADVANCECOMP VERSION 1.21 2015/12
 ================================
 
-* Update to latest zopfli
+* Update to latest zopfli.
 
 
 ADVANCECOMP VERSION 1.20 2015/08

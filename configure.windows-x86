@@ -2,5 +2,5 @@
 	CFLAGS="-O3 -march=i686" \
 	CXXFLAGS="-O3 -march=i686" \
 	LDFLAGS="-s" \
-	--host=i686-pc-mingw32 --build=`./config.guess` $@
+	--host=i686-w64-mingw32.static --build=`./config.guess` $@
 

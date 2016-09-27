@@ -297,21 +297,13 @@ bool zip_entry::shrink(bool standard, shrink_t level)
 
 		// try only for small files or if standard compression is required
 		// otherwise assume that lzma is better
-		if (level.level != shrink_fast && (standard || uncompressed_size_get() <= RETRY_FOR_SMALL_FILES)) {
+		if (level.level == shrink_extra && (standard || uncompressed_size_get() <= RETRY_FOR_SMALL_FILES)) {
 			unsigned sz_passes;
 			unsigned sz_fastbytes;
 
 			switch (level.level) {
-			case shrink_normal :
-				sz_passes = 1;
-				sz_fastbytes = 64;
-				break;
 			case shrink_extra :
 				sz_passes = level.iter > 15 ? level.iter : 15;
-				sz_fastbytes = 255;
-				break;
-			case shrink_insane :
-				sz_passes = 3; // assume that zopfli is better, but does a fast try to cover some corner cases
 				sz_fastbytes = 255;
 				break;
 			default:
@@ -342,6 +334,52 @@ bool zip_entry::shrink(bool standard, shrink_t level)
 			}
 		}
 
+		// try only for small files or if standard compression is required
+		// otherwise assume that lzma is better
+		if (level.level != shrink_fast && (standard || uncompressed_size_get() <= RETRY_FOR_SMALL_FILES)) {
+			int compression_level;
+
+			switch (level.level) {
+			case shrink_normal :
+				compression_level = 12;
+				break;
+			case shrink_extra :
+				// assume that 7z is better, but does a fast try to cover some corner cases
+				compression_level = 12;
+				break;
+			case shrink_insane :
+				// assume that zopfli is better, but does a fast try to cover some corner cases
+				compression_level = 12;
+				break;
+			default:
+				assert(0);
+			}
+
+			// compress with 7z
+			c1_data = data_alloc(uncompressed_size_get());
+			c1_size = uncompressed_size_get();
+			c1_ver = 20;
+			c1_met = ZIP_METHOD_DEFLATE;
+			c1_fla = ZIP_GEN_FLAGS_DEFLATE_MAXIMUM;
+
+			if (!compress_deflate_libdeflate(uncompressed_data, uncompressed_size_get(), c1_data, c1_size, compression_level)) {
+				data_free(c1_data);
+				c1_data = 0;
+			}
+
+			if (got(c0_data, c0_size, c0_met, c1_data, c1_size, c1_met, true, standard, level.level == shrink_none)) {
+				data_free(c0_data);
+				c0_data = c1_data;
+				c0_size = c1_size;
+				c0_ver = c1_ver;
+				c0_met = c1_met;
+				c0_fla = c1_fla;
+				modify = true;
+			} else {
+				data_free(c1_data);
+			}
+		}
+
 		if (level.level == shrink_fast) {
 			// compress with zlib Z_BEST_COMPRESSION/Z_DEFAULT_STRATEGY/MAX_MEM_LEVEL
 			c1_data = data_alloc(uncompressed_size_get());
@@ -349,6 +387,7 @@ bool zip_entry::shrink(bool standard, shrink_t level)
 			c1_ver = 20;
 			c1_met = ZIP_METHOD_DEFLATE;
 			c1_fla = ZIP_GEN_FLAGS_DEFLATE_MAXIMUM;
+
 			if (!compress_deflate_zlib(uncompressed_data, uncompressed_size_get(), c1_data, c1_size, Z_BEST_COMPRESSION, Z_DEFAULT_STRATEGY, MAX_MEM_LEVEL)) {
 				data_free(c1_data);
 				c1_data = 0;

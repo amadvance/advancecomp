@@ -476,7 +476,7 @@ void usage()
 	cout << "  " SWITCH_GETOPT_LONG("-p, --pedantic      ", "-p") "  Be pedantic on the zip tests" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-0, --shrink-store  ", "-0") "  Don't compress" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-1, --shrink-fast   ", "-1") "  Compress fast (zlib)" << endl;
-	cout << "  " SWITCH_GETOPT_LONG("-2, --shrink-normal ", "-2") "  Compress normal (7z)" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-2, --shrink-normal ", "-2") "  Compress normal (libdeflate)" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-3, --shrink-extra  ", "-3") "  Compress extra (7z)" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-4, --shrink-insane ", "-4") "  Compress extreme (zopfli)" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-i N, --iter=N      ", "-i") "  Compress iterations" << endl;

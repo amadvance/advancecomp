@@ -1,8 +1,10 @@
 Name
 	advcomp - History For AdvanceCOMP
 
-AdvanceCOMP Version 1.21 2015/12
-	) Update to latest zopfli
+AdvanceCOMP Version 1.21 2016/09
+	) Update to latest zopfli.
+	) Added libdeflate support. It's the new default,
+		enabled using -2, --shrink-normal.
 
 AdvanceCOMP Version 1.20 2015/08
 	) Fixed .gz recompression of data bigger than 400 MB.

@@ -66,7 +66,7 @@ Options
 		compressor.
 
 	-2, --shrink-normal
-		Set the compression level to "normal" using the 7z
+		Set the compression level to "normal" using the libdeflate
 		compressor.
 		This is the default level of compression.
 

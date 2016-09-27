@@ -24,6 +24,10 @@
 #include "7z/7z.h"
 
 extern "C" {
+#include "libdeflate/libdeflate.h"
+}
+
+extern "C" {
 #include "zopfli/zopfli.h"
 }
 
@@ -46,6 +50,9 @@ bool compress_bzip2(const unsigned char* in_data, unsigned in_size, unsigned cha
 
 bool decompress_rfc1950_zlib(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned out_size);
 bool compress_rfc1950_zlib(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned& out_size, int compression_level, int strategy, int mem_level);
+
+bool compress_deflate_libdeflate(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned& out_size, int compression_level);
+bool compress_rfc1950_libdeflate(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned& out_size, int compression_level);
 
 enum shrink_level_t {
 	shrink_none,

@@ -21,6 +21,18 @@ bin_PROGRAMS = advzip advpng advmng advdef
 	7z/WindowIn.cc \
 	7z/WindowOut.cc
 
+libdeflate_SOURCES = \
+	libdeflate/adler32.c \
+	libdeflate/aligned_malloc.c \
+	libdeflate/crc32.c \
+	libdeflate/deflate_compress.c \
+	libdeflate/deflate_decompress.c \
+	libdeflate/gzip_compress.c \
+	libdeflate/gzip_decompress.c \
+	libdeflate/x86_cpu_features.c \
+	libdeflate/zlib_compress.c \
+	libdeflate/zlib_decompress.c
+
 zopfli_SOURCES = \
 	zopfli/blocksplitter.c \
 	zopfli/cache.c \
@@ -47,6 +59,7 @@ advzip_SOURCES = \
 	getopt.c \
 	snprintf.c \
 	$(7z_SOURCES) \
+	$(libdeflate_SOURCES) \
 	$(zopfli_SOURCES)
 
 advpng_SOURCES = \
@@ -63,6 +76,7 @@ advpng_SOURCES = \
 	lib/error.c \
 	lib/snstring.c \
 	$(7z_SOURCES) \
+	$(libdeflate_SOURCES) \
 	$(zopfli_SOURCES)
 
 advmng_SOURCES = \
@@ -82,6 +96,7 @@ advmng_SOURCES = \
 	lib/error.c \
 	lib/snstring.c \
 	$(7z_SOURCES) \
+	$(libdeflate_SOURCES) \
 	$(zopfli_SOURCES)
 
 advdef_SOURCES = \
@@ -99,6 +114,7 @@ advdef_SOURCES = \
 	lib/png.c \
 	lib/mng.c \
 	$(7z_SOURCES) \
+	$(libdeflate_SOURCES) \
 	$(zopfli_SOURCES)
 
 EXTRA_DIST = \
@@ -108,6 +124,9 @@ EXTRA_DIST = \
 	doc/advdef.txt doc/advzip.txt doc/advpng.txt doc/advmng.txt doc/history.txt doc/readme.txt doc/authors.txt doc/install.txt \
 	autogen.sh \
 	7z/README \
+	libdeflate/README.md \
+	libdeflate/COPYING \
+	libdeflate/NEWS \
 	zopfli/README \
 	zopfli/COPYING \
 	zopfli/CONTRIBUTORS \
@@ -182,6 +201,28 @@ noinst_HEADERS = \
 	7z/RangeCoder.h \
 	7z/WindowIn.h \
 	7z/WindowOut.h \
+	libdeflate/adler32.h \
+	libdeflate/adler32_impl.h \
+	libdeflate/aligned_malloc.h \
+	libdeflate/bt_matchfinder.h \
+	libdeflate/common_defs.h \
+	libdeflate/compiler_gcc.h \
+	libdeflate/crc32.h \
+	libdeflate/crc32_table.h \
+	libdeflate/decompress_impl.h \
+	libdeflate/deflate_compress.h \
+	libdeflate/deflate_constants.h \
+	libdeflate/gzip_constants.h \
+	libdeflate/hc_matchfinder.h \
+	libdeflate/lib_common.h \
+	libdeflate/libdeflate.h \
+	libdeflate/matchfinder_avx2.h \
+	libdeflate/matchfinder_common.h \
+	libdeflate/matchfinder_neon.h \
+	libdeflate/matchfinder_sse2.h \
+	libdeflate/unaligned.h \
+	libdeflate/x86_cpu_features.h \
+	libdeflate/zlib_constants.h \
 	zopfli/blocksplitter.h \
 	zopfli/cache.h \
 	zopfli/deflate.h \
@@ -242,38 +283,28 @@ HISTORY: doc/history.txt
 doc/copying.txt: COPYING
 	cat $< | todos > $@
 
+# We don't test wth -L the with -3 and -4 because the result is depending on
+# the compiler and/or optimization options.
+# This is likely a defect of 7z/zopfli implementation.
 check-local: ./advzip$(EXEEXT) test/test.lst
 	@cp $(srcdir)/test/archive.zip .
 	@echo CRC SIZE > check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -z archive.zip
+	$(TESTENV) ./advzip$(EXEEXT) -L archive.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -t -p archive.zip
 	$(TESTENV) ./advzip$(EXEEXT) -z -3 archive.zip
-	$(TESTENV) ./advzip$(EXEEXT) -L archive.zip >> check.lst
-	$(TESTENV) ./advzip$(EXEEXT) -z -3 -i 20 archive.zip
-	$(TESTENV) ./advzip$(EXEEXT) -L archive.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -t -p archive.zip
 	$(TESTENV) ./advzip$(EXEEXT) -z -4 archive.zip
-	$(TESTENV) ./advzip$(EXEEXT) -L archive.zip >> check.lst
-	$(TESTENV) ./advzip$(EXEEXT) -z -4 -i 20 archive.zip
-	$(TESTENV) ./advzip$(EXEEXT) -L archive.zip >> check.lst
-	$(TESTENV) ./advzip$(EXEEXT) -z -3 -N archive.zip
-	$(TESTENV) ./advzip$(EXEEXT) -L archive.zip >> check.lst
-	$(TESTENV) ./advzip$(EXEEXT) -z -4 -N archive.zip
-	$(TESTENV) ./advzip$(EXEEXT) -L archive.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -t -p archive.zip
 	$(TESTENV) ./advzip$(EXEEXT) -a check.zip $(srcdir)/COPYING
-	$(TESTENV) ./advzip$(EXEEXT) -L check.zip >> check.lst
 	$(TESTENV) ./advzip$(EXEEXT) -t -p check.zip
-	$(TESTENV) ./advzip$(EXEEXT) -a -3 check.zip $(srcdir)/COPYING
 	$(TESTENV) ./advzip$(EXEEXT) -L check.zip >> check.lst
-	$(TESTENV) ./advzip$(EXEEXT) -t -p check.zip
-	$(TESTENV) ./advzip$(EXEEXT) -a -4 check.zip $(srcdir)/COPYING
-	$(TESTENV) ./advzip$(EXEEXT) -L check.zip >> check.lst
-	$(TESTENV) ./advzip$(EXEEXT) -t -p check.zip
 	$(TESTENV) ./advzip$(EXEEXT) -a -N check.zip $(srcdir)/COPYING
-	$(TESTENV) ./advzip$(EXEEXT) -L check.zip >> check.lst
 	$(TESTENV) ./advzip$(EXEEXT) -t -p check.zip
-	$(TESTENV) ./advzip$(EXEEXT) -a -3 -N check.zip $(srcdir)/COPYING
 	$(TESTENV) ./advzip$(EXEEXT) -L check.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -z -3 check.zip
 	$(TESTENV) ./advzip$(EXEEXT) -t -p check.zip
-	$(TESTENV) ./advzip$(EXEEXT) -a -4 -N check.zip $(srcdir)/COPYING
-	$(TESTENV) ./advzip$(EXEEXT) -L check.zip >> check.lst
+	$(TESTENV) ./advzip$(EXEEXT) -z -4 check.zip
 	$(TESTENV) ./advzip$(EXEEXT) -t -p check.zip
 	@cp $(srcdir)/test/mappy.mng .
 	$(TESTENV) ./advmng$(EXEEXT) -v -z -f -S 8 mappy.mng
@@ -288,20 +319,8 @@ check-local: ./advzip$(EXEEXT) test/test.lst
 	@cp $(srcdir)/test/italy.png .
 	$(TESTENV) ./advpng$(EXEEXT) -z italy.png
 	$(TESTENV) ./advpng$(EXEEXT) -L italy.png >> check.lst
-	$(TESTENV) ./advpng$(EXEEXT) -z -3 italy.png
-	$(TESTENV) ./advpng$(EXEEXT) -L italy.png >> check.lst
-	$(TESTENV) ./advpng$(EXEEXT) -z -3 -i 20 italy.png
-	$(TESTENV) ./advpng$(EXEEXT) -L italy.png >> check.lst
-	$(TESTENV) ./advpng$(EXEEXT) -z -4 italy.png
-	$(TESTENV) ./advpng$(EXEEXT) -L italy.png >> check.lst
-	$(TESTENV) ./advpng$(EXEEXT) -z -4 -i 20 italy.png
-	$(TESTENV) ./advpng$(EXEEXT) -L italy.png >> check.lst
 	@cp $(srcdir)/test/basn2c08.png $(srcdir)/test/basn3p01.png $(srcdir)/test/basn3p02.png $(srcdir)/test/basn3p04.png $(srcdir)/test/basn3p08.png $(srcdir)/test/basn6a08.png $(srcdir)/test/basn6a04.png .
 	$(TESTENV) ./advpng$(EXEEXT) -f -z basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png
-	$(TESTENV) ./advpng$(EXEEXT) -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png >> check.lst
-	$(TESTENV) ./advdef$(EXEEXT) -f -z -3 basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png
-	$(TESTENV) ./advpng$(EXEEXT) -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png >> check.lst
-	$(TESTENV) ./advdef$(EXEEXT) -f -z -4 basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png
 	$(TESTENV) ./advpng$(EXEEXT) -L basn2c08.png basn3p01.png basn3p02.png basn3p04.png basn3p08.png basn6a08.png basn6a04.png >> check.lst
 	cat check.lst | $(DTOU) | cmp $(srcdir)/test/test.lst
 	@echo Success!

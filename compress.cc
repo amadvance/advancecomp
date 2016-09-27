@@ -180,6 +180,38 @@ bool compress_rfc1950_zlib(const unsigned char* in_data, unsigned in_size, unsig
 	return true;
 }
 
+bool compress_deflate_libdeflate(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned& out_size, int compression_level)
+{
+	struct libdeflate_compressor* compressor;
+
+	compressor = libdeflate_alloc_compressor(compression_level);
+
+	out_size = libdeflate_deflate_compress(compressor, in_data, in_size, out_data, out_size);
+
+	libdeflate_free_compressor(compressor);
+
+	if (!out_size)
+		return false;
+
+	return true;
+}
+
+bool compress_rfc1950_libdeflate(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned& out_size, int compression_level)
+{
+	struct libdeflate_compressor* compressor;
+
+	compressor = libdeflate_alloc_compressor(compression_level);
+
+	out_size = libdeflate_zlib_compress(compressor, in_data, in_size, out_data, out_size);
+
+	libdeflate_free_compressor(compressor);
+
+	if (!out_size)
+		return false;
+
+	return true;
+}
+
 #if USE_BZIP2
 bool compress_bzip2(const unsigned char* in_data, unsigned in_size, unsigned char* out_data, unsigned& out_size, int blocksize, int workfactor)
 {
@@ -223,25 +255,17 @@ bool compress_zlib(shrink_t level, unsigned char* out_data, unsigned& out_size, 
 		free(data);
 	}
 
-	if (level.level == shrink_normal || level.level == shrink_extra || level.level == shrink_insane) {
+	if (level.level == shrink_extra) {
 		unsigned sz_passes;
 		unsigned sz_fastbytes;
 		unsigned char* data;
 		unsigned size;
 
 		switch (level.level) {
-		case shrink_normal :
-			sz_passes = 1;
-			sz_fastbytes = 64;
-			break;
 		case shrink_extra :
 			sz_passes = level.iter > 15 ? level.iter : 15;
 			if (sz_passes > 255)
 				sz_passes = 255;
-			sz_fastbytes = 255;
-			break;
-		case shrink_insane :
-			sz_passes = 3; // assume that zopfli is better, but does a fast try to cover some corner cases
 			sz_fastbytes = 255;
 			break;
 		default:
@@ -252,6 +276,40 @@ bool compress_zlib(shrink_t level, unsigned char* out_data, unsigned& out_size, 
 		data = data_alloc(size);
 
 		if (compress_rfc1950_7z(in_data, in_size, data, size, sz_passes, sz_fastbytes)) {
+			memcpy(out_data, data, size);
+			out_size = size;
+		}
+
+		data_free(data);
+
+		return true;
+	}
+
+	if (level.level == shrink_normal || level.level == shrink_extra || level.level == shrink_insane) {
+		int compression_level;
+		unsigned char* data;
+		unsigned size;
+
+		switch (level.level) {
+		case shrink_normal :
+			compression_level = 12;
+			break;
+		case shrink_extra :
+			// assume that 7z is better, but does a fast try to cover some corner cases
+			compression_level = 12;
+			break;
+		case shrink_insane :
+			// assume that zopfli is better, but does a fast try to cover some corner cases
+			compression_level = 12;
+			break;
+		default:
+			assert(0);
+		}
+
+		size = out_size;
+		data = data_alloc(size);
+
+		if (compress_rfc1950_libdeflate(in_data, in_size, data, size, compression_level)) {
 			memcpy(out_data, data, size);
 			out_size = size;
 		}
@@ -314,25 +372,20 @@ bool compress_deflate(shrink_t level, unsigned char* out_data, unsigned& out_siz
 
 	// note that in some case, 7z is better than zopfli
 	if (level.level == shrink_normal || level.level == shrink_extra || level.level == shrink_insane) {
-		unsigned sz_passes;
-		unsigned sz_fastbytes;
+		int compression_level;
 		unsigned char* data;
 		unsigned size;
 
 		switch (level.level) {
 		case shrink_normal :
-			sz_passes = 1;
-			sz_fastbytes = 64;
+			compression_level = 6;
 			break;
 		case shrink_extra :
-			sz_passes = level.iter > 15 ? level.iter : 15;
-			if (sz_passes > 255)
-				sz_passes = 255;
-			sz_fastbytes = 255;
+			compression_level = 12;
 			break;
 		case shrink_insane :
-			sz_passes = 3; // assume that zopfli is better, but does a fast try to cover some corner cases
-			sz_fastbytes = 255;
+			// assume that zopfli is better, but does a fast try to cover some corner cases
+			compression_level = 12;
 			break;
 		default:
 			assert(0);
@@ -341,7 +394,7 @@ bool compress_deflate(shrink_t level, unsigned char* out_data, unsigned& out_siz
 		size = out_size;
 		data = data_alloc(size);
 
-		if (compress_deflate_7z(in_data, in_size, data, size, sz_passes, sz_fastbytes)) {
+		if (compress_deflate_libdeflate(in_data, in_size, data, size, compression_level)) {
 			memcpy(out_data, data, size);
 			out_size = size;
 		}
