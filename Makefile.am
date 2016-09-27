@@ -286,6 +286,8 @@ doc/copying.txt: COPYING
 # We don't test wth -L the with -3 and -4 because the result is depending on
 # the compiler and/or optimization options.
 # This is likely a defect of 7z/zopfli implementation.
+# For zopfli a possible cause is the use of qsort() (not stable sorting),
+# that may be different on different platforms.
 check-local: ./advzip$(EXEEXT) test/test.lst
 	@cp $(srcdir)/test/archive.zip .
 	@echo CRC SIZE > check.lst
