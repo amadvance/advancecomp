@@ -12,5 +12,6 @@ compiler:
 
 os:
   - linux
+  - osx
 
 
