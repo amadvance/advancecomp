@@ -55,9 +55,9 @@ operating on huge files without exceeding memory, such as the 1GB wiki9 corpus.
 The whole compression algorithm, including the smarter block splitting, will
 be executed independently on each huge block.
 Dividing into huge blocks hurts compression, but not much relative to the size.
-Set this to, for example, 20MB (20000000). Set it to 0 to disable master blocks.
+Set it to 0 to disable master blocks.
 */
-#define ZOPFLI_MASTER_BLOCK_SIZE 20000000
+#define ZOPFLI_MASTER_BLOCK_SIZE 1000000
 
 /*
 Used to initialize costs for example
@@ -119,33 +119,6 @@ better result of ZopfliLZ77Greedy, but the effect this has on the optimal LZ77
 varies from file to file.
 */
 #define ZOPFLI_LAZY_MATCHING
-
-/*
-Gets the symbol for the given length, cfr. the DEFLATE spec.
-Returns the symbol in the range [257-285] (inclusive)
-*/
-int ZopfliGetLengthSymbol(int l);
-
-/* Gets the amount of extra bits for the given length, cfr. the DEFLATE spec. */
-int ZopfliGetLengthExtraBits(int l);
-
-/* Gets value of the extra bits for the given length, cfr. the DEFLATE spec. */
-int ZopfliGetLengthExtraBitsValue(int l);
-
-/* Gets the symbol for the given dist, cfr. the DEFLATE spec. */
-int ZopfliGetDistSymbol(int dist);
-
-/* Gets the amount of extra bits for the given dist, cfr. the DEFLATE spec. */
-int ZopfliGetDistExtraBits(int dist);
-
-/* Gets value of the extra bits for the given dist, cfr. the DEFLATE spec. */
-int ZopfliGetDistExtraBitsValue(int dist);
-
-/* Gets the amount of extra bits for the given length symbol. */
-int ZopfliGetLengthSymbolExtraBits(int s);
-
-/* Gets the amount of extra bits for the given distance symbol. */
-int ZopfliGetDistSymbolExtraBits(int s);
 
 /*
 Appends value to dynamically allocated memory, doubling its allocation size

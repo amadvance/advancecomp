@@ -30,17 +30,17 @@ advzip [\-a, \-\-add] [\-x, \-\-extract] [\-l, \-\-list]
 The main purpose of this utility is to recompress and test
 the zip archives to get the smallest possible size.
 .PP
-For recompression the 7\-Zip (www.7\-zip.com) Deflate
-implementation is used. This implementation generally
-gives 5\-10% more compression than the zLib Deflate
-implementation.
+For recompression the libdeflate implementation is used.
+This implementation generally gives 5\-10% more compression
+than the zLib Deflate implementation, and it\'s also
+generally faster.
 .PP
 For experimental purpose also the 7\-Zip LZMA algorithm is
 available with the \-N option. In this case, the generated
 zips WILL NOT BE USABLE by any other program. To make
 them usable you need to recompress them without the \-N
 option. Generally this algorithm gives 10\-20% more
-compression than the 7\-Zip Deflate implementation.
+compression than the zLib Deflate implementation.
 .SH OPTIONS 
 .TP
 .B \-a, \-\-add ARCHIVE FILES...

@@ -2,9 +2,13 @@ Name
 	advcomp - History For AdvanceCOMP
 
 AdvanceCOMP Version 1.21 2016/11
-	) Update to latest zopfli.
-	) Added libdeflate support. It's the new default,
-		enabled using -2, --shrink-normal.
+	) Added libdeflate support. It's the new default because it provides
+		better performance and compression than 7z.
+		From https://github.com/ebiggers/libdeflate
+		at commit 64dc75786d12cc4df005de50add12e36503f579a.
+	) Update to te latest zopfli library.
+		From https://github.com/google/zopfli
+		at commit 6818a0859063b946094fb6f94732836404a0d89a.
 	) Windows binaries built with MingW 4.9.3 using the MXE cross compiler at
 		commit 62bcdbee56e87c81f1faa105b8777a5879d4e2e with targets
 		i686-w64-mingw32 and x86_64-w64-mingw32.

@@ -230,6 +230,7 @@ noinst_HEADERS = \
 	zopfli/hash.h \
 	zopfli/katajainen.h \
 	zopfli/lz77.h \
+	zopfli/symbols.h \
 	zopfli/squeeze.h \
 	zopfli/tree.h \
 	zopfli/util.h \
