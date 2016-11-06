@@ -1,10 +1,15 @@
 Name
 	advcomp - History For AdvanceCOMP
 
-AdvanceCOMP Version 1.21 2016/09
+AdvanceCOMP Version 1.21 2016/11
 	) Update to latest zopfli.
 	) Added libdeflate support. It's the new default,
 		enabled using -2, --shrink-normal.
+	) Windows binaries built with MingW 4.9.3 using the MXE cross compiler at
+		commit 62bcdbee56e87c81f1faa105b8777a5879d4e2e with targets
+		i686-w64-mingw32 and x86_64-w64-mingw32.
+	) DOS binaries built with DJGPP 4.8.5 from
+		https://github.com/andrewwutw/build-djgpp
 
 AdvanceCOMP Version 1.20 2015/08
 	) Fixed .gz recompression of data bigger than 400 MB.

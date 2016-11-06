@@ -1,6 +1,6 @@
 ./configure \
-	CFLAGS="-O2 -Wall -march=i686 -fomit-frame-pointer -fno-strength-reduce" \
-	CXXFLAGS="-O2 -Wall -march=i686 -fomit-frame-pointer -fno-strength-reduce" \
+	CFLAGS="-O2 -Wall -march=i686 -fomit-frame-pointer -fno-strict-aliasing -fno-strict-overflow" \
+	CXXFLAGS="-O2 -Wall -march=i686 -fomit-frame-pointer -fno-strict-aliasing -fno-strict-overflow" \
 	LDFLAGS="-s" \
 	--host=i586-pc-msdosdjgpp --build=`./config.guess` $@
 
