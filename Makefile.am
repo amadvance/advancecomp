@@ -201,13 +201,11 @@ noinst_HEADERS = \
 	7z/RangeCoder.h \
 	7z/WindowIn.h \
 	7z/WindowOut.h \
-	libdeflate/adler32.h \
 	libdeflate/adler32_impl.h \
 	libdeflate/aligned_malloc.h \
 	libdeflate/bt_matchfinder.h \
 	libdeflate/common_defs.h \
 	libdeflate/compiler_gcc.h \
-	libdeflate/crc32.h \
 	libdeflate/crc32_table.h \
 	libdeflate/decompress_impl.h \
 	libdeflate/deflate_compress.h \

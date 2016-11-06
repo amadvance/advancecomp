@@ -10,10 +10,11 @@ extern "C" {
 #endif
 
 #define LIBDEFLATE_VERSION_MAJOR	0
-#define LIBDEFLATE_VERSION_MINOR	4
-#define LIBDEFLATE_VERSION_STRING	"0.4"
+#define LIBDEFLATE_VERSION_MINOR	6
+#define LIBDEFLATE_VERSION_STRING	"0.6"
 
 #include <stddef.h>
+#include <stdint.h>
 
 /*
  * On Windows, if you want to link to the DLL version of libdeflate, then
@@ -243,6 +244,28 @@ libdeflate_gzip_decompress(struct libdeflate_decompressor *decompressor,
 LIBDEFLATEAPI void
 libdeflate_free_decompressor(struct libdeflate_decompressor *decompressor);
 
+/* ========================================================================== */
+/*                                Checksums                                   */
+/* ========================================================================== */
+
+/*
+ * libdeflate_adler32() updates a running Adler-32 checksum with 'len' bytes of
+ * data and returns the updated checksum.  When starting a new checksum, the
+ * required initial value for 'adler' is 1.  This value is also returned when
+ * 'buffer' is specified as NULL.
+ */
+LIBDEFLATEAPI uint32_t
+libdeflate_adler32(uint32_t adler32, const void *buffer, size_t len);
+
+
+/*
+ * libdeflate_crc32() updates a running CRC-32 checksum with 'len' bytes of data
+ * and returns the updated checksum.  When starting a new checksum, the required
+ * initial value for 'crc' is 0.  This value is also returned when 'buffer' is
+ * specified as NULL.
+ */
+LIBDEFLATEAPI uint32_t
+libdeflate_crc32(uint32_t crc, const void *buffer, size_t len);
 
 #ifdef __cplusplus
 }
