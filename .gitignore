@@ -1,3 +1,6 @@
+# upload
+makepush.sh
+
 # archives
 *.zip
 *.tar.gz
