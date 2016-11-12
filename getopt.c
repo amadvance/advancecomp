@@ -22,6 +22,12 @@
 #include <config.h>
 #endif
 
+/* Enable automatic command line wildcard expandion in mingw-w64 */
+/* See: https://github.com/Alexpux/mingw-w64/blob/master/mingw-w64-crt/crt/wildcard.c */
+#ifdef __MINGW32__
+int _dowildcard = -1;
+#endif
+
 #if !HAVE_GETOPT
 
 /* This source is extracted from the DJGPP LIBC library */
