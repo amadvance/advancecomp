@@ -3,6 +3,13 @@
                             =======================
 
 
+ADVANCECOMP VERSION 1.22 2016/11
+================================
+
+* Enabled again the command line wildcard expansion in the Windows
+  builds. The new MingW compiler was disabling it by default.
+
+
 ADVANCECOMP VERSION 1.21 2016/11
 ================================
 
