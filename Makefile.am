@@ -206,6 +206,7 @@ noinst_HEADERS = \
 	libdeflate/bt_matchfinder.h \
 	libdeflate/common_defs.h \
 	libdeflate/compiler_gcc.h \
+	libdeflate/crc32_impl.h \
 	libdeflate/crc32_table.h \
 	libdeflate/decompress_impl.h \
 	libdeflate/deflate_compress.h \
