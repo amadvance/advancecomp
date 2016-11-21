@@ -4,7 +4,7 @@ sudo: false
 
 language: c
 
-script: autoreconf -i && ./configure && make check
+script: autoreconf -i && ./configure && make distcheck
 
 compiler:
   - clang
