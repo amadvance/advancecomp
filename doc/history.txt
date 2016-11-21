@@ -3,6 +3,12 @@
                             =======================
 
 
+ADVANCECOMP VERSION 1.23 2016/11
+================================
+
+* Fixed build issue from source code due missing libdeflate header.
+
+
 ADVANCECOMP VERSION 1.22 2016/11
 ================================
 

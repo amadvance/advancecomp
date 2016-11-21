@@ -1,6 +1,9 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 1.23 2016/11
+	) Fixed build issue from source code due missing libdeflate header.
+
 AdvanceCOMP Version 1.22 2016/11
 	) Enabled again the command line wildcard expansion in the Windows
 		builds. The new MingW compiler was disabling it by default.
