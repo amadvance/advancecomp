@@ -1,5 +1,6 @@
 # upload
 makepush.sh
+makeftp.sh
 
 # archives
 *.zip
