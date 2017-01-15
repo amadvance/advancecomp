@@ -1,6 +1,9 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 1.24 2017/01
+	) Added preliminary 64 bits support.
+
 AdvanceCOMP Version 1.23 2016/11
 	) Fixed build issue from source code due missing libdeflate header.
 

@@ -144,6 +144,23 @@ int snprintf(char *str, size_t count, const char *fmt, ...);
 int vsnprintf(char *str, size_t count, const char *fmt, va_list arg);
 #endif
 
+/* 64 bit IO */
+#ifdef __WIN32__
+#define off_t off64_t /* This must be after including stdio.h */
+off64_t rpl_ftello(FILE* f);
+int rpl_fseeko(FILE* f, off64_t offset, int origin);
+#undef fseeko
+#define fseeko rpl_fseeko
+#undef ftello
+#define ftello rpl_ftello
+#endif
+
+#ifdef __MSDOS__
+/* No support for 64 bit fseek/ftell in MSDOS */
+#define fseeko fseek
+#define ftello ftell
+#endif
+
 #ifdef __cplusplus
 }
 #endif

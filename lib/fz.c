@@ -105,7 +105,7 @@ static int fgetc_lock(FILE* f)
 
 #define INFLATE_INPUT_BUFFER_MAX 4096
 
-adv_error fzgrow(adv_fz* f, unsigned size)
+adv_error fzgrow(adv_fz* f, size_t size)
 {
 	if (f->type == fz_memory_write) {
 		if (f->virtual_size < size) {
@@ -125,12 +125,12 @@ adv_error fzgrow(adv_fz* f, unsigned size)
  * Read from a file.
  * The semantic is like the C fread() function.
  */
-unsigned fzread(void *buffer, unsigned size, unsigned number, adv_fz* f)
+size_t fzread(void *buffer, size_t size, size_t number, adv_fz* f)
 {
 	if (f->type == fz_file) {
 		return fread_lock(buffer, size, number, f->f);
 	} else {
-		unsigned total_size;
+		size_t total_size;
 
 		/* adjust the number of record to read */
 		total_size = size * number;
@@ -156,7 +156,7 @@ unsigned fzread(void *buffer, unsigned size, unsigned number, adv_fz* f)
 
 			while (f->z.avail_out) {
 				if (!f->z.avail_in) {
-					unsigned run = INFLATE_INPUT_BUFFER_MAX;
+					size_t run = INFLATE_INPUT_BUFFER_MAX;
 					if (run > f->remaining)
 						run = f->remaining;
 					f->z.next_in = f->zbuffer;
@@ -189,12 +189,12 @@ unsigned fzread(void *buffer, unsigned size, unsigned number, adv_fz* f)
  * This function works only for files opened with fzopen().
  * The semantic is like the C fwrite() function.
  */
-unsigned fzwrite(const void *buffer, unsigned size, unsigned number, adv_fz* f)
+size_t fzwrite(const void *buffer, size_t size, size_t number, adv_fz* f)
 {
 	if (f->type == fz_file) {
 		return fwrite_lock(buffer, size, number, f->f);
 	} else if (f->type == fz_memory_write) {
-		unsigned total_size;
+		size_t total_size;
 
 		/* adjust the number of record to write */
 		total_size = size * number;
@@ -312,7 +312,7 @@ err:
  * \param offset Offset in the archive.
  * \param size Size of the data.
  */
-adv_fz* fzopenzipuncompressed(const char* file, unsigned offset, unsigned size)
+adv_fz* fzopenzipuncompressed(const char* file, off_t offset, unsigned size)
 {
 	unsigned char buf[ZIP_LO_FIXED];
 	unsigned filename_length;
@@ -331,7 +331,7 @@ adv_fz* fzopenzipuncompressed(const char* file, unsigned offset, unsigned size)
 		return 0;
 	}
 
-	if (fseek(f->f, offset, SEEK_SET) != 0) {
+	if (fseeko(f->f, offset, SEEK_SET) != 0) {
 		fclose_lock(f->f);
 		free(f);
 		return 0;
@@ -350,7 +350,7 @@ adv_fz* fzopenzipuncompressed(const char* file, unsigned offset, unsigned size)
 	f->real_offset = offset;
 	f->real_size = size;
 
-	if (fseek(f->f, f->real_offset, SEEK_SET) != 0) {
+	if (fseeko(f->f, f->real_offset, SEEK_SET) != 0) {
 		fclose_lock(f->f);
 		free(f);
 		return 0;
@@ -399,7 +399,7 @@ static void compressed_done(adv_fz* f)
  * \param size_compressed Size of the compressed data.
  * \param size_uncompressed Size of the uncompressed data.
  */
-adv_fz* fzopenzipcompressed(const char* file, unsigned offset, unsigned size_compressed, unsigned size_uncompressed)
+adv_fz* fzopenzipcompressed(const char* file, off_t offset, unsigned size_compressed, unsigned size_uncompressed)
 {
 	unsigned char buf[ZIP_LO_FIXED];
 	unsigned filename_length;
@@ -418,7 +418,7 @@ adv_fz* fzopenzipcompressed(const char* file, unsigned offset, unsigned size_com
 		return 0;
 	}
 
-	if (fseek(f->f, offset, SEEK_SET) != 0) {
+	if (fseeko(f->f, offset, SEEK_SET) != 0) {
 		fclose_lock(f->f);
 		free(f);
 		return 0;
@@ -437,7 +437,7 @@ adv_fz* fzopenzipcompressed(const char* file, unsigned offset, unsigned size_com
 	f->real_offset = offset;
 	f->real_size = size_compressed;
 
-	if (fseek(f->f, f->real_offset, SEEK_SET) != 0) {
+	if (fseeko(f->f, f->real_offset, SEEK_SET) != 0) {
 		fclose_lock(f->f);
 		free(f);
 		return 0;
@@ -545,7 +545,7 @@ char* fzgets(char *s, int n, adv_fz* f)
 		} else {
 			r = s;
 			while (n > 1) {
-				*s++ = c;
+				*s++ = (char)c;
 				--n;
 				if (c == '\n')
 					break;
@@ -580,7 +580,7 @@ adv_error fzeof(adv_fz* f)
  * Get the current position in the file.
  * The semantic is like the C ftell() function.
  */
-long fztell(adv_fz* f)
+off_t fztell(adv_fz* f)
 {
 	if (f->type == fz_file) {
 		return ftell(f->f);
@@ -592,7 +592,7 @@ long fztell(adv_fz* f)
 /**
  * Get the size of the file.
  */
-long fzsize(adv_fz* f)
+off_t fzsize(adv_fz* f)
 {
 	if (f->type == fz_file) {
 		struct stat st;
@@ -609,24 +609,24 @@ long fzsize(adv_fz* f)
  * Seek to an arbitrary position.
  * The semantic is like the C fseek() function.
  */
-adv_error fzseek(adv_fz* f, long offset, int mode)
+adv_error fzseek(adv_fz* f, off_t offset, int mode)
 {
 	if (f->type == fz_file) {
 		switch (mode) {
 			case SEEK_SET :
-				return fseek(f->f, f->real_offset + offset, SEEK_SET);
+				return fseeko(f->f, f->real_offset + offset, SEEK_SET);
 			case SEEK_CUR :
-				return fseek(f->f, offset, SEEK_CUR);
+				return fseeko(f->f, offset, SEEK_CUR);
 			case SEEK_END :
 				if (f->real_size)
-					return fseek(f->f, f->real_size - offset, SEEK_SET);
+					return fseeko(f->f, f->real_size - offset, SEEK_SET);
 				else
-					return fseek(f->f, offset, SEEK_END);
+					return fseeko(f->f, offset, SEEK_END);
 			default:
 				return -1;
 		}
 	} else {
-		int pos;
+		off_t pos;
 		switch (mode) {
 			case SEEK_SET :
 				pos = offset;
@@ -652,18 +652,18 @@ adv_error fzseek(adv_fz* f, long offset, int mode)
 			f->virtual_pos = pos;
 			return 0;
 		} else if (f->type == fz_file_part) {
-			if (fseek(f->f, f->real_offset + f->virtual_pos, SEEK_SET) != 0)
+			if (fseeko(f->f, f->real_offset + f->virtual_pos, SEEK_SET) != 0)
 				return -1;
 			f->virtual_pos = pos;
 			return 0;
 		} else if (f->type == fz_file_compressed) {
-			unsigned offset;
+			off_t offset;
 
 			if (pos < f->virtual_pos) {
 				/* if backward reopen the file */
 				int err;
 				compressed_done(f);
-				err = fseek(f->f, f->real_offset, SEEK_SET);
+				err = fseeko(f->f, f->real_offset, SEEK_SET);
 				f->virtual_pos = 0;
 				compressed_init(f);
 				if (err != 0)
@@ -676,7 +676,7 @@ adv_error fzseek(adv_fz* f, long offset, int mode)
 			/* read all the data */
 			while (offset > 0) {
 				unsigned char buffer[256];
-				unsigned run = offset;
+				off_t run = offset;
 				if (run > 256)
 					run = 256;
 				if (fzread(buffer, run, 1, f) != 1)

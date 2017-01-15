@@ -3,6 +3,12 @@
                             =======================
 
 
+ADVANCECOMP VERSION 1.24 2017/01
+================================
+
+* Added preliminary 64 bits support.
+
+
 ADVANCECOMP VERSION 1.23 2016/11
 ================================
 

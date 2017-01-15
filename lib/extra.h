@@ -35,6 +35,8 @@
 #ifndef __EXTRA_H
 #define __EXTRA_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -62,30 +64,39 @@ typedef int adv_bool;
 
 typedef unsigned char uint8; /**< Unsigned 8 bit integer. */
 typedef signed char int8; /**< Signed 8 bit integer. */
-typedef unsigned short uint16; /**< Unsigned 16 bit integer. */
-typedef signed short int16; /**< Signed 16 bit integer. */
-typedef unsigned int uint32; /**< Unsigned 32 bit integer. */
-typedef signed int int32; /**< Signed 32 bit integer. */
-typedef unsigned long long int uint64; /**< Unsigned 64 bit integer. */
-typedef signed long long int int64; /**< Signed 64 bit integer. */
+typedef uint16_t uint16; /**< Unsigned 16 bit integer. */
+typedef int16_t int16; /**< Signed 16 bit integer. */
+typedef uint32_t uint32; /**< Unsigned 32 bit integer. */
+typedef int32_t int32; /**< Signed 32 bit integer. */
+typedef uint64_t uint64; /**< Unsigned 64 bit integer. */
+typedef int64_t int64; /**< Signed 64 bit integer. */
+typedef uintptr_t uintptr; /**< Unsigned integer with pointer size. */
 
 /** \name Align
  * Alignment.
  */
 /*@{*/
-#define ALIGN_BIT 3 /**< Number of bit of alignment required. */
+#define ALIGN_BIT 4 /**< Number of bit of alignment required for SSE2. */
 #define ALIGN (1U << ALIGN_BIT) /**< Alignment multiplicator. */
 #define ALIGN_MASK (ALIGN - 1U) /**< Alignment mask. */
 
 /**
- * Align a unsigned interger at the specified byte size.
+ * Align a unsigned integer at the specified byte size.
  */
-#define ALIGN_UNSIGNED(v, a) (((v) + ((a)-1)) & ~((a)-1))
+static inline uintptr ALIGN_UNSIGNED(uintptr v, unsigned a)
+{
+	uintptr mask = a - 1;
+
+	return (v + mask) & ~mask;
+}
 
 /**
  * Align a void pointer at the specified byte size.
  */
-#define ALIGN_PTR(v, a) (void*)ALIGN_UNSIGNED((unsigned char*)(v) - (unsigned char*)0, a)
+static inline void* ALIGN_PTR(void* v, unsigned a)
+{
+	return (void*)ALIGN_UNSIGNED((uintptr)v, a);
+}
 /*@}*/
 
 /*@}*/

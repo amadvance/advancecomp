@@ -16,6 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ * In addition, as a special exception, Andrea Mazzoleni
+ * gives permission to link the code of this program with
+ * the MAME library (or with modified versions of MAME that use the
+ * same license as MAME), and distribute linked combinations including
+ * the two.  You must obey the GNU General Public License in all
+ * respects for all of the code used other than MAME.  If you modify
+ * this file, you may extend this exception to your version of the
+ * file, but you are not obligated to do so.  If you do not wish to
+ * do so, delete this exception statement from your version.
  */
 
 /** \file
@@ -163,6 +173,22 @@ static inline unsigned le_uint32_read(const void* ptr)
 #endif
 }
 
+static inline uint64 cpu_uint64_read(const void* ptr)
+{
+	return *(const uint64*)ptr;
+}
+
+static inline uint64 le_uint64_read(const void* ptr)
+{
+#ifdef USE_LSB
+	return cpu_uint64_read(ptr);
+#else
+	const unsigned char* ptr8 = (const unsigned char*)ptr;
+	return (uint64)ptr8[0] | (uint64)ptr8[1] << 8 | (uint64)ptr8[2] << 16 | (uint64)ptr8[3] << 24
+		| (uint64)ptr8[4] << 32 | (uint64)ptr8[5] << 40 | (uint64)ptr8[6] << 48 | (uint64)ptr8[7] << 56;
+#endif
+}
+
 static inline unsigned be_uint32_read(const void* ptr)
 {
 #ifdef USE_MSB
@@ -181,25 +207,25 @@ static inline unsigned be_uint32_read(const void* ptr)
 static inline void cpu_uint8_write(void* ptr, unsigned v)
 {
 	unsigned char* ptr8 = (unsigned char*)ptr;
-	ptr8[0] = v;
+	ptr8[0] = (unsigned char)v;
 }
 
 static inline void le_uint8_write(void* ptr, unsigned v)
 {
 	unsigned char* ptr8 = (unsigned char*)ptr;
-	ptr8[0] = v;
+	ptr8[0] = (unsigned char)v;
 }
 
 static inline void be_uint8_write(void* ptr, unsigned v)
 {
 	unsigned char* ptr8 = (unsigned char*)ptr;
-	ptr8[0] = v;
+	ptr8[0] = (unsigned char)v;
 }
 
 static inline void cpu_uint16_write(void* ptr, unsigned v)
 {
 	uint16* ptr16 = (uint16*)ptr;
-	ptr16[0] = v;
+	ptr16[0] = (uint16)v;
 }
 
 static inline void le_uint16_write(void* ptr, unsigned v)
@@ -261,10 +287,10 @@ static inline void le_uint32_write(void* ptr, unsigned v)
 	cpu_uint32_write(ptr, v);
 #else
 	unsigned char* ptr8 = (unsigned char*)ptr;
-	ptr8[0] = v & 0xFF;
-	ptr8[1] = (v >> 8) & 0xFF;
-	ptr8[2] = (v >> 16) & 0xFF;
-	ptr8[3] = (v >> 24) & 0xFF;
+	ptr8[0] = (unsigned char)(v & 0xFF);
+	ptr8[1] = (unsigned char)((v >> 8) & 0xFF);
+	ptr8[2] = (unsigned char)((v >> 16) & 0xFF);
+	ptr8[3] = (unsigned char)((v >> 24) & 0xFF);
 #endif
 }
 
@@ -274,10 +300,10 @@ static inline void be_uint32_write(void* ptr, unsigned v)
 	cpu_uint32_write(ptr, v);
 #else
 	unsigned char* ptr8 = (unsigned char*)ptr;
-	ptr8[3] = v & 0xFF;
-	ptr8[2] = (v >> 8) & 0xFF;
-	ptr8[1] = (v >> 16) & 0xFF;
-	ptr8[0] = (v >> 24) & 0xFF;
+	ptr8[3] = (unsigned char)(v & 0xFF);
+	ptr8[2] = (unsigned char)((v >> 8) & 0xFF);
+	ptr8[1] = (unsigned char)((v >> 16) & 0xFF);
+	ptr8[0] = (unsigned char)((v >> 24) & 0xFF);
 #endif
 }
 

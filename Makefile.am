@@ -58,6 +58,7 @@ advzip_SOURCES = \
 	zipsh.cc \
 	getopt.c \
 	snprintf.c \
+	portable.c \
 	$(7z_SOURCES) \
 	$(libdeflate_SOURCES) \
 	$(zopfli_SOURCES)
@@ -71,6 +72,7 @@ advpng_SOURCES = \
 	compress.cc \
 	getopt.c \
 	snprintf.c \
+	portable.c \
 	lib/fz.c \
 	lib/png.c \
 	lib/error.c \
@@ -90,6 +92,7 @@ advmng_SOURCES = \
 	compress.cc \
 	getopt.c \
 	snprintf.c \
+	portable.c \
 	lib/fz.c \
 	lib/png.c \
 	lib/mng.c \
@@ -108,6 +111,7 @@ advdef_SOURCES = \
 	getopt.c \
 	snprintf.c \
 	pngex.cc \
+	portable.c \
 	lib/fz.c \
 	lib/error.c \
 	lib/snstring.c \

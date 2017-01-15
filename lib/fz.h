@@ -62,11 +62,11 @@ enum adv_fz_enum {
  */
 typedef struct adv_fz_struct {
 	unsigned type; /**< Type of file. One of the ::adv_fz_enum. */
-	unsigned virtual_pos; /**< Current position on the virtual file. */
-	unsigned virtual_size; /**< Size of the virtual file. */
+	off_t virtual_pos; /**< Current position on the virtual file. */
+	off_t virtual_size; /**< Size of the virtual file. */
 
-	unsigned real_offset; /**< Starting position on file part used. */
-	unsigned real_size; /**< Size of the file part used. */
+	off_t real_offset; /**< Starting position on file part used. */
+	off_t real_size; /**< Size of the file part used. */
 
 	const unsigned char* data_read; /**< Memory used by the file. */
 	unsigned char* data_write; /**< Memory used by the file which need to be freed. */
@@ -75,7 +75,7 @@ typedef struct adv_fz_struct {
 
 	z_stream z; /**< Compressed stream. */
 	unsigned char* zbuffer; /**< Buffer used for reading a compressed stream. */
-	unsigned remaining; /**< Remainig bytes of a compressed stream. */
+	off_t remaining; /**< Remainig bytes of a compressed stream. */
 } adv_fz;
 
 /** \addtogroup CompressedFile */
@@ -83,16 +83,16 @@ typedef struct adv_fz_struct {
 
 adv_fz* fzopen(const char* file, const char* mode);
 adv_fz* fzopennullwrite(const char* file, const char* mode);
-adv_fz* fzopenzipuncompressed(const char* file, unsigned offset, unsigned size);
-adv_fz* fzopenzipcompressed(const char* file, unsigned offset, unsigned size_compressed, unsigned size_uncompressed);
+adv_fz* fzopenzipuncompressed(const char* file, off_t offset, unsigned size);
+adv_fz* fzopenzipcompressed(const char* file, off_t offset, unsigned size_compressed, unsigned size_uncompressed);
 adv_fz* fzopenmemory(const unsigned char* data, unsigned size);
 
-unsigned fzread(void *buffer, unsigned size, unsigned number, adv_fz* f);
-unsigned fzwrite(const void *buffer, unsigned size, unsigned number, adv_fz* f);
+size_t fzread(void *buffer, size_t size, size_t number, adv_fz* f);
+size_t fzwrite(const void *buffer, size_t size, size_t number, adv_fz* f);
 adv_error fzclose(adv_fz* f);
-long fztell(adv_fz* f);
-long fzsize(adv_fz* f);
-adv_error fzseek(adv_fz* f, long offset, int mode);
+off_t fztell(adv_fz* f);
+off_t fzsize(adv_fz* f);
+adv_error fzseek(adv_fz* f, off_t offset, int mode);
 int fzgetc(adv_fz* f);
 adv_error fzungetc(int c, adv_fz* f);
 char* fzgets(char *s, int n, adv_fz* f);
