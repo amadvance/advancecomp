@@ -1,0 +1,7 @@
+./configure \
+	CFLAGS="-O2 -Wall -fno-strict-aliasing -fno-strict-overflow" \
+	CXXFLAGS="-O2 -Wall -fno-strict-aliasing -fno-strict-overflow" \
+	LDFLAGS="-s" \
+	--host=x86_64-w64-mingw32.static --build=`./config.guess` $@
+
+

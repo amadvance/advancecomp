@@ -348,13 +348,22 @@ distdos: $(DISTDOS_ROOT) $(DISTDOS_DOC)
 	cd tmp && zip -r ../$(PACKAGE)-$(VERSION)-dos-x86.zip *
 	rm -r tmp
 
-distwindows: $(DISTDOS_ROOT) $(DISTDOS_DOC)
+distwindows-x86: $(DISTDOS_ROOT) $(DISTDOS_DOC)
 	rm -f $(PACKAGE)-$(VERSION)-windows-x86.zip
 	mkdir tmp
 	cp $(DISTDOS_ROOT) tmp
 	mkdir tmp/doc
 	cp $(DISTDOS_DOC) tmp/doc
 	cd tmp && zip -r ../$(PACKAGE)-$(VERSION)-windows-x86.zip *
+	rm -r tmp
+
+distwindows-x64: $(DISTDOS_ROOT) $(DISTDOS_DOC)
+	rm -f $(PACKAGE)-$(VERSION)-windows-x64.zip
+	mkdir tmp
+	cp $(DISTDOS_ROOT) tmp
+	mkdir tmp/doc
+	cp $(DISTDOS_DOC) tmp/doc
+	cd tmp && zip -r ../$(PACKAGE)-$(VERSION)-windows-x64.zip *
 	rm -r tmp
 
 DISTWEB = \
