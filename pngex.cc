@@ -105,7 +105,7 @@ void png_compress_delta(shrink_t level, data_ptr& out_ptr, unsigned& out_size, c
 	out_size = z_size;
 }
 
-void png_compress_palette_delta(data_ptr& out_ptr, unsigned& out_size, const unsigned char* pal_ptr, unsigned pal_size, const unsigned char* prev_ptr)
+void png_compress_palette_delta(data_ptr& out_ptr, unsigned& out_size, const unsigned char* pal_ptr, unsigned pal_size, const unsigned char* prev_ptr, unsigned prev_size)
 {
 	unsigned i;
 	unsigned char* dst_ptr;
@@ -120,15 +120,15 @@ void png_compress_palette_delta(data_ptr& out_ptr, unsigned& out_size, const uns
 	while (i<pal_size) {
 		unsigned j;
 
-		while (i < pal_size && prev_ptr[i] == pal_ptr[i] && prev_ptr[i+1] == pal_ptr[i+1] && prev_ptr[i+2] == pal_ptr[i+2])
+		while (i < pal_size && (i < prev_size && prev_ptr[i] == pal_ptr[i] && prev_ptr[i+1] == pal_ptr[i+1] && prev_ptr[i+2] == pal_ptr[i+2]))
 			i += 3;
 
 		if (i == pal_size)
 			break;
 
-		j = i;
+		j = i + 3;
 
-		while (j < pal_size && (prev_ptr[j] != pal_ptr[j] || prev_ptr[j+1] != pal_ptr[j+1] || prev_ptr[j+2] != pal_ptr[j+2]))
+		while (j < pal_size && (j >= prev_size || prev_ptr[j] != pal_ptr[j] || prev_ptr[j+1] != pal_ptr[j+1] || prev_ptr[j+2] != pal_ptr[j+2]))
 			j += 3;
 
 		dst_ptr[dst_size++] = i / 3; /* first index */

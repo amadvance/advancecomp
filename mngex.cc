@@ -396,10 +396,17 @@ static void mng_write_delta_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, u
 	unsigned dhdr_size;
 
 	if (pal_ptr && pal_size) {
-		png_compress_palette_delta(pal_d_ptr, pal_d_size, pal_ptr, pal_size, mng->pal_ptr);
+		if (pal_size == mng->pal_size) {
+			/* the MNG standard allows a palette size change with the PPLT chunk, */
+			/* but some players don't support it */
+			png_compress_palette_delta(pal_d_ptr, pal_d_size, pal_ptr, pal_size, mng->pal_ptr, mng->pal_size);
+		} else {
+			pal_d_ptr = 0;
+			pal_d_size = 0;
+		}
 
 		pal_r_ptr = data_dup(pal_ptr, pal_size);
-                pal_r_size = pal_size;
+		pal_r_size = pal_size;
 	} else {
 		pal_d_ptr = 0;
 		pal_d_size = 0;
@@ -448,15 +455,13 @@ static void mng_write_delta_image(adv_mng_write* mng, adv_fz* f, unsigned* fc, u
 		throw_png_error();
 	}
 
-	if (pal_d_size) {
-		if (pal_d_size < pal_r_size) {
-			if (adv_png_write_chunk(f, ADV_MNG_CN_PPLT, pal_d_ptr, pal_d_size, fc) != 0) {
-				throw_png_error();
-			}
-		} else {
-			if (adv_png_write_chunk(f, ADV_PNG_CN_PLTE, pal_r_ptr, pal_r_size, fc) != 0) {
-				throw_png_error();
-			}
+	if (pal_d_size && pal_d_size < pal_r_size) {
+		if (adv_png_write_chunk(f, ADV_MNG_CN_PPLT, pal_d_ptr, pal_d_size, fc) != 0) {
+			throw_png_error();
+		}
+	} else if (pal_r_size) {
+		if (adv_png_write_chunk(f, ADV_PNG_CN_PLTE, pal_r_ptr, pal_r_size, fc) != 0) {
+			throw_png_error();
 		}
 	}
 
@@ -599,8 +604,7 @@ static void mng_write_image_raw(adv_mng_write* mng, adv_fz* f, unsigned* fc, uns
 
 		if (mng->type == mng_std) {
 			mng_write_move(mng, f, fc, shift_x, shift_y);
-			mng_write_delta_image(mng, f, fc, img_ptr, img_scanline, pal_ptr,
- pal_size);
+			mng_write_delta_image(mng, f, fc, img_ptr, img_scanline, pal_ptr, pal_size);
 		} else {
 			mng_write_base_image(mng, f, fc, img_ptr, img_scanline, pal_ptr, pal_size);
 		}

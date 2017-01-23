@@ -55,7 +55,7 @@ void png_compress_delta(
 void png_compress_palette_delta(
 	data_ptr& out_ptr, unsigned& out_size,
 	const unsigned char* pal_ptr, unsigned pal_size,
-	const unsigned char* prev_ptr
+	const unsigned char* prev_ptr, unsigned prev_size
 );
 void png_write(
 	adv_fz* f,
