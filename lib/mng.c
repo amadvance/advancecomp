@@ -86,6 +86,7 @@ static adv_error mng_read_ihdr(adv_mng* mng, adv_fz* f, const unsigned char* ihd
 	unsigned char* data;
 	unsigned size;
 	unsigned long dat_size;
+	unsigned bit_per_pixel;
 
 	if (ihdr_size != 13) {
 		error_set("Invalid IHDR size");
@@ -103,18 +104,20 @@ static adv_error mng_read_ihdr(adv_mng* mng, adv_fz* f, const unsigned char* ihd
 		goto err;
 	}
 
-	if (ihdr[8] != 8) { /* bit depth */
-		error_unsupported_set("Unsupported bit depth");
-		goto err;
-	}
-	if (ihdr[9] == 3) /* color type */
+	if (ihdr[8] == 8 && ihdr[9] == 3) { /* color type */
 		mng->pixel = 1;
-	else if (ihdr[9] == 2)
+		bit_per_pixel = 8;
+	} else if ((ihdr[8] == 1 || ihdr[8] == 2 || ihdr[8] == 4) && ihdr[9] == 3) {
+		mng->pixel = 1;
+		bit_per_pixel = ihdr[8]; /* convert later to a 1 byte per pixel format */
+	} else if (ihdr[8] == 8 && ihdr[9] == 2) {
 		mng->pixel = 3;
-	else if (ihdr[9] == 6)
+		bit_per_pixel = 8;
+	}else if (ihdr[8] == 8 && ihdr[9] == 6) {
 		mng->pixel = 4;
-	else {
-		error_unsupported_set("Unsupported color type");
+		bit_per_pixel = 8;
+	} else {
+		error_unsupported_set("Unsupported bit depth/color type combination");
 		goto err;
 	}
 	if (ihdr[10] != 0) { /* compression */
@@ -172,10 +175,108 @@ static adv_error mng_read_ihdr(adv_mng* mng, adv_fz* f, const unsigned char* ihd
 		goto err_data;
 	}
 
-	dat_size = mng->dat_size;
-	if (uncompress(mng->dat_ptr, &dat_size, data, size) != Z_OK) {
-		error_set("Corrupt compressed data");
-		goto err_data;
+	if (bit_per_pixel == 8) {
+		/* plain read */
+		dat_size = mng->dat_size;
+		if (uncompress(mng->dat_ptr, &dat_size, data, size) != Z_OK) {
+			error_set("Corrupt compressed data");
+			goto err_data;
+		}
+	} else {
+		unsigned long buf_line;
+		unsigned long buf_size;
+		unsigned long buf_expected;
+		unsigned char* buf_ptr;
+		unsigned char* out_ptr;
+		unsigned char* in_ptr;
+		unsigned y;
+
+		buf_line = (mng->dat_width * bit_per_pixel + 7) / 8 + 1; /* +1 for the filter byte */
+		buf_expected = mng->dat_height * buf_line;
+		buf_ptr = malloc(buf_expected);
+
+		buf_size = buf_expected;
+		if (uncompress(buf_ptr, &buf_size, data, size) != Z_OK) {
+			free(buf_ptr);
+			error_set("Corrupt compressed data");
+			goto err_data;
+		}
+
+		if (buf_size != buf_expected) {
+			free(buf_ptr);
+			error_set("Corrupt compressed data");
+			goto err_data;
+		}
+
+		/* expand */
+		out_ptr = mng->dat_ptr;
+		in_ptr = buf_ptr;
+		for(y=0;y<mng->dat_height;++y) {
+			/* copy filter byte */
+			*out_ptr++ = *in_ptr++;
+
+			if (bit_per_pixel == 1) {
+				unsigned count = mng->dat_width;
+				while (count >= 8) {
+					unsigned char m = *in_ptr++;
+					out_ptr[0] = (m >> 7) & 0x1;
+					out_ptr[1] = (m >> 6) & 0x1;
+					out_ptr[2] = (m >> 5) & 0x1;
+					out_ptr[3] = (m >> 4) & 0x1;
+					out_ptr[4] = (m >> 3) & 0x1;
+					out_ptr[5] = (m >> 2) & 0x1;
+					out_ptr[6] = (m >> 1) & 0x1;
+					out_ptr[7] = m & 0x1;
+					out_ptr += 8;
+					count -= 8;
+				}
+				if (count) {
+					unsigned char m = *in_ptr++;
+					while (count) {
+						*out_ptr++ = (m >> 7) & 0x1;
+						m <<= 1;
+						--count;
+					}
+				}
+			} else if (bit_per_pixel == 2) {
+				unsigned count = mng->dat_width;
+				while (count >= 4) {
+					unsigned char m = *in_ptr++;
+					out_ptr[0] = (m >> 6) & 0x3;
+					out_ptr[1] = (m >> 4) & 0x3;
+					out_ptr[2] = (m >> 2) & 0x3;
+					out_ptr[3] = m & 0x3;
+					out_ptr += 4;
+					count -= 4;
+				}
+				if (count) {
+					unsigned char m = *in_ptr++;
+					while (count) {
+						*out_ptr++ = (m >> 6) & 0x3;
+						m <<= 2;
+						--count;
+					}
+				}
+			} else if (bit_per_pixel == 4) {
+				unsigned count = mng->dat_width;
+				while (count >= 2) {
+					unsigned char m = *in_ptr++;
+					out_ptr[0] = (m >> 4) & 0xF;
+					out_ptr[1] = m & 0xF;
+					out_ptr += 2;
+					count -= 2;
+				}
+				if (count) {
+					unsigned char m = *in_ptr++;
+					*out_ptr++ = (m >> 4) & 0xF;
+				}
+			}
+		}
+
+		free(buf_ptr);
+
+		/* compute the written size */
+		dat_size = out_ptr - mng->dat_ptr;
 	}
 
 	free(data);
