@@ -1,8 +1,9 @@
 Name
 	advcomp - History For AdvanceCOMP
 
-AdvanceCOMP Version 1.24 2017/01
-	) Added preliminary 64 bits support.
+AdvanceCOMP Version 2.0 2017/01
+	) Added support for reading MNG files with depth of 1, 2, and 4 bits.
+	) Added 64 bits binary for Windows.
 
 AdvanceCOMP Version 1.23 2016/11
 	) Fixed build issue from source code due missing libdeflate header.
@@ -16,7 +17,7 @@ AdvanceCOMP Version 1.21 2016/11
 		better performance and compression than 7z.
 		From https://github.com/ebiggers/libdeflate
 		at commit 28cc14994b8b57f590d31a7340c8fffc5cc37d88
-	) Update to te latest zopfli library.
+	) Update to the latest zopfli library.
 		From https://github.com/google/zopfli
 		at commit 6818a0859063b946094fb6f94732836404a0d89a.
 	) Windows binaries built with MingW 4.9.3 using the MXE cross compiler at
