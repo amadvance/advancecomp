@@ -4,6 +4,9 @@ Name
 AdvanceCOMP Version 2.0 2017/01
 	) Added support for reading MNG files with depth of 1, 2, and 4 bits.
 	) Added 64 bits binary for Windows.
+	) Updated to libdeflate 0.7.
+		From https://github.com/google/zopfli
+		at commit a32bdb097de48e5ddffc959a58297d384b58fcaa.
 
 AdvanceCOMP Version 1.23 2016/11
 	) Fixed build issue from source code due missing libdeflate header.
