@@ -1,6 +1,8 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.65])
-AC_INIT([AdvanceCOMP], [2.0], [], [], [http://www.advancemame.it])
+dnl Get version number from git
+m4_define([git_revision], m4_esyscmd_s([./autover.sh]))
+AC_INIT([AdvanceCOMP], [git_revision], [], [], [http://www.advancemame.it])
 AM_INIT_AUTOMAKE([foreign no-dependencies subdir-objects])
 AC_CONFIG_SRCDIR([rezip.cc])
 AC_CONFIG_HEADERS([config.h])

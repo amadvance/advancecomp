@@ -121,12 +121,16 @@ advdef_SOURCES = \
 	$(libdeflate_SOURCES) \
 	$(zopfli_SOURCES)
 
+# Add the .version file in the distribution
+dist-hook:
+	$(srcdir)/autover.sh > $(distdir)/.version
+
 EXTRA_DIST = \
 	README AUTHORS HISTORY INSTALL COPYING \
 	doc/advdef.d doc/advzip.d doc/advpng.d doc/advmng.d doc/history.d doc/readme.d doc/authors.d doc/install.d \
 	doc/advdef.1 doc/advzip.1 doc/advpng.1 doc/advmng.1 doc/history.1 doc/readme.1 doc/authors.1 doc/install.1 \
 	doc/advdef.txt doc/advzip.txt doc/advpng.txt doc/advmng.txt doc/history.txt doc/readme.txt doc/authors.txt doc/install.txt \
-	autogen.sh \
+	autogen.sh autover.sh \
 	7z/README \
 	libdeflate/README.md \
 	libdeflate/COPYING \
