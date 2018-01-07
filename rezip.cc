@@ -480,6 +480,7 @@ void usage()
 	cout << "  " SWITCH_GETOPT_LONG("-3, --shrink-extra  ", "-3") "  Compress extra (7z)" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-4, --shrink-insane ", "-4") "  Compress extreme (zopfli)" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-i N, --iter=N      ", "-i") "  Compress iterations" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-N, --not-zip       ", "-N") "  Consider bzip2 or lzma compression" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-k, --keep-file-time", "-k") "  REZIP! Don't alter zip time" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-q, --quiet         ", "-q") "  Don't print on the console" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-h, --help          ", "-h") "  Help of the program" << endl;
