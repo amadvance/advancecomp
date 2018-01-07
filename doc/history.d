@@ -1,6 +1,9 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 2.1 2018/01
+	) Support ZIPs with data descriptor signature.
+
 AdvanceCOMP Version 2.0 2017/06
 	) Added support for reading MNG files with depth of 1, 2, and 4 bits.
 	) Added 64 bits binary for Windows.

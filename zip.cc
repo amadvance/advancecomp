@@ -527,13 +527,20 @@ void zip_entry::check_local(const unsigned char* buf) const
 
 void zip_entry::check_descriptor(const unsigned char* buf) const
 {
+	if (0x08074b50 != le_uint32_read(buf+ZIP_DO_header_signature)) {
+		throw error_invalid() << "Invalid header signature on data descriptor " << le_uint32_read(buf+ZIP_DO_crc32);
+	}
 	if (info.crc32 != le_uint32_read(buf+ZIP_DO_crc32)) {
 		throw error_invalid() << "Invalid crc on data descriptor " << info.crc32 << "/" << le_uint32_read(buf+ZIP_DO_crc32);
 	}
-	if (info.compressed_size != le_uint32_read(buf+ZIP_DO_compressed_size)) {
+	if (info.compressed_size != le_uint32_read(buf+ZIP_DO_compressed_size)
+		// allow a 0 size, GNU unzip also allow it
+		&& 0 != le_uint32_read(buf+ZIP_DO_compressed_size)) {
 		throw error_invalid() << "Invalid compressed size in data descriptor " << info.compressed_size << "/" << le_uint32_read(buf+ZIP_DO_compressed_size);
 	}
-	if (info.uncompressed_size != le_uint32_read(buf+ZIP_DO_uncompressed_size)) {
+	if (info.uncompressed_size != le_uint32_read(buf+ZIP_DO_uncompressed_size)
+		// allow a 0 size, GNU unzip also allow it
+		&& 0 != le_uint32_read(buf+ZIP_DO_uncompressed_size)) {
 		throw error_invalid() << "Invalid uncompressed size in data descriptor " << info.uncompressed_size << "/" << le_uint32_read(buf+ZIP_DO_uncompressed_size);
 	}
 }
@@ -543,33 +550,6 @@ void zip_entry::unload()
 {
 	data_free(data);
 	data = 0;
-}
-
-/** Skip local file header and data. */
-void zip::skip_local(const unsigned char* buf, FILE* f)
-{
-	unsigned local_extra_field_length = le_uint16_read(buf+ZIP_LO_extra_field_length);
-	unsigned filename_length = le_uint16_read(buf+ZIP_LO_filename_length);
-	unsigned compressed_size = le_uint32_read(buf+ZIP_LO_compressed_size);
-	
-	// skip filename and extra field
-	if (fseek(f, filename_length + local_extra_field_length, SEEK_CUR) != 0) {
-		throw error_invalid() << "Failed seek";
-	}
-
-	// directory don't have data
-	if (compressed_size) {
-		if (fseek(f, compressed_size, SEEK_CUR) != 0) {
-			throw error_invalid() << "Failed seek";
-		}
-	}
-
-	// data descriptor
-	if ((le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag) & ZIP_GEN_FLAGS_DEFLATE_ZERO) != 0) {
-		if (fseek(f, ZIP_DO_FIXED, SEEK_CUR) != 0) {
-			throw error_invalid() << "Failed seek";
-		}
-	}
 }
 
 /**
@@ -618,15 +598,24 @@ void zip_entry::load_local(const unsigned char* buf, FILE* f, unsigned size)
 	// load the data descriptor
 	if ((le_uint16_read(buf+ZIP_LO_general_purpose_bit_flag) & ZIP_GEN_FLAGS_DEFLATE_ZERO) != 0) {
 		unsigned char data_desc[ZIP_DO_FIXED];
+		unsigned offset;
 
-		if (size < ZIP_DO_FIXED) {
+		// handle the case of the ZIP_DO_header_signature missing
+		if (size == ZIP_DO_FIXED - 4) {
+			le_uint32_write(data_desc+ZIP_DO_header_signature, 0x08074b50);
+			offset = ZIP_DO_crc32;
+		} else {
+			offset = 0;
+		}
+
+		if (size < ZIP_DO_FIXED - offset) {
 			throw error_invalid() << "Overflow of data descriptor";
 		}
-		size -= ZIP_DO_FIXED;
 
-		if (fread(data_desc, ZIP_DO_FIXED, 1, f) != 1) {
+		if (fread(data_desc + offset, ZIP_DO_FIXED - offset, 1, f) != 1) {
 			throw error() << "Failed read";
 		}
+		size -= ZIP_DO_FIXED - offset;
 
 		check_descriptor(data_desc);
 	}

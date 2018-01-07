@@ -126,10 +126,11 @@
 #define ZIP_CO_filename 0x2E
 
 // Offsets in data descriptor structure
-#define ZIP_DO_crc32 0x00
-#define ZIP_DO_compressed_size 0x04
-#define ZIP_DO_uncompressed_size 0x08
-#define ZIP_DO_FIXED 0x0C // size of fixed data structure
+#define ZIP_DO_header_signature 0x00 // this field may be missing
+#define ZIP_DO_crc32 0x04
+#define ZIP_DO_compressed_size 0x08
+#define ZIP_DO_uncompressed_size 0x0C
+#define ZIP_DO_FIXED 0x10 // size of fixed data structure
 
 // Offsets in local file header structure
 #define ZIP_LO_local_file_header_signature 0x00
@@ -261,8 +262,6 @@ class zip {
 	zip& operator=(const zip&);
 	bool operator==(const zip&) const;
 	bool operator!=(const zip&) const;
-
-	void skip_local(const unsigned char* buf, FILE* f);
 
 	static bool pedantic;
 
