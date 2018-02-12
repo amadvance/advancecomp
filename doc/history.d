@@ -1,8 +1,9 @@
 Name
 	advcomp - History For AdvanceCOMP
 
-AdvanceCOMP Version 2.1 2018/01
+AdvanceCOMP Version 2.1 2018/02
 	) Support ZIPs with data descriptor signature.
+	) Fixed a crash condition with invalid ZIP data.
 
 AdvanceCOMP Version 2.0 2017/06
 	) Added support for reading MNG files with depth of 1, 2, and 4 bits.

@@ -456,13 +456,15 @@ string zip_entry::name_get() const
 }
 
 /** Check central directory entry. */
-void zip_entry::check_cent(const unsigned char* buf) const
+void zip_entry::check_cent(const unsigned char* buf, unsigned buf_size) const
 {
+	if (buf_size < ZIP_CO_FIXED) {
+		throw error_invalid() << "Invalid central directory data";
+	}
 	// check signature
 	if (le_uint32_read(buf+ZIP_CO_central_file_header_signature) != ZIP_C_signature) {
 		throw error_invalid() << "Invalid central directory signature";
 	}
-
 	// check filename_length > 0, can't exist a file without a name
 	if (le_uint16_read(buf+ZIP_CO_filename_length) == 0) {
 		throw error_invalid() << "Empty filename in central directory";
@@ -679,11 +681,11 @@ void zip_entry::save_local(FILE* f)
  * \param buf Fixed size cent dir.
  * \param f File seeked after the fixed size cent dir.
  */
-void zip_entry::load_cent(const unsigned char* buf, unsigned& skip)
+void zip_entry::load_cent(const unsigned char* buf, unsigned buf_size, unsigned& skip)
 {
 	const unsigned char* o_buf = buf;
 
-	check_cent(buf);
+	check_cent(buf, buf_size);
 
 	// read header
 	info.version_made_by = le_uint8_read(buf+ZIP_CO_version_made_by);
@@ -704,6 +706,14 @@ void zip_entry::load_cent(const unsigned char* buf, unsigned& skip)
 	info.external_file_attrib = le_uint32_read(buf+ZIP_CO_external_file_attrib);
 	info.relative_offset_of_local_header = le_uint32_read(buf+ZIP_CO_relative_offset_of_local_header);
 	buf += ZIP_CO_FIXED;
+
+	if (buf_size < info.filename_length
+		|| buf_size < info.central_extra_field_length
+		|| buf_size < info.file_comment_length
+		|| buf_size < ZIP_CO_FIXED + info.filename_length + info.central_extra_field_length + info.file_comment_length
+	) {
+		throw error_invalid() << "Invalid central directory data";
+	}
 
 	// read filename
 	data_free(file_name);
@@ -853,7 +863,7 @@ void zip::open()
 
 			unsigned skip = 0;
 			try {
-				i->load_cent(data + data_pos, skip);
+				i->load_cent(data + data_pos, data_size - data_pos, skip);
 			} catch (...) {
 				map.erase(i);
 				throw;

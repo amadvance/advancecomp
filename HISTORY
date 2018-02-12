@@ -3,10 +3,11 @@
                             =======================
 
 
-ADVANCECOMP VERSION 2.1 2018/01
+ADVANCECOMP VERSION 2.1 2018/02
 ===============================
 
 * Support ZIPs with data descriptor signature.
+* Fixed a crash condition with invalid ZIP data.
 
 
 ADVANCECOMP VERSION 2.0 2017/06

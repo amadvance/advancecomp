@@ -192,7 +192,7 @@ private:
 	unsigned char* central_extra_field;
 	unsigned char* data;
 
-	void check_cent(const unsigned char* buf) const;
+	void check_cent(const unsigned char* buf, unsigned buf_size) const;
 	void check_local(const unsigned char* buf) const;
 	void check_descriptor(const unsigned char* buf) const;
 
@@ -208,7 +208,7 @@ public:
 
 	void load_local(const unsigned char* buf, FILE* f, unsigned size);
 	void save_local(FILE* f);
-	void load_cent(const unsigned char* buf, unsigned& skip);
+	void load_cent(const unsigned char* buf, unsigned size, unsigned& skip);
 	void save_cent(FILE* f);
 	void unload();
 
