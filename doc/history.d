@@ -1,6 +1,9 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 2.2 2019/01
+	) Fixed two crash conditions with invalid PNG/MNG files.
+
 AdvanceCOMP Version 2.1 2018/02
 	) Support ZIPs with data descriptor signature.
 	) Fixed a crash condition with invalid ZIP data.
