@@ -603,6 +603,7 @@ adv_error adv_png_read_ihdr(
 	unsigned pixel;
 	unsigned width;
 	unsigned width_align;
+	unsigned scanline;
 	unsigned height;
 	unsigned depth;
 	int r;
@@ -719,9 +720,23 @@ adv_error adv_png_read_ihdr(
 		goto err_ptr;
 	}
 
-	*dat_size = height * (width_align * pixel + 1);
+	/* check for overflow */
+	if (pixel == 0 || width_align >= UINT_MAX / pixel) {
+		error_set("Invalid image size");
+		goto err_ptr;
+	}
+
+	scanline = width_align * pixel + 1;
+
+	/* check for overflow */
+	if (scanline == 0 || height >= UINT_MAX / scanline) {
+		error_set("Invalid image size");
+		goto err_ptr;
+	}
+
+	*dat_size = height * scanline;
 	*dat_ptr = malloc(*dat_size);
-	*pix_scanline = width_align * pixel + 1;
+	*pix_scanline = scanline;
 	*pix_ptr = *dat_ptr + 1;
 
 	z.zalloc = 0;
