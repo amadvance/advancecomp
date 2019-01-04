@@ -163,6 +163,10 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size)
 
 	switch (type) {
 		case ADV_MNG_CN_MHDR :
+			if (size < 28) {
+				cout << " invalid chunk size";
+				break;
+			}
 			cout << " width:" << be_uint32_read(data+0) << " height:" << be_uint32_read(data+4) << " frequency:" << be_uint32_read(data+8);
 			cout << " simplicity:" << be_uint32_read(data+24);
 			cout << "(bit";
@@ -174,6 +178,10 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size)
 			cout << ")";
 		break;
 		case ADV_MNG_CN_DHDR :
+			if (size < 4) {
+				cout << " invalid chunk size";
+				break;
+			}
 			cout << " id:" << be_uint16_read(data+0);
 			switch (data[2]) {
 				case 0 : cout << " img:unspecified"; break;
@@ -243,6 +251,10 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size)
 			}
 			break;
 		case ADV_MNG_CN_DEFI :
+			if (size < 2) {
+				cout << " invalid chunk size";
+				break;
+			}
 			cout << " id:" << be_uint16_read(data+0);
 			if (size >= 3) {
 				switch (data[2]) {
@@ -266,6 +278,10 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size)
 			}
 		break;
 		case ADV_MNG_CN_MOVE :
+			if (size < 13) {
+				cout << " invalid chunk size";
+				break;
+			}
 			cout << " id_from:" << be_uint16_read(data+0) << " id_to:" << be_uint16_read(data+2);
 			switch (data[4]) {
 				case 0 : cout << " type:replace"; break;
@@ -275,6 +291,10 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size)
 			cout << " x:" << (int)be_uint32_read(data + 5) << " y:" << (int)be_uint32_read(data + 9);
 			break;
 		case ADV_MNG_CN_PPLT :
+			if (size < 1) {
+				cout << " invalid chunk size";
+				break;
+			}
 			switch (data[0]) {
 				case 0 : cout << " type:replacement_rgb"; break;
 				case 1 : cout << " type:delta_rgb"; break;
@@ -285,7 +305,7 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size)
 				default : cout << " type:?"; break;
 			}
 			i = 1;
-			while (i<size) {
+			while (i + 1 < size) {
 				unsigned ssize;
 				cout << " " << (unsigned)data[i] << ":" << (unsigned)data[i+1];
 				if (data[0] == 0 || data[1] == 1)
@@ -298,6 +318,10 @@ void png_print_chunk(unsigned type, unsigned char* data, unsigned size)
 			}
 			break;
 		case ADV_PNG_CN_IHDR :
+			if (size < 13) {
+				cout << " invalid chunk size";
+				break;
+			}
 			cout << " width:" << be_uint32_read(data) << " height:" << be_uint32_read(data + 4);
 			cout << " depth:" << (unsigned)data[8];
 			cout << " color_type:" << (unsigned)data[9];
