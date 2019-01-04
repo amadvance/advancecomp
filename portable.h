@@ -39,6 +39,7 @@ extern "C" {
 #include <assert.h>
 #include <errno.h>
 #include <signal.h>
+#include <limits.h>
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
