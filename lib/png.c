@@ -656,6 +656,11 @@ adv_error adv_png_read_ihdr(
 	}
 	*pix_pixel = pixel;
 
+	if (width_align < width) {
+		error_unsupported_set("Invalid image size");
+		goto err;
+	}
+
 	if (data[10] != 0) { /* compression */
 		error_unsupported_set("Unsupported compression, %d instead of 0", (unsigned)data[10]);
 		goto err;
