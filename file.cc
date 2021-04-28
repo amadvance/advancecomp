@@ -98,7 +98,7 @@ void infopath::readonly_set(bool Areadonly)
 /**
  * Check if a file exists.
  */
-bool file_exists(const string& path) throw (error)
+bool file_exists(const string& path)
 {
 	struct stat s;
 	if (stat(path.c_str(), &s) != 0) {
@@ -114,7 +114,7 @@ bool file_exists(const string& path) throw (error)
 /**
  * Write a whole file.
  */
-void file_write(const string& path, const char* data, unsigned size) throw (error)
+void file_write(const string& path, const char* data, unsigned size)
 {
 	FILE* f = fopen(path.c_str(), "wb");
 	if (!f)
@@ -134,7 +134,7 @@ void file_write(const string& path, const char* data, unsigned size) throw (erro
 /**
  * Read a whole file.
  */
-void file_read(const string& path, char* data, unsigned size) throw (error)
+void file_read(const string& path, char* data, unsigned size)
 {
 	file_read(path, data, 0, size);
 }
@@ -142,7 +142,7 @@ void file_read(const string& path, char* data, unsigned size) throw (error)
 /**
  * Read a whole file.
  */
-void file_read(const string& path, char* data, unsigned offset, unsigned size) throw (error)
+void file_read(const string& path, char* data, unsigned offset, unsigned size)
 {
 	FILE* f = fopen(path.c_str(), "rb");
 	if (!f)
@@ -166,7 +166,7 @@ void file_read(const string& path, char* data, unsigned offset, unsigned size) t
 /**
  * Get the time of a file.
  */
-time_t file_time(const string& path) throw (error)
+time_t file_time(const string& path)
 {
 	struct stat s;
 	if (stat(path.c_str(), &s)!=0)
@@ -178,7 +178,7 @@ time_t file_time(const string& path) throw (error)
 /**
  * Set the time of a file.
  */
-void file_utime(const string& path, time_t tod) throw (error)
+void file_utime(const string& path, time_t tod)
 {
 	struct utimbuf u;
 
@@ -192,7 +192,7 @@ void file_utime(const string& path, time_t tod) throw (error)
 /**
  * Get the size of a file.
  */
-unsigned file_size(const string& path) throw (error)
+unsigned file_size(const string& path)
 {
 	struct stat s;
 	if (stat(path.c_str(), &s)!=0)
@@ -204,7 +204,7 @@ unsigned file_size(const string& path) throw (error)
 /**
  * Get the crc of a file.
  */
-crc_t file_crc(const string& path) throw (error)
+crc_t file_crc(const string& path)
 {
 	unsigned size = file_size(path);
 
@@ -227,7 +227,7 @@ crc_t file_crc(const string& path) throw (error)
 /**
  * Copy a file.
  */
-void file_copy(const string& path1, const string& path2) throw (error)
+void file_copy(const string& path1, const string& path2)
 {
 	unsigned size;
 
@@ -249,7 +249,7 @@ void file_copy(const string& path1, const string& path2) throw (error)
 /**
  * Move a file.
  */
-void file_move(const string& path1, const string& path2) throw (error)
+void file_move(const string& path1, const string& path2)
 {
 	if (rename(path1.c_str(), path2.c_str())!=0
 		&& errno==EXDEV) {
@@ -271,7 +271,7 @@ void file_move(const string& path1, const string& path2) throw (error)
 /**
  * Remove a file.
  */
-void file_remove(const string& path1) throw (error)
+void file_remove(const string& path1)
 {
 	if (remove(path1.c_str())!=0) {
 		throw error() << "Failed remove of " << path1;
@@ -281,7 +281,7 @@ void file_remove(const string& path1) throw (error)
 /**
  * Rename a file.
  */
-void file_rename(const string& path1, const string& path2) throw (error)
+void file_rename(const string& path1, const string& path2)
 {
 	if (rename(path1.c_str(), path2.c_str())!=0) {
 		throw error() << "Failed rename of " << path1 << " to " << path2;
@@ -409,7 +409,7 @@ string file_adjust(const string& path) throw ()
 /**
  * Make a drectory tree.
  */
-void file_mktree(const std::string& path) throw (error)
+void file_mktree(const std::string& path)
 {
 	string dir = file_dir(path);
 	string name = file_name(path);
