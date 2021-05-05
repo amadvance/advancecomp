@@ -70,6 +70,8 @@ void mng_write_frame(adv_mng_write* mng, adv_fz* f, unsigned* fc, unsigned tick)
 void mng_write_footer(adv_mng_write* mng, adv_fz* f, unsigned* fc);
 adv_mng_write* mng_write_init(adv_mng_type type, shrink_t level, adv_bool reduce, adv_bool expand);
 void mng_write_done(adv_mng_write* mng);
+void mng_write_loop(adv_mng_write* mng, adv_fz* f, unsigned* fc);
+void mng_end_loop(adv_mng_write* mng, adv_fz* f, unsigned* fc);
 
 #endif
 
