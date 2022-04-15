@@ -1,6 +1,9 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 2.3 2022/04
+	) Fix compatibility with modern C++ compilers.
+
 AdvanceCOMP Version 2.2 2019/03
 	) Fixed multiple crash conditions with invalid PNG/MNG files.
 
