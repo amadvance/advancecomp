@@ -95,11 +95,11 @@ static adv_error mng_read_ihdr(adv_mng* mng, adv_fz* f, const unsigned char* ihd
 
 	mng->dat_width = be_uint32_read(ihdr + 0);
 	mng->dat_height = be_uint32_read(ihdr + 4);
-	if (mng->dat_x + mng->frame_width > mng->dat_width) {
+	if (mng->dat_x < 0 || mng->dat_x + mng->frame_width > mng->dat_width) {
 		error_set("Frame not complete");
 		goto err;
 	}
-	if (mng->dat_y + mng->frame_height > mng->dat_height) {
+	if (mng->dat_y < 0 || mng->dat_y + mng->frame_height > mng->dat_height) {
 		error_set("Frame not complete");
 		goto err;
 	}
@@ -340,12 +340,23 @@ static adv_error mng_read_defi(adv_mng* mng, unsigned char* defi, unsigned defi_
 		mng->dat_y = 0;
 	}
 
+	if (mng->dat_x < 0 || mng->dat_x >= (int)mng->frame_width) {
+		error_set("Invalid move");
+		return -1;
+	}
+	if (mng->dat_y < 0 || mng->dat_y >= (int)mng->frame_height) {
+		error_set("Invalid move");
+		return -1;
+	}
+
 	return 0;
 }
 
 static adv_error mng_read_move(adv_mng* mng, adv_fz* f, unsigned char* move, unsigned move_size)
 {
 	unsigned id;
+
+	(void)f;
 
 	if (move_size != 13) {
 		error_unsupported_set("Unsupported MOVE size in MOVE chunk");
@@ -372,6 +383,15 @@ static adv_error mng_read_move(adv_mng* mng, adv_fz* f, unsigned char* move, uns
 		mng->dat_y += - (int)be_uint32_read(move + 9);
 	} else {
 		error_unsupported_set("Unsupported move type in MOVE chunk");
+		return -1;
+	}
+
+	if (mng->dat_x < 0 || mng->dat_x + mng->frame_width > mng->dat_width) {
+		error_set("Invalid move");
+		return -1;
+	}
+	if (mng->dat_y < 0 || mng->dat_y + mng->frame_height > mng->dat_height) {
+		error_set("Invalid move");
 		return -1;
 	}
 
