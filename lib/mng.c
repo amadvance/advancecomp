@@ -378,7 +378,7 @@ static adv_error mng_read_move(adv_mng* mng, adv_fz* f, unsigned char* move, uns
 	return 0;
 }
 
-static void mng_delta_replacement(adv_mng* mng, unsigned pos_x, unsigned pos_y, unsigned width, unsigned height)
+static int mng_delta_replacement(adv_mng* mng, unsigned dlt_size, unsigned pos_x, unsigned pos_y, unsigned width, unsigned height)
 {
 	unsigned i;
 	unsigned bytes_per_run = width * mng->pixel;
@@ -386,20 +386,28 @@ static void mng_delta_replacement(adv_mng* mng, unsigned pos_x, unsigned pos_y, 
 	unsigned char* p0 = mng->dat_ptr + pos_y * mng->dat_line + pos_x * mng->pixel + 1;
 	unsigned char* p1 = mng->dlt_ptr + 1;
 
+	if (dlt_size != delta_bytes_per_scanline * height)
+		return -1;
+
 	for(i=0;i<height;++i) {
 		memcpy(p0, p1, bytes_per_run);
 		p0 += mng->dat_line;
 		p1 += delta_bytes_per_scanline;
 	}
+
+	return 0;
 }
 
-static void mng_delta_addition(adv_mng* mng, unsigned pos_x, unsigned pos_y, unsigned width, unsigned height)
+static int mng_delta_addition(adv_mng* mng, unsigned dlt_size, unsigned pos_x, unsigned pos_y, unsigned width, unsigned height)
 {
 	unsigned i, j;
 	unsigned bytes_per_run = width * mng->pixel;
 	unsigned delta_bytes_per_scanline = bytes_per_run + 1;
 	unsigned char* p0 = mng->dat_ptr + pos_y * mng->dat_line + pos_x * mng->pixel + 1;
 	unsigned char* p1 = mng->dlt_ptr + 1;
+
+	if (dlt_size != delta_bytes_per_scanline * height)
+		return -1;
 
 	for(i=0;i<height;++i) {
 		for(j=0;j<bytes_per_run;++j) {
@@ -408,6 +416,8 @@ static void mng_delta_addition(adv_mng* mng, unsigned pos_x, unsigned pos_y, uns
 		p0 += mng->dat_line - bytes_per_run;
 		p1 += delta_bytes_per_scanline - bytes_per_run;
 	}
+
+	return 0;
 }
 
 static adv_error mng_read_delta(adv_mng* mng, adv_fz* f, unsigned char* dhdr, unsigned dhdr_size)
@@ -538,16 +548,22 @@ static adv_error mng_read_delta(adv_mng* mng, adv_fz* f, unsigned char* dhdr, un
 			goto err_data;
 		}
 
-		dlt_size = mng->dat_size;
+		dlt_size = mng->dlt_size;
 		if (uncompress(mng->dlt_ptr, &dlt_size, data, size) != Z_OK) {
 			error_set("Corrupt compressed data in IDAT chunk");
 			goto err_data;
 		}
 
 		if (ope == 0 || ope == 4) {
-			mng_delta_replacement(mng, pos_x, pos_y, width, height);
+			if (mng_delta_replacement(mng, dlt_size, pos_x, pos_y, width, height) != 0) {
+				error_unsupported_set("Invalid delta");
+				goto err_data;
+			}
 		} else if (ope == 1) {
-			mng_delta_addition(mng, pos_x, pos_y, width, height);
+			if (mng_delta_addition(mng, dlt_size, pos_x, pos_y, width, height) != 0) {
+				error_unsupported_set("Invalid delta");
+				goto err_data;
+			}
 		} else {
 			error_unsupported_set("Unsupported delta operation");
 			goto err_data;
