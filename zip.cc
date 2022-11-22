@@ -857,7 +857,7 @@ void zip::open()
 
 	try {
 		// central dir
-		while (le_uint32_read(data+data_pos) == ZIP_C_signature) {
+		while (data_pos + 4 < data_size && le_uint32_read(data+data_pos) == ZIP_C_signature) {
 
 			iterator i = map.insert(map.end(), zip_entry(path));
 
@@ -872,6 +872,9 @@ void zip::open()
 			data_pos += skip;
 		}
 
+		if (data_pos+ZIP_EO_FIXED > data_size)
+			throw error_invalid() << "Truncated end of central dir";
+
 		// end of central dir
 		if (le_uint32_read(data+data_pos) != ZIP_E_signature)
 			throw error_invalid() << "Invalid end of central dir signature";
@@ -885,6 +888,10 @@ void zip::open()
 
 		// comment
 		data_free(zipfile_comment);
+
+		if (data_pos+info.zipfile_comment_length > data_size)
+			throw error_invalid() << "Truncated end of central dir";
+
 		zipfile_comment = data_dup(data+data_pos, info.zipfile_comment_length);
 		data_pos += info.zipfile_comment_length;
 
