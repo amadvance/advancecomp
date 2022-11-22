@@ -1,6 +1,11 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 2.4 2022/11
+	) Fix CVE-2022-35014, CVE-2022-35015, CVE-2022-35016, CVE-2022-35017,
+		CVE-2022-35018, CVE-2022-35019, CVE-2022-35020
+	) Update libdeflate to 1.14
+
 AdvanceCOMP Version 2.3 2022/04
 	) Fix compatibility with modern C++ compilers.
 
