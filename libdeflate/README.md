@@ -22,40 +22,170 @@ use this library are also provided:
   yet support very large files
 * benchmark, a program for benchmarking in-memory compression and decompression
 
+For the release notes, see the [NEWS file](NEWS.md).
+
+## Table of Contents
+
+- [Building](#building)
+  - [Using the Makefile](#using-the-makefile)
+    - [For UNIX](#for-unix)
+    - [For macOS](#for-macos)
+    - [For Windows](#for-windows)
+      - [Using Cygwin](#using-cygwin)
+      - [Using MSYS2](#using-msys2)
+  - [Using a custom build system](#using-a-custom-build-system)
+- [API](#api)
+- [Bindings for other programming languages](#bindings-for-other-programming-languages)
+- [DEFLATE vs. zlib vs. gzip](#deflate-vs-zlib-vs-gzip)
+- [Compression levels](#compression-levels)
+- [Motivation](#motivation)
+- [License](#license)
+
+
 # Building
 
-## For UNIX
+libdeflate and the provided programs like `gzip` can be built using the provided
+Makefile.  If only the library is needed, it can alternatively be easily
+integrated into applications and built using any build system; see [Using a
+custom build system](#using-a-custom-build-system).
 
-Just run `make`.  You need GNU Make and either GCC or Clang.  GCC is recommended
-because it builds slightly faster binaries.  There is no `make install` yet;
-just copy the file(s) to where you want.
+## Using the Makefile
 
-By default, all targets are built, including the library and programs, with the
-exception of the `benchmark` program.  `make help` shows the available targets.
-There are also several options which can be set on the `make` command line.  See
-the Makefile for details.
+### For UNIX
 
-## For Windows
+Just run `make`, then (if desired) `make install`.  You need GNU Make and either
+GCC or Clang.  GCC is recommended because it builds slightly faster binaries.
 
-MinGW (GCC) is the recommended compiler to use when building binaries for
-Windows.  MinGW can be used on either Windows or Linux.  On Windows, you'll need
-the compiler as well as GNU Make and basic UNIX tools such as `sh`.  This is
-most easily set up with Cygwin, but some standalone MinGW distributions for
-Windows also work.  Or, on Linux, you'll need to install the `mingw-w64-gcc` or
-similarly-named package.  Once ready, do the build using a command like:
+By default, the following targets are built: the static library `libdeflate.a`,
+the shared library `libdeflate.so`, the `gzip` program, and the `gunzip` program
+(which is actually just a hard link to `gzip`).  Benchmarking and test programs
+such as `benchmark` are not built by default.  You can run `make help` to
+display the available build targets.
 
-    $ make CC=x86_64-w64-mingw32-gcc
+There are also many options which can be set on the `make` command line, e.g. to
+omit library features or to customize the directories into which `make install`
+installs files.  See the Makefile for details.
 
-Some MinGW distributions for Windows may require `CC=gcc` instead.
+### For macOS
 
-Windows binaries prebuilt with MinGW may also be downloaded from
-https://github.com/ebiggers/libdeflate/releases.
+Prebuilt macOS binaries can be installed with [Homebrew](https://brew.sh):
 
-Alternatively, a separate Makefile, `Makefile.msc`, is provided for the tools
-that come with Visual Studio, for those who strongly prefer that toolchain.
+    brew install libdeflate
 
-As usual, 64-bit binaries are faster than 32-bit binaries and should be
+But if you need to build the binaries yourself, see the section for UNIX above.
+
+### For Windows
+
+Prebuilt Windows binaries can be downloaded from
+https://github.com/ebiggers/libdeflate/releases.  But if you need to build the
+binaries yourself, MinGW (gcc) is the recommended compiler to use.  If you're
+performing the build *on* Windows (as opposed to cross-compiling for Windows on
+Linux, for example), you'll need to follow the directions in **one** of the two
+sections below to set up a minimal UNIX-compatible environment using either
+Cygwin or MSYS2, then do the build.  (Other MinGW distributions may not work, as
+they often omit basic UNIX tools such as `sh`.)
+
+Alternatively, libdeflate may be built using the Visual Studio toolchain by
+running `nmake /f Makefile.msc`.  However, while this is supported in the sense
+that it will produce working binaries, it is not recommended because the
+binaries built with MinGW will be significantly faster.
+
+Also note that 64-bit binaries are faster than 32-bit binaries and should be
 preferred whenever possible.
+
+#### Using Cygwin
+
+Run the Cygwin installer, available from https://cygwin.com/setup-x86_64.exe.
+When you get to the package selection screen, choose the following additional
+packages from category "Devel":
+
+- git
+- make
+- mingw64-i686-binutils
+- mingw64-i686-gcc-g++
+- mingw64-x86_64-binutils
+- mingw64-x86_64-gcc-g++
+
+(You may skip the mingw64-i686 packages if you don't need to build 32-bit
+binaries.)
+
+After the installation finishes, open a Cygwin terminal.  Then download
+libdeflate's source code (if you haven't already) and `cd` into its directory:
+
+    git clone https://github.com/ebiggers/libdeflate
+    cd libdeflate
+
+(Note that it's not required to use `git`; an alternative is to extract a .zip
+or .tar.gz archive of the source code downloaded from the releases page.
+Also, in case you need to find it in the file browser, note that your home
+directory in Cygwin is usually located at `C:\cygwin64\home\<your username>`.)
+
+Then, to build 64-bit binaries:
+
+    make CC=x86_64-w64-mingw32-gcc
+
+or to build 32-bit binaries:
+
+    make CC=i686-w64-mingw32-gcc
+
+#### Using MSYS2
+
+Run the MSYS2 installer, available from http://www.msys2.org/.  After
+installing, open an MSYS2 shell and run:
+
+    pacman -Syu
+
+Say `y`, then when it's finished, close the shell window and open a new one.
+Then run the same command again:
+
+    pacman -Syu
+
+Then, install the packages needed to build libdeflate:
+
+    pacman -S git \
+              make \
+              mingw-w64-i686-binutils \
+              mingw-w64-i686-gcc \
+              mingw-w64-x86_64-binutils \
+              mingw-w64-x86_64-gcc
+
+(You may skip the mingw-w64-i686 packages if you don't need to build 32-bit
+binaries.)
+
+Then download libdeflate's source code (if you haven't already):
+
+    git clone https://github.com/ebiggers/libdeflate
+
+(Note that it's not required to use `git`; an alternative is to extract a .zip
+or .tar.gz archive of the source code downloaded from the releases page.
+Also, in case you need to find it in the file browser, note that your home
+directory in MSYS2 is usually located at `C:\msys64\home\<your username>`.)
+
+Then, to build 64-bit binaries, open "MSYS2 MinGW 64-bit" from the Start menu
+and run the following commands:
+
+    cd libdeflate
+    make clean
+    make
+
+Or to build 32-bit binaries, do the same but use "MSYS2 MinGW 32-bit" instead.
+
+## Using a custom build system
+
+The source files of the library are designed to be compilable directly, without
+any prerequisite step like running a `./configure` script.  Therefore, as an
+alternative to building the library using the provided Makefile, the library
+source files can be easily integrated directly into your application and built
+using any build system.
+
+You should compile both `lib/*.c` and `lib/*/*.c`.  You don't need to worry
+about excluding irrelevant architecture-specific code, as this is already
+handled in the source files themselves using `#ifdef`s.
+
+It is **strongly** recommended to use either gcc or clang, and to use `-O2`.
+
+If you are doing a freestanding build with `-ffreestanding`, you must add
+`-DFREESTANDING` as well, otherwise performance will suffer greatly.
 
 # API
 
@@ -77,6 +207,27 @@ uncompressed size of each chunk stored outside of the compressed data itself.
 This enables you to allocate an output buffer of the correct size without
 guessing.  However, libdeflate's decompression routines do optionally provide
 the actual number of output bytes in case you need it.
+
+Windows developers: note that the calling convention of libdeflate.dll is
+"cdecl".  (libdeflate v1.4 through v1.12 used "stdcall" instead.)
+
+# Bindings for other programming languages
+
+The libdeflate project itself only provides a C library.  If you need to use
+libdeflate from a programming language other than C or C++, consider using the
+following bindings:
+
+* C#: [LibDeflate.NET](https://github.com/jzebedee/LibDeflate.NET)
+* Go: [go-libdeflate](https://github.com/4kills/go-libdeflate)
+* Java: [libdeflate-java](https://github.com/astei/libdeflate-java)
+* Julia: [LibDeflate.jl](https://github.com/jakobnissen/LibDeflate.jl)
+* Python: [deflate](https://github.com/dcwatson/deflate)
+* Ruby: [libdeflate-ruby](https://github.com/kaorimatz/libdeflate-ruby)
+* Rust: [libdeflater](https://github.com/adamkewley/libdeflater)
+
+Note: these are third-party projects which haven't necessarily been vetted by
+the authors of libdeflate.  Please direct all questions, bugs, and improvements
+for these bindings to their authors.
 
 # DEFLATE vs. zlib vs. gzip
 
@@ -150,21 +301,8 @@ processors.  libdeflate addresses this by providing an optimized DEFLATE
 implementation which can be used for benchmarking purposes.  And, of course,
 real applications can use it as well.
 
-That being said, I have also started [a separate
-project](https://github.com/ebiggers/xpack) for an experimental, more modern
-compression format.
-
 # License
 
 libdeflate is [MIT-licensed](COPYING).
 
-Additional notes (informational only):
-
-- I am not aware of any patents covering libdeflate.
-
-- Old versions of libdeflate were public domain; I only started copyrighting
-  changes in newer versions.  Portions of the source code that have not been
-  changed since being released in a public domain version can theoretically
-  still be used as public domain if you want to.  But for practical purposes, it
-  probably would be easier to just take the MIT license option, which is nearly
-  the same anyway.
+I am not aware of any patents or patent applications relevant to libdeflate.

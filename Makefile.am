@@ -23,15 +23,15 @@ bin_PROGRAMS = advzip advpng advmng advdef
 
 libdeflate_SOURCES = \
 	libdeflate/adler32.c \
-	libdeflate/aligned_malloc.c \
 	libdeflate/crc32.c \
-	libdeflate/deflate_compress.c \
+	libdeflate/deflate_compress.c\
 	libdeflate/deflate_decompress.c \
 	libdeflate/gzip_compress.c \
 	libdeflate/gzip_decompress.c \
-	libdeflate/x86_cpu_features.c \
+	libdeflate/utils.c \
 	libdeflate/zlib_compress.c \
 	libdeflate/zlib_decompress.c
+
 
 zopfli_SOURCES = \
 	zopfli/blocksplitter.c \
@@ -134,7 +134,7 @@ EXTRA_DIST = \
 	7z/README \
 	libdeflate/README.md \
 	libdeflate/COPYING \
-	libdeflate/NEWS \
+	libdeflate/NEWS.md \
 	zopfli/README \
 	zopfli/COPYING \
 	zopfli/CONTRIBUTORS \
@@ -209,26 +209,21 @@ noinst_HEADERS = \
 	7z/RangeCoder.h \
 	7z/WindowIn.h \
 	7z/WindowOut.h \
-	libdeflate/adler32_impl.h \
-	libdeflate/aligned_malloc.h \
+	libdeflate/adler32_vec_template.h \
 	libdeflate/bt_matchfinder.h \
 	libdeflate/common_defs.h \
-	libdeflate/compiler_gcc.h \
-	libdeflate/crc32_impl.h \
-	libdeflate/crc32_table.h \
-	libdeflate/decompress_impl.h \
+	libdeflate/cpu_features_common.h \
+	libdeflate/crc32_multipliers.h \
+	libdeflate/crc32_tables.h \
+	libdeflate/decompress_template.h \
 	libdeflate/deflate_compress.h \
 	libdeflate/deflate_constants.h \
 	libdeflate/gzip_constants.h \
 	libdeflate/hc_matchfinder.h \
+	libdeflate/ht_matchfinder.h \
 	libdeflate/lib_common.h \
 	libdeflate/libdeflate.h \
-	libdeflate/matchfinder_avx2.h \
 	libdeflate/matchfinder_common.h \
-	libdeflate/matchfinder_neon.h \
-	libdeflate/matchfinder_sse2.h \
-	libdeflate/unaligned.h \
-	libdeflate/x86_cpu_features.h \
 	libdeflate/zlib_constants.h \
 	zopfli/blocksplitter.h \
 	zopfli/cache.h \

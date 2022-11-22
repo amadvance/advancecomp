@@ -6,11 +6,43 @@
 #define LIB_MATCHFINDER_COMMON_H
 
 #include "lib_common.h"
-#include "unaligned.h"
 
 #ifndef MATCHFINDER_WINDOW_ORDER
 #  error "MATCHFINDER_WINDOW_ORDER must be defined!"
 #endif
+
+/*
+ * Given a 32-bit value that was loaded with the platform's native endianness,
+ * return a 32-bit value whose high-order 8 bits are 0 and whose low-order 24
+ * bits contain the first 3 bytes, arranged in octets in a platform-dependent
+ * order, at the memory location from which the input 32-bit value was loaded.
+ */
+static forceinline u32
+loaded_u32_to_u24(u32 v)
+{
+	if (CPU_IS_LITTLE_ENDIAN())
+		return v & 0xFFFFFF;
+	else
+		return v >> 8;
+}
+
+/*
+ * Load the next 3 bytes from @p into the 24 low-order bits of a 32-bit value.
+ * The order in which the 3 bytes will be arranged as octets in the 24 bits is
+ * platform-dependent.  At least 4 bytes (not 3) must be available at @p.
+ */
+static forceinline u32
+load_u24_unaligned(const u8 *p)
+{
+#if UNALIGNED_ACCESS_IS_FAST
+	return loaded_u32_to_u24(load_u32_unaligned(p));
+#else
+	if (CPU_IS_LITTLE_ENDIAN())
+		return ((u32)p[0] << 0) | ((u32)p[1] << 8) | ((u32)p[2] << 16);
+	else
+		return ((u32)p[2] << 0) | ((u32)p[1] << 8) | ((u32)p[0] << 16);
+#endif
+}
 
 #define MATCHFINDER_WINDOW_SIZE (1UL << MATCHFINDER_WINDOW_ORDER)
 
@@ -18,30 +50,24 @@ typedef s16 mf_pos_t;
 
 #define MATCHFINDER_INITVAL ((mf_pos_t)-MATCHFINDER_WINDOW_SIZE)
 
-#define MATCHFINDER_ALIGNMENT 8
+/*
+ * Required alignment of the matchfinder buffer pointer and size.  The values
+ * here come from the AVX-2 implementation, which is the worst case.
+ */
+#define MATCHFINDER_MEM_ALIGNMENT	32
+#define MATCHFINDER_SIZE_ALIGNMENT	128
 
-#ifdef __AVX2__
-#  include "matchfinder_avx2.h"
-#  if MATCHFINDER_ALIGNMENT < 32
-#    undef MATCHFINDER_ALIGNMENT
-#    define MATCHFINDER_ALIGNMENT 32
+#undef matchfinder_init
+#undef matchfinder_rebase
+#ifdef _aligned_attribute
+#  define MATCHFINDER_ALIGNED _aligned_attribute(MATCHFINDER_MEM_ALIGNMENT)
+#  if defined(__arm__) || defined(__aarch64__)
+//#    include "arm/matchfinder_impl.h"
+#  elif defined(__i386__) || defined(__x86_64__)
+//#    include "x86/matchfinder_impl.h"
 #  endif
-#endif
-
-#ifdef __SSE2__
-#  include "matchfinder_sse2.h"
-#  if MATCHFINDER_ALIGNMENT < 16
-#    undef MATCHFINDER_ALIGNMENT
-#    define MATCHFINDER_ALIGNMENT 16
-#  endif
-#endif
-
-#ifdef __ARM_NEON
-#  include "matchfinder_neon.h"
-#  if MATCHFINDER_ALIGNMENT < 16
-#    undef MATCHFINDER_ALIGNMENT
-#    define MATCHFINDER_ALIGNMENT 16
-#  endif
+#else
+#  define MATCHFINDER_ALIGNED
 #endif
 
 /*
@@ -49,95 +75,63 @@ typedef s16 mf_pos_t;
  *
  * Essentially, this is an optimized memset().
  *
- * 'data' must be aligned to a MATCHFINDER_ALIGNMENT boundary.
+ * 'data' must be aligned to a MATCHFINDER_MEM_ALIGNMENT boundary, and
+ * 'size' must be a multiple of MATCHFINDER_SIZE_ALIGNMENT.
  */
+#ifndef matchfinder_init
 static forceinline void
-matchfinder_init(mf_pos_t *data, size_t num_entries)
+matchfinder_init(mf_pos_t *data, size_t size)
 {
+	size_t num_entries = size / sizeof(*data);
 	size_t i;
-
-#if defined(__AVX2__) && defined(_aligned_attribute)
-	if (matchfinder_init_avx2(data, num_entries * sizeof(data[0])))
-		return;
-#endif
-
-#if defined(__SSE2__) && defined(_aligned_attribute)
-	if (matchfinder_init_sse2(data, num_entries * sizeof(data[0])))
-		return;
-#endif
-
-#if defined(__ARM_NEON) && defined(_aligned_attribute)
-	if (matchfinder_init_neon(data, num_entries * sizeof(data[0])))
-		return;
-#endif
 
 	for (i = 0; i < num_entries; i++)
 		data[i] = MATCHFINDER_INITVAL;
 }
+#endif
 
 /*
- * Slide the matchfinder by WINDOW_SIZE bytes.
+ * Slide the matchfinder by MATCHFINDER_WINDOW_SIZE bytes.
  *
- * This must be called just after each WINDOW_SIZE bytes have been run through
- * the matchfinder.
+ * This must be called just after each MATCHFINDER_WINDOW_SIZE bytes have been
+ * run through the matchfinder.
  *
- * This will subtract WINDOW_SIZE bytes from each entry in the array specified.
- * The effect is that all entries are updated to be relative to the current
- * position, rather than the position WINDOW_SIZE bytes prior.
+ * This subtracts MATCHFINDER_WINDOW_SIZE bytes from each entry in the given
+ * array, making the entries be relative to the current position rather than the
+ * position MATCHFINDER_WINDOW_SIZE bytes prior.  To avoid integer underflows,
+ * entries that would become less than -MATCHFINDER_WINDOW_SIZE stay at
+ * -MATCHFINDER_WINDOW_SIZE, keeping them permanently out of bounds.
  *
- * Underflow is detected and replaced with signed saturation.  This ensures that
- * once the sliding window has passed over a position, that position forever
- * remains out of bounds.
- *
- * The array passed in must contain all matchfinder data that is
- * position-relative.  Concretely, this will include the hash table as well as
- * the table of positions that is used to link together the sequences in each
- * hash bucket.  Note that in the latter table, the links are 1-ary in the case
- * of "hash chains", and 2-ary in the case of "binary trees".  In either case,
- * the links need to be rebased in the same way.
+ * The given array must contain all matchfinder data that is position-relative:
+ * the hash table(s) as well as any hash chain or binary tree links.  Its
+ * address must be aligned to a MATCHFINDER_MEM_ALIGNMENT boundary, and its size
+ * must be a multiple of MATCHFINDER_SIZE_ALIGNMENT.
  */
+#ifndef matchfinder_rebase
 static forceinline void
-matchfinder_rebase(mf_pos_t *data, size_t num_entries)
+matchfinder_rebase(mf_pos_t *data, size_t size)
 {
+	size_t num_entries = size / sizeof(*data);
 	size_t i;
 
-#if defined(__AVX2__) && defined(_aligned_attribute)
-	if (matchfinder_rebase_avx2(data, num_entries * sizeof(data[0])))
-		return;
-#endif
-
-#if defined(__SSE2__) && defined(_aligned_attribute)
-	if (matchfinder_rebase_sse2(data, num_entries * sizeof(data[0])))
-		return;
-#endif
-
-#if defined(__ARM_NEON) && defined(_aligned_attribute)
-	if (matchfinder_rebase_neon(data, num_entries * sizeof(data[0])))
-		return;
-#endif
-
 	if (MATCHFINDER_WINDOW_SIZE == 32768) {
-		/* Branchless version for 32768 byte windows.  If the value was
-		 * already negative, clear all bits except the sign bit; this
-		 * changes the value to -32768.  Otherwise, set the sign bit;
-		 * this is equivalent to subtracting 32768.  */
+		/*
+		 * Branchless version for 32768-byte windows.  Clear all bits if
+		 * the value was already negative, then set the sign bit.  This
+		 * is equivalent to subtracting 32768 with signed saturation.
+		 */
+		for (i = 0; i < num_entries; i++)
+			data[i] = 0x8000 | (data[i] & ~(data[i] >> 15));
+	} else {
 		for (i = 0; i < num_entries; i++) {
-			u16 v = data[i];
-			u16 sign_bit = v & 0x8000;
-			v &= sign_bit - ((sign_bit >> 15) ^ 1);
-			v |= 0x8000;
-			data[i] = v;
+			if (data[i] >= 0)
+				data[i] -= (mf_pos_t)-MATCHFINDER_WINDOW_SIZE;
+			else
+				data[i] = (mf_pos_t)-MATCHFINDER_WINDOW_SIZE;
 		}
-		return;
-	}
-
-	for (i = 0; i < num_entries; i++) {
-		if (data[i] >= 0)
-			data[i] -= (mf_pos_t)-MATCHFINDER_WINDOW_SIZE;
-		else
-			data[i] = (mf_pos_t)-MATCHFINDER_WINDOW_SIZE;
 	}
 }
+#endif
 
 /*
  * The hash function: given a sequence prefix held in the low-order bits of a
