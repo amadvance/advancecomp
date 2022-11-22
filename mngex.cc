@@ -700,6 +700,7 @@ adv_mng_write* mng_write_init(adv_mng_type type, shrink_t level, adv_bool reduce
 	mng->expand = expand;
 	mng->header_written = 0;
 	mng->header_simplicity = 0;
+	mng->scroll_ptr = 0;
 
 	return mng;
 }
