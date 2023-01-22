@@ -725,20 +725,16 @@ adv_error adv_png_read_ihdr(
 		goto err_ptr;
 	}
 
-	/* check for overflow */
-	if (pixel == 0 || width_align >= UINT_MAX / pixel) {
+	if (UINT_MUL_OVERFLOW(width_align, pixel)) {
 		error_set("Invalid image size");
 		goto err_ptr;
 	}
-
 	scanline = width_align * pixel + 1;
 
-	/* check for overflow */
-	if (scanline == 0 || height >= UINT_MAX / scanline) {
-		error_set("Invalid image size");
+	if (scanline == 0 || UINT_MUL_OVERFLOW(height, scanline)) {
+		error_set("Invalid size");
 		goto err_ptr;
 	}
-
 	*dat_size = height * scanline;
 	*dat_ptr = malloc(*dat_size);
 	*pix_scanline = scanline;

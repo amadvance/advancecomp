@@ -72,6 +72,14 @@ typedef uint64_t uint64; /**< Unsigned 64 bit integer. */
 typedef int64_t int64; /**< Signed 64 bit integer. */
 typedef uintptr_t uintptr; /**< Unsigned integer with pointer size. */
 
+/**
+ * Check for unsigned overflow in multiplication
+ */
+static inline int UINT_MUL_OVERFLOW(unsigned a, unsigned b)
+{
+	return b != 0 && a >= UINT_MAX / b;
+}
+
 /** \name Align
  * Alignment.
  */

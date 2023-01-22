@@ -134,8 +134,18 @@ static adv_error mng_read_ihdr(adv_mng* mng, adv_fz* f, const unsigned char* ihd
 	}
 
 	if (!mng->dat_ptr) {
+		if (UINT_MUL_OVERFLOW(mng->dat_width, mng->pixel)) {
+			error_unsupported_set("Invalid size");
+			goto err;
+		}
 		mng->dat_line = mng->dat_width * mng->pixel + 1; /* +1 for the filter byte */
+
+		if (mng->dat_line == 0 || UINT_MUL_OVERFLOW(mng->dat_height, mng->dat_line)) {
+			error_unsupported_set("Invalid size");
+			goto err;
+		}
 		mng->dat_size = mng->dat_height * mng->dat_line;
+
 		mng->dat_ptr = malloc(mng->dat_size);
 	} else {
 		if (mng->dat_line != mng->dat_width * mng->pixel + 1
