@@ -1,0 +1,17 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: autoreconf -i
+      - run: ./configure
+      - run: make all
+      - run: make distcheck
