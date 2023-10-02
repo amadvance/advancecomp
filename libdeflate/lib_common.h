@@ -37,7 +37,7 @@
 
 #define LIBDEFLATEAPI	LIBDEFLATE_EXPORT_SYM LIBDEFLATE_ALIGN_STACK
 
-#include "../common_defs.h"
+#include "common_defs.h"
 
 typedef void *(*malloc_func_t)(size_t);
 typedef void (*free_func_t)(void *);

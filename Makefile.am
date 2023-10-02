@@ -22,6 +22,8 @@ bin_PROGRAMS = advzip advpng advmng advdef
 	7z/WindowOut.cc
 
 libdeflate_SOURCES = \
+	libdeflate/arm/cpu_features.c \
+	libdeflate/x86/cpu_features.c \
 	libdeflate/adler32.c \
 	libdeflate/crc32.c \
 	libdeflate/deflate_compress.c\
