@@ -5,7 +5,7 @@
 #ifndef LIB_LIB_COMMON_H
 #define LIB_LIB_COMMON_H
 
-#include "../common_defs.h"
+#include "common_defs.h"
 
 #ifdef LIBDEFLATE_H
  /*
