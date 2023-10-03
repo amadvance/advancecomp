@@ -223,10 +223,10 @@ crc32_slice1(u32 crc, const u8 *p, size_t len)
 #undef DEFAULT_IMPL
 #undef arch_select_crc32_func
 typedef u32 (*crc32_func_t)(u32 crc, const u8 *p, size_t len);
-#if defined(__arm__) || defined(__aarch64__)
-//#  include "arm/crc32_impl.h"
-#elif defined(__i386__) || defined(__x86_64__)
-//#  include "x86/crc32_impl.h"
+#if defined(ARCH_ARM32) || defined(ARCH_ARM64)
+#  include "arm/crc32_impl.h"
+#elif defined(ARCH_X86_32) || defined(ARCH_X86_64)
+#  include "x86/crc32_impl.h"
 #endif
 
 #ifndef DEFAULT_IMPL
@@ -254,7 +254,7 @@ static u32 dispatch_crc32(u32 crc, const u8 *p, size_t len)
 #define crc32_impl DEFAULT_IMPL
 #endif
 
-LIBDEFLATEEXPORT u32 LIBDEFLATEAPI
+LIBDEFLATEAPI u32
 libdeflate_crc32(u32 crc, const void *p, size_t len)
 {
 	if (p == NULL) /* Return initial value. */
