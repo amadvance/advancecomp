@@ -19,7 +19,7 @@ AC_CHECK_PROGS(GZIP, gzip)
 AC_CHECK_PROGS(GROFF, groff)
 AC_CHECK_PROGS(COL, col)
 AC_CHECK_PROG([VALGRIND],[valgrind],[valgrind --leak-check=full --track-fds=yes --error-exitcode=1],[])
-AC_CHECK_PROG([WINE],[wine],[wine],[])
+AC_CHECK_PROG([WINE],[wine64],[wine64],[])
 AC_CHECK_PROG([ADVD2],[advd2],[advd2],[])
 AM_CONDITIONAL(HAVE_ADVD2, [test x"$ADVD2" != x])
 
