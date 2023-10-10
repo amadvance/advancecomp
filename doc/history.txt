@@ -3,6 +3,12 @@
                             =======================
 
 
+ADVANCECOMP VERSION 2.6 2023/10
+===============================
+
+* Update libdeflate to 1.19 [Darik Horn]
+
+
 ADVANCECOMP VERSION 2.5 2023/01
 ===============================
 

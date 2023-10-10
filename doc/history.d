@@ -1,6 +1,9 @@
 Name
 	advcomp - History For AdvanceCOMP
 
+AdvanceCOMP Version 2.6 2023/10
+	) Update libdeflate to 1.19 [Darik Horn]
+
 AdvanceCOMP Version 2.5 2023/01
 	) Fix segmentation fault on invalid MNG size
 
