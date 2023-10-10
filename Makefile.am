@@ -22,6 +22,8 @@ bin_PROGRAMS = advzip advpng advmng advdef
 	7z/WindowOut.cc
 
 libdeflate_SOURCES = \
+	libdeflate/arm/cpu_features.c \
+	libdeflate/x86/cpu_features.c \
 	libdeflate/adler32.c \
 	libdeflate/crc32.c \
 	libdeflate/deflate_compress.c\
@@ -209,6 +211,18 @@ noinst_HEADERS = \
 	7z/RangeCoder.h \
 	7z/WindowIn.h \
 	7z/WindowOut.h \
+	libdeflate/arm/adler32_impl.h \
+	libdeflate/arm/cpu_features.h \
+	libdeflate/arm/crc32_impl.h \
+	libdeflate/arm/crc32_pmull_helpers.h \
+	libdeflate/arm/crc32_pmull_wide.h \
+	libdeflate/arm/matchfinder_impl.h \
+	libdeflate/x86/adler32_impl.h \
+	libdeflate/x86/cpu_features.h \
+	libdeflate/x86/crc32_impl.h \
+	libdeflate/x86/crc32_pclmul_template.h \
+	libdeflate/x86/decompress_impl.h \
+	libdeflate/x86/matchfinder_impl.h \
 	libdeflate/adler32_vec_template.h \
 	libdeflate/bt_matchfinder.h \
 	libdeflate/common_defs.h \
