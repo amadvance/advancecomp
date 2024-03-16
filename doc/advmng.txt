@@ -7,7 +7,7 @@
 ==========
 
 advmng [-l, --list] [-z, --recompress]
-	[-x, --extract] [-a, --add RATE MNG_FILE PNG_FILES...]
+	[-x, --extract] [-a,-p, --add RATE MNG_FILE PNG_FILES...]
 	[-0, --shrink-store] [-1, --shrink-fast] [-2, --shrink-normal]
 	[-3, --shrink-extra] [-4, --shrink-insane] [-i, --iter N]
 	[-s, --scroll HxV] [-S, --scroll-square]
@@ -58,12 +58,13 @@ strategies:
         images are always 24 bit images with alpha channel.
         You can remove the alpha channel with the -n option.
 
-    -a, --add RATE MNG_FILE PNG_FILES...
+    -a, -p, --add RATE MNG_FILE PNG_FILES...
         Compress all the .png files on the command line
         as a .mng file. All the .png files must have the
         same size and the same bit depth. You must also
         specify an integer frame rate to use in the
-        .mng file.
+        .mng file. If -p is used, the mng will loop continually.
+    
 
 
 4 OPTIONS
