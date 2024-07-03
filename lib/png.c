@@ -626,33 +626,50 @@ adv_error adv_png_read_ihdr(
 	*pix_height = height = be_uint32_read(data + 4);
 
 	depth = data[8];
-	if (data[9] == 3 && depth == 8) {
-		pixel = 1;
+	if (depth == 8) {
 		width_align = width;
-		has_palette = 1;
-	} else if (data[9] == 3 && depth == 4) {
-		pixel = 1;
-		width_align = (width + 1) & ~1;
-		has_palette = 1;
-	} else if (data[9] == 3 && depth == 2) {
-		pixel = 1;
-		width_align = (width + 3) & ~3;
-		has_palette = 1;
-	} else if (data[9] == 3 && depth == 1) {
-		pixel = 1;
-		width_align = (width + 7) & ~7;
-		has_palette = 1;
-	} else if (data[9] == 2 && depth == 8) {
-		pixel = 3;
-		width_align = width;
-		has_palette = 0;
-	} else if (data[9] == 6 && depth == 8) {
-		pixel = 4;
-		width_align = width;
-		has_palette = 0;
 	} else {
-		error_unsupported_set("Unsupported bit depth/color type, %d/%d", (unsigned)data[8], (unsigned)data[9]);
-		goto err;
+		if ((data[9] != 0) && (data[9] != 3)) {
+			error_unsupported_set("Unsupported bit depth/color type, %d/%d", depth, (unsigned)data[9]);
+			goto err;
+		}
+		if (depth == 4) {
+			width_align = (width + 1) & ~1;
+		} else if (depth == 2) {
+			width_align = (width + 3) & ~3;
+		} else if (depth == 1) {
+			width_align = (width + 7) & ~7;
+		} else {
+			error_unsupported_set("Unsupported bit depth, %d", depth);
+			goto err;
+		}
+	}
+
+	switch (data[9]) {
+		case 0:
+			pixel = 1;
+			has_palette = 0;
+			break;
+		case 2:
+			pixel = 3;
+			has_palette = 0;
+			break;
+		case 3:
+			pixel = 1;
+			has_palette = 1;
+			break;
+		case 4:
+			pixel = 2;
+			has_palette = 0;
+			break;
+		case 6:
+			pixel = 4;
+			has_palette = 0;
+			break;
+		default:
+			error_unsupported_set("Unsupported color type, %d", (unsigned)data[9]);
+			goto err;
+			break;
 	}
 	*pix_pixel = pixel;
 
