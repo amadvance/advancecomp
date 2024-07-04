@@ -55,6 +55,10 @@ Commands
 		specify an integer frame rate to use in the
 		.mng file.
 
+	-p RATE MNG_FILE PNG_FILES...
+		It's the same as -a, however the mng file will
+		loop continually.
+
 Options
 	-0, --shrink-store
 		Disable the compression. The file is

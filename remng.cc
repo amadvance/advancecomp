@@ -51,7 +51,8 @@ bool opt_scroll;
 adv_mng_type opt_type;
 bool opt_force;
 bool opt_crc;
-
+bool loop;
+bool firstloop;
 void clear_line()
 {
 	cout << "                                                              \r";
@@ -879,6 +880,11 @@ void add_all(int argc, char* argv[], unsigned frequency)
 				if (!mng_write_has_header(mng_write)) {
 					convert_header(mng_write, f_out, &filec, pix_width, pix_height, frequency, info, pix_pixel == 4 && !opt_noalpha);
 				}
+                                
+                                if (loop & firstloop) {
+                                    mng_write_loop(mng_write, f_out, &filec);
+                                    firstloop = false;
+                                }
 
 				if (opt_type != mng_vlc)
 					mng_write_frame(mng_write, f_out, &filec, 1);
@@ -918,7 +924,9 @@ void add_all(int argc, char* argv[], unsigned frequency)
 			scroll_info_done(info);
 		throw;
 	}
-
+        if (loop) {
+            mng_end_loop(mng_write, f_out, &filec);
+        }
 	mng_write_footer(mng_write, f_out, &filec);
 
 	mng_write_done(mng_write);
@@ -1019,7 +1027,7 @@ struct option long_options[] = {
 	{"list-crc", 0, 0, 'L'},
 	{"extract", 0, 0, 'x'},
 	{"add", 1, 0, 'a'},
-
+        {"loop", 0, 0, 'p'},
 	{"shrink-store", 0, 0, '0'},
 	{"shrink-fast", 0, 0, '1'},
 	{"shrink-normal", 0, 0, '2'},
@@ -1043,7 +1051,7 @@ struct option long_options[] = {
 };
 #endif
 
-#define OPTIONS "zlLxa:01234i:s:S:rencCfqvhV"
+#define OPTIONS "zlLxap:01234i:s:S:rencCfqvhV"
 
 void version()
 {
@@ -1143,6 +1151,9 @@ void process(int argc, char* argv[])
 				throw error() << "Too many commands";
 			cmd = cmd_extract;
 			break;
+                case 'p' : {
+                    loop =true;
+                }
 		case 'a' : {
 			int n, s;
 			if (cmd != cmd_unset)
@@ -1264,6 +1275,8 @@ void process(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+    loop=false;
+    firstloop=true;
 	try {
 		process(argc, argv);
 	} catch (error& e) {
