@@ -36,6 +36,7 @@ using namespace std;
 shrink_t opt_level;
 bool opt_quiet;
 bool opt_force;
+bool opt_keep_timestamp=false;
 
 enum ftype_t {
 	ftype_png,
@@ -570,7 +571,18 @@ void rezip_single(const string& file, unsigned long long& total_0, unsigned long
 		size_0 = file_size(file);
 
 		try {
+			struct stat orig_stat;
+			const char*filecstr = file.c_str();
+			if (opt_keep_timestamp) {   
+           		stat(filecstr, &orig_stat);
+			}
 			convert_inplace(file);
+			if (opt_keep_timestamp) {
+			 	struct utimbuf utime_buf;
+    			utime_buf.actime = orig_stat.st_atime;  // Set access time
+    			utime_buf.modtime = orig_stat.st_mtime; // Set modification time
+			   	utime(filecstr, &utime_buf);
+			}
 		} catch (error_unsupported& e) {
 			desc = e.desc_get();
 		}
@@ -580,7 +592,6 @@ void rezip_single(const string& file, unsigned long long& total_0, unsigned long
 	} catch (error& e) {
 		throw e << " on " << file;
 	}
-
 	if (!opt_quiet) {
 		cout << setw(12) << size_0 << setw(12) << size_1 << " ";
 		if (size_0) {
@@ -630,7 +641,7 @@ struct option long_options[] = {
 	{"shrink-extra", 0, 0, '3'},
 	{"shrink-insane", 0, 0, '4'},
 	{"iter", 1, 0, 'i'},
-
+	{"keep-timestamp", no_argument, 0, 'k'},
 	{"quiet", 0, 0, 'q'},
 	{"help", 0, 0, 'h'},
 	{"version", 0, 0, 'V'},
@@ -638,7 +649,7 @@ struct option long_options[] = {
 };
 #endif
 
-#define OPTIONS "zl01234i:fqhV"
+#define OPTIONS "zl01234ik:fqhV"
 
 void version()
 {
@@ -649,7 +660,7 @@ void usage()
 {
 	version();
 
-	cout << "Usage: advpng [options] [FILES...]" << endl;
+	cout << "Usage: advdef [options] [FILES...]" << endl;
 	cout << endl;
 	cout << "Modes:" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-z, --recompress    ", "-z") "  Recompress the specified files" << endl;
@@ -659,6 +670,8 @@ void usage()
 	cout << "  " SWITCH_GETOPT_LONG("-2, --shrink-normal ", "-2") "  Compress normal (libdeflate)" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-3, --shrink-extra  ", "-3") "  Compress extra (7z)" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-4, --shrink-insane ", "-4") "  Compress extreme (zopfli)" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-k, --keep-timestamp", "-k") "  Keep the original timestamp" << endl;
+
 	cout << "  " SWITCH_GETOPT_LONG("-i N, --iter=N      ", "-i") "  Compress iterations" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-f, --force         ", "-f") "  Force the new file also if it's bigger" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-q, --quiet         ", "-q") "  Don't print on the console" << endl;
@@ -720,6 +733,9 @@ void process(int argc, char* argv[])
 			break;
 		case 'f' :
 			opt_force = true;
+			break;
+		case 'k' :
+			opt_keep_timestamp = true;
 			break;
 		case 'q' :
 			opt_quiet = true;
