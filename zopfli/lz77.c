@@ -24,6 +24,7 @@ Author: jyrki.alakuijala@gmail.com (Jyrki Alakuijala)
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 void ZopfliInitLZ77Store(const unsigned char* data, ZopfliLZ77Store* store) {
   store->size = 0;
@@ -299,13 +300,13 @@ static const unsigned char* GetMatch(const unsigned char* scan,
                                      const unsigned char* end,
                                      const unsigned char* safe_end) {
 
-  if (sizeof(size_t) == 8) {
+  if (sizeof(size_t) == 8 && ((uintptr_t)scan % 8 == 0) && ((uintptr_t)match % 8 == 0)) {
     /* 8 checks at once per array bounds check (size_t is 64-bit). */
     while (scan < safe_end && *((size_t*)scan) == *((size_t*)match)) {
       scan += 8;
       match += 8;
     }
-  } else if (sizeof(unsigned int) == 4) {
+  } else if (sizeof(unsigned int) == 4 && ((uintptr_t)scan % 4 == 0) && ((uintptr_t)match % 4 == 0)) {
     /* 4 checks at once per array bounds check (unsigned int is 32-bit). */
     while (scan < safe_end
         && *((unsigned int*)scan) == *((unsigned int*)match)) {
