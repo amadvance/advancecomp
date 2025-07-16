@@ -641,7 +641,7 @@ struct option long_options[] = {
 	{"shrink-extra", 0, 0, '3'},
 	{"shrink-insane", 0, 0, '4'},
 	{"iter", 1, 0, 'i'},
-	{"keep-timestamp", no_argument, 0, 'k'},
+	{"keep-timestamp", 0, 0, 'k'},
 	{"quiet", 0, 0, 'q'},
 	{"help", 0, 0, 'h'},
 	{"version", 0, 0, 'V'},
@@ -649,7 +649,7 @@ struct option long_options[] = {
 };
 #endif
 
-#define OPTIONS "zl01234ik:fqhV"
+#define OPTIONS "zl01234i:kfqhV"
 
 void version()
 {
