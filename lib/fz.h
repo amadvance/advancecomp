@@ -100,6 +100,8 @@ adv_error fzeof(adv_fz* f);
 adv_error le_uint8_fzread(adv_fz* f, unsigned* v);
 adv_error le_uint16_fzread(adv_fz* f, unsigned* v);
 adv_error le_uint32_fzread(adv_fz* f, unsigned* v);
+int fzfileno(adv_fz* f);
+int fzflush(adv_fz* f);
 
 /*@}*/
 

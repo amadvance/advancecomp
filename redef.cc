@@ -36,6 +36,7 @@ using namespace std;
 shrink_t opt_level;
 bool opt_quiet;
 bool opt_force;
+bool opt_keep_timestamp;
 
 enum ftype_t {
 	ftype_png,
@@ -467,10 +468,11 @@ void convert_gz(adv_fz* f_in, adv_fz* f_out)
 		throw error() << "Invalid size";
 }
 
-void convert_inplace(const string& path)
+void convert_inplace(const string& path, bool keep_timestamp)
 {
 	adv_fz* f_in;
 	adv_fz* f_out;
+	struct stat st;
 
 	// temp name of the saved file
 	string path_dst = file_temp(path);
@@ -478,6 +480,12 @@ void convert_inplace(const string& path)
 	f_in = fzopen(path.c_str(), "rb");
 	if (!f_in) {
 		throw error() << "Failed open for reading " << path;
+	}
+
+	if (keep_timestamp) {
+		if (fstat(fzfileno(f_in), &st) != 0)
+			throw error() << "Failed stat for " << path;
+			printf("OK\n");
 	}
 
 	try {
@@ -531,6 +539,17 @@ void convert_inplace(const string& path)
 		throw;
 	}
 
+	if (keep_timestamp) {
+		struct timespec tv[2];
+		tv[0] = st.st_atim;
+		tv[1] = st.st_mtim;
+		fzflush(f_out); // ensure that everything is written before setting the time
+		if (futimens(fzfileno(f_out), tv) != 0) {
+			throw error() << "Failed futimes for " << path_dst;
+		}
+		printf("SET\n");
+	}
+
 	fzclose(f_in);
 	fzclose(f_out);
 
@@ -570,7 +589,7 @@ void rezip_single(const string& file, unsigned long long& total_0, unsigned long
 		size_0 = file_size(file);
 
 		try {
-			convert_inplace(file);
+			convert_inplace(file, opt_keep_timestamp);
 		} catch (error_unsupported& e) {
 			desc = e.desc_get();
 		}
@@ -580,7 +599,6 @@ void rezip_single(const string& file, unsigned long long& total_0, unsigned long
 	} catch (error& e) {
 		throw e << " on " << file;
 	}
-
 	if (!opt_quiet) {
 		cout << setw(12) << size_0 << setw(12) << size_1 << " ";
 		if (size_0) {
@@ -630,7 +648,7 @@ struct option long_options[] = {
 	{"shrink-extra", 0, 0, '3'},
 	{"shrink-insane", 0, 0, '4'},
 	{"iter", 1, 0, 'i'},
-
+	{"keep-timestamp", 0, 0, 'k'},
 	{"quiet", 0, 0, 'q'},
 	{"help", 0, 0, 'h'},
 	{"version", 0, 0, 'V'},
@@ -638,7 +656,7 @@ struct option long_options[] = {
 };
 #endif
 
-#define OPTIONS "zl01234i:fqhV"
+#define OPTIONS "zl01234i:kfqhV"
 
 void version()
 {
@@ -649,7 +667,7 @@ void usage()
 {
 	version();
 
-	cout << "Usage: advpng [options] [FILES...]" << endl;
+	cout << "Usage: advdef [options] [FILES...]" << endl;
 	cout << endl;
 	cout << "Modes:" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-z, --recompress    ", "-z") "  Recompress the specified files" << endl;
@@ -659,6 +677,8 @@ void usage()
 	cout << "  " SWITCH_GETOPT_LONG("-2, --shrink-normal ", "-2") "  Compress normal (libdeflate)" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-3, --shrink-extra  ", "-3") "  Compress extra (7z)" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-4, --shrink-insane ", "-4") "  Compress extreme (zopfli)" << endl;
+	cout << "  " SWITCH_GETOPT_LONG("-k, --keep-timestamp", "-k") "  Keep the original timestamp" << endl;
+
 	cout << "  " SWITCH_GETOPT_LONG("-i N, --iter=N      ", "-i") "  Compress iterations" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-f, --force         ", "-f") "  Force the new file also if it's bigger" << endl;
 	cout << "  " SWITCH_GETOPT_LONG("-q, --quiet         ", "-q") "  Don't print on the console" << endl;
@@ -676,6 +696,7 @@ void process(int argc, char* argv[])
 	opt_level.level = shrink_normal;
 	opt_level.iter = 0;
 	opt_force = false;
+	opt_keep_timestamp = false;
 
 	if (argc <= 1) {
 		usage();
@@ -720,6 +741,9 @@ void process(int argc, char* argv[])
 			break;
 		case 'f' :
 			opt_force = true;
+			break;
+		case 'k' :
+			opt_keep_timestamp = true;
 			break;
 		case 'q' :
 			opt_quiet = true;

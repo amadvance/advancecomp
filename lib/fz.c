@@ -230,6 +230,20 @@ static adv_fz* fzalloc(void)
 	return f;
 }
 
+int fzflush(adv_fz* f)
+{
+	if (f->type != fz_file)
+		return -1;
+	return fflush(f->f);	
+}
+
+int fzfileno(adv_fz* f)
+{
+	if (f->type != fz_file)
+		return -1;
+	return fileno(f->f);
+}
+
 /**
  * Open a normal file.
  * The semantic is like the C fopen() function.
